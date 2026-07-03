@@ -1,0 +1,20 @@
+{
+  "agent_id": "PM",
+  "version": "1.0",
+  "prompt_path": "agents/pm/v1.0.md",
+  "organization_id": "personal",
+  "client_project_id": "finance-tracker",
+  "allowed_workflows": ["finance-app"],
+  "project_type_support": ["GREENFIELD", "RETROFIT", "MONITOR"],
+  "status": "ACTIVE",
+  "owner": "mehulbhatt.ml@gmail.com",
+  "capabilities": ["market_research", "business_case_generation", "jira_story_seeding"],
+  "max_concurrent_executions": 1,
+  "sla_seconds": 300,
+  "runs_in_parallel": false,
+  "note": "First agent in the pipeline. Triggered by a one-line business requirement. Produces the BACKLOG->IN_ANALYSIS handoff; requires human APPROVAL gate before BA is invoked.",
+  "permissions": {
+    "jira": ["read", "write"],
+    "web_search": ["read"]
+  }
+}

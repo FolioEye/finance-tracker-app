@@ -1,0 +1,28 @@
+"""Request/response DTOs for the auth API. Pydantic v2 validates all external input."""
+from __future__ import annotations
+
+import uuid
+
+from pydantic import BaseModel, EmailStr, Field
+
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=1, max_length=128)
+    confirm_password: str = Field(..., min_length=1, max_length=128)
+
+    # NOTE for maintainers: `password` and `confirm_password` must never be
+    # passed to a logger, error message, or anywhere else outside this
+    # request/handler boundary. See constraint matrix.
+
+
+class RegisterResponse(BaseModel):
+    user_id: uuid.UUID
+    email: str
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    email_verification_pending: bool = True
+
+    model_config = {"from_attributes": True}

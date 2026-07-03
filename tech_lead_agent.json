@@ -1,0 +1,20 @@
+{
+  "agent_id": "TECH_LEAD",
+  "version": "1.0",
+  "prompt_path": "agents/tech-lead/v1.0.md",
+  "organization_id": "personal",
+  "client_project_id": "finance-tracker",
+  "allowed_workflows": ["finance-app"],
+  "project_type_support": ["GREENFIELD", "RETROFIT", "MONITOR"],
+  "status": "ACTIVE",
+  "owner": "mehulbhatt.ml@gmail.com",
+  "capabilities": ["architecture_decision", "production_code_generation", "github_pr_creation"],
+  "max_concurrent_executions": 1,
+  "sla_seconds": 600,
+  "runs_in_parallel": false,
+  "note": "Third agent in the pipeline. Triggered on BA APPROVAL. Drives IN_ANALYSIS->IN_DEV. Largest token budget of the six agents (40000, per agent-budgets.yml) since it generates production code. No blocking human gate on this transition -- Gatekeeper scans every PR instead.",
+  "permissions": {
+    "github": ["read", "write"],
+    "filesystem": ["read", "write"]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "workflow_id": "finance-app-sdlc",
+  "version": "1.0",
+  "project_key": "FINTRACK",
+  "project_type": "GREENFIELD",
+  "organization_id": "personal",
+  "client_project_id": "finance-tracker",
+  "jira_cloud_id": "08dfa27d-17e5-405b-ae9d-00f09f537f8c",
+  "jira_site": "gtech45.atlassian.net",
+  "transitions": [
+    {
+      "from_state": "BACKLOG",
+      "to_state": "IN_ANALYSIS",
+      "jira_transition_id": "5",
+      "agent": "BA",
+      "gate": null,
+      "required_fields": ["story_id", "summary"]
+    },
+    {
+      "from_state": "IN_ANALYSIS",
+      "to_state": "IN_DEV",
+      "jira_transition_id": "21",
+      "agent": "TECH_LEAD",
+      "gate": "APPROVAL",
+      "required_fields": ["feature_file_path", "story_ids", "scenario_count"]
+    },
+    {
+      "from_state": "IN_DEV",
+      "to_state": "IN_TEST",
+      "jira_transition_id": "2",
+      "agent": "QA_LEAD",
+      "gate": null,
+      "required_fields": ["pr_url", "branch_name", "files_changed"]
+    },
+    {
+      "from_state": "IN_TEST",
+      "to_state": "READY_RELEASE",
+      "jira_transition_id": "3",
+      "agent": "RELEASE_PRO",
+      "gate": "APPROVAL",
+      "required_fields": ["passed", "failed", "coverage_pct", "security_tests_passed"]
+    },
+    {
+      "from_state": "READY_RELEASE",
+      "to_state": "DONE",
+      "jira_transition_id": "41",
+      "agent": null,
+      "gate": "APPROVAL",
+      "required_fields": ["environment", "image_tag", "rollback_tag"]
+    }
+  ],
+  "failure_handling": {
+    "failed_label": "PIPELINE_FAILED",
+    "failed_comment_prefix": "🔴 Pipeline FAILED",
+    "note": "FAILED state handled via Jira label + comment — not a separate status in next-gen Jira"
+  },
+  "metadata": {
+    "created": "2026-07-02",
+    "blueprint_version": "2.1",
+    "note": "Jira transition IDs verified live against gtech45.atlassian.net on 2026-07-02"
+  }
+}
