@@ -1,0 +1,20 @@
+{
+  "agent_id": "GATEKEEPER",
+  "version": "1.0",
+  "prompt_path": "agents/gatekeeper/v1.0.md",
+  "organization_id": "personal",
+  "client_project_id": "finance-tracker",
+  "allowed_workflows": ["finance-app"],
+  "project_type_support": ["GREENFIELD", "RETROFIT", "MONITOR"],
+  "status": "ACTIVE",
+  "owner": "mehulbhatt.ml@gmail.com",
+  "capabilities": ["pii_scan", "injection_detection", "schema_validation", "audit_logging", "gate_management"],
+  "max_concurrent_executions": 1,
+  "sla_seconds": 60,
+  "runs_in_parallel": true,
+  "note": "Gatekeeper runs alongside every agent — never sequentially. It is always-on.",
+  "permissions": {
+    "github": ["read"],
+    "jira": ["read", "write"]
+  }
+}

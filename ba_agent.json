@@ -1,0 +1,20 @@
+{
+  "agent_id": "BA",
+  "version": "1.0",
+  "prompt_path": "agents/ba/v1.0.md",
+  "organization_id": "personal",
+  "client_project_id": "finance-tracker",
+  "allowed_workflows": ["finance-app"],
+  "project_type_support": ["GREENFIELD", "RETROFIT", "MONITOR"],
+  "status": "ACTIVE",
+  "owner": "mehulbhatt.ml@gmail.com",
+  "capabilities": ["gherkin_generation", "jira_story_creation"],
+  "max_concurrent_executions": 1,
+  "sla_seconds": 180,
+  "runs_in_parallel": false,
+  "note": "Second agent in the pipeline. Triggered on PM APPROVAL. Drives the BACKLOG->IN_ANALYSIS transition and hands off to Tech Lead behind an APPROVAL gate.",
+  "permissions": {
+    "jira": ["read", "write"],
+    "github": ["read"]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "agent_id": "RELEASE_PRO",
+  "version": "1.0",
+  "prompt_path": "agents/release-pro/v1.0.md",
+  "organization_id": "personal",
+  "client_project_id": "finance-tracker",
+  "allowed_workflows": ["finance-app"],
+  "project_type_support": ["GREENFIELD", "RETROFIT", "MONITOR"],
+  "status": "ACTIVE",
+  "owner": "mehulbhatt.ml@gmail.com",
+  "capabilities": ["cicd_orchestration", "environment_promotion", "release_notes_generation", "rollback_management"],
+  "max_concurrent_executions": 1,
+  "sla_seconds": 120,
+  "runs_in_parallel": false,
+  "note": "Fifth agent in the pipeline. Triggered on QA APPROVAL. Drives IN_TEST->READY_RELEASE->DONE. Only agent with EXECUTE access on github (triggers GitHub Actions). Production deploy additionally gated by GitHub Environments required reviewers -- a second, non-agent human gate.",
+  "permissions": {
+    "github": ["read", "write", "execute"]
+  }
+}

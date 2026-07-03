@@ -1,0 +1,20 @@
+{
+  "agent_id": "QA_LEAD",
+  "version": "1.0",
+  "prompt_path": "agents/qa-lead/v1.0.md",
+  "organization_id": "personal",
+  "client_project_id": "finance-tracker",
+  "allowed_workflows": ["finance-app"],
+  "project_type_support": ["GREENFIELD", "RETROFIT", "MONITOR"],
+  "status": "ACTIVE",
+  "owner": "mehulbhatt.ml@gmail.com",
+  "capabilities": ["pytest_bdd_generation", "playwright_e2e", "security_test_generation", "coverage_reporting"],
+  "max_concurrent_executions": 1,
+  "sla_seconds": 300,
+  "runs_in_parallel": false,
+  "note": "Fourth agent in the pipeline. Triggered on Tech Lead output (no gate). Drives IN_DEV->IN_TEST and hands off to Release Pro behind an APPROVAL gate. Requires the Playwright MCP (custom install, not a Cowork plugin).",
+  "permissions": {
+    "github": ["read", "write"],
+    "playwright": ["read", "execute"]
+  }
+}
