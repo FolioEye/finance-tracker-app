@@ -1,6 +1,14 @@
-"""Auth API endpoints. Story: FINTRACK-13 (User Registration)."""
-from __future__ import annotations
+"""Auth API endpoints. Story: FINTRACK-13 (User Registration).
 
+Note: deliberately NOT using `from __future__ import annotations` here.
+Combined with this project's pinned fastapi==0.115.0 + pydantic==2.9.2,
+postponed evaluation of annotations breaks FastAPI's route registration
+at import time (PydanticUndefinedAnnotation on RegisterRequest) -- found
+during QA Lead's integration testing, since the original unit/security
+tests only exercised the handler class directly and never actually
+imported the live app. Verified live: removing this import is sufficient
+for the app to import and all routes to register correctly.
+"""
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
