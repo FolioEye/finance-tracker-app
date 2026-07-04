@@ -253,7 +253,7 @@ def test_successful_registration_issues_valid_access_token_and_secure_refresh_co
     """Session edge case the Gherkin doesn't spell out: verifies the actual
     tokens/cookie issued on success, not just that *some* 201 came back.
     """
-    from jose import jwt as jose_jwt
+    import jwt as jose_jwt  # PyJWT (see ADR-006) -- alias kept to minimize diff
 
     resp = client.post(
         "/api/v1/auth/register",
@@ -266,7 +266,7 @@ def test_successful_registration_issues_valid_access_token_and_secure_refresh_co
     assert resp.status_code == 201, resp.text
     body = resp.json()
 
-    claims = jose_jwt.get_unverified_claims(body["access_token"])
+    claims = jose_jwt.decode(body["access_token"], options={"verify_signature": False})
     assert claims["type"] == "access"
     assert claims["sub"] == body["user_id"]
     ttl_seconds = claims["exp"] - claims["iat"]
