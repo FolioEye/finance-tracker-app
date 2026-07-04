@@ -29,7 +29,19 @@ RUN groupadd --gid 65532 nonroot && \
 
 WORKDIR /app
 COPY --from=builder --chown=nonroot:nonroot /install /app/.deps
-COPY --chown=nonroot:nonroot . .
+# Railway's Root Directory for this service is apps/api/, so the build
+# context here is apps/api/'s own contents, not the repo root -- confirmed
+# via the real build log ("COPY requirements.txt ." only succeeds if the
+# context starts inside apps/api/). Code throughout imports as apps.api.*
+# (absolute from the real repo root), so the container has to reconstruct
+# that same layout even though the build context itself starts one level
+# deeper. Copying flatly into /app left no `apps` package at all --
+# ModuleNotFoundError: No module named 'apps' at container start (found
+# via Railway deploy logs, 2026-07-04). apps/__init__.py can't be COPYed
+# in from this context since it lives outside apps/api/ (sibling of api/,
+# not under it) -- created by hand instead.
+COPY --chown=nonroot:nonroot . /app/apps/api/
+RUN touch /app/apps/__init__.py && chown nonroot:nonroot /app/apps/__init__.py
 
 ENV PYTHONPATH=/app/.deps:/app \
     PYTHONUNBUFFERED=1 \
