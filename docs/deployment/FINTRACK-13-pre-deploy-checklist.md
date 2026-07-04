@@ -29,7 +29,7 @@ I can't do any of this for you — it's dashboard clicks and credentials I shoul
 - [ ] All tests passing in CI — **not yet verified**: this exact workflow has never run in GitHub Actions. QA Lead's 23/23 passed locally in sandbox; first real signal comes from the first push once `TEST_SECRET_KEY` is set.
 - [ ] Code reviewed and approved — done (PR #1 merged to `main`, Gatekeeper PASS at both Tech Lead and QA Lead stages)
 - [ ] No known critical bugs in release — none open; one MEDIUM item carried forward (refresh_token duplicated in body + cookie, tracked, not blocking)
-- [ ] Database migration tested — `alembic/versions/0001_create_users_table.py` is a fresh `CREATE TABLE`, no existing data to migrate. Low risk, but unverified against a real Neon instance (only tested against in-memory SQLite so far)
+- [ ] Database migration tested — `apps/api/alembic/versions/0001_create_users_table.py` is a fresh `CREATE TABLE`, no existing data to migrate. Runs automatically via Railway's Pre-Deploy Command (`cd apps/api && alembic upgrade head` — see ADR-007) before the app container starts each deploy.
 - [ ] Feature flags configured — none in use for this story
 - [ ] Rollback plan documented — see below
 - [ ] Deploy window: Mon–Thu, 10am–2pm (per blueprint's own policy)
