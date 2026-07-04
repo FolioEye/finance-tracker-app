@@ -91,6 +91,13 @@ jobs:
           DATABASE_URL: postgresql+asyncpg://postgres:test_password@localhost:5432/fintrack_test
           REDIS_URL: redis://localhost:6379
           JWT_SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}
+          # Without this, `apps` isn't importable and every test module that
+          # imports it at module level fails collection with
+          # ModuleNotFoundError: No module named 'apps' -- this step never
+          # actually ran in real CI until PR #2 (Security Scan always failed
+          # first before that), so this gap went uncaught since Release Pro's
+          # original workflow was authored. Found via the real CI log, 2026-07-04.
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           pytest tests/unit tests/security tests/integration \
             --cov=apps.api \
