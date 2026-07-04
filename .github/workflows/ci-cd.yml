@@ -1,0 +1,178 @@
+name: FinTrack CI/CD
+
+# ARCHITECTURE NOTE (see docs/adr/ADR-005-deployment-architecture.md):
+# Repo is PUBLIC -> environment: production required reviewers works on the free plan.
+# Railway is connected to GitHub directly -- it auto-builds apps/api from source on
+# push to `staging`/`main`. No GHCR Docker push needed here; this workflow only
+# builds and ships the frontend. Railway's own dashboard (one-time setup) owns the
+# API build/deploy, not this file.
+#
+# build-frontend / deploy-frontend-* are guarded on whether apps/web exists yet
+# (it doesn't -- only backend stories have shipped so far, FINTRACK-13). That
+# check has to happen in its own job with a real checkout: a job-level `if:`
+# is evaluated by the orchestrator before any runner/checkout exists for that
+# job, so a filesystem-dependent function like hashFiles() isn't available
+# there at all (this is what broke the first two attempts at this workflow --
+# "Unrecognized function: hashFiles", not a YAML syntax problem). detect-frontend
+# below does the actual checkout + shell test and exposes a plain string output,
+# which downstream jobs can safely read in their own job-level `if:`.
+
+on:
+  push:
+    branches: [develop, staging, main]
+  pull_request:
+    branches: [develop, staging, main]
+
+jobs:
+  # ─── STAGE 0: Detect whether a frontend exists yet ───────────────
+  detect-frontend:
+    name: Detect Frontend
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.check.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          if [ -f "apps/web/package.json" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ─── STAGE 1: Security scan (all branches) ───────────────────────
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          severity: CRITICAL,HIGH
+          exit-code: 1 # fails pipeline on any CRITICAL or HIGH CVE
+
+  # ─── STAGE 2: Test suite (all branches) ──────────────────────────
+  test:
+    name: Test Suite
+    needs: security-scan
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: test_password, POSTGRES_DB: fintrack_test }
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7
+        options: --health-cmd "redis-cli ping" --health-interval 10s
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install dependencies
+        run: pip install -r apps/api/requirements.txt -r requirements-test.txt
+      - name: Run pytest with coverage
+        env:
+          # Not actually used by the current suite -- tests/unit, tests/security,
+          # and tests/integration all run against an isolated in-memory SQLite DB
+          # (see tests/conftest.py) regardless of DATABASE_URL, so results are
+          # deterministic and don't depend on this service container. Kept wired
+          # up for future stories whose integration tests may want a real Postgres
+          # instance.
+          DATABASE_URL: postgresql+asyncpg://postgres:test_password@localhost:5432/fintrack_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}
+          # Without this, `apps` isn't importable and every test module that
+          # imports it at module level fails collection with
+          # ModuleNotFoundError: No module named 'apps' -- this step never
+          # actually ran in real CI until PR #2 (Security Scan always failed
+          # first before that), so this gap went uncaught since Release Pro's
+          # original workflow was authored. Found via the real CI log, 2026-07-04.
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          pytest tests/unit tests/security tests/integration \
+            --cov=apps.api \
+            --cov-fail-under=80 \
+            --cov-report=term-missing \
+            -v
+
+  # ─── STAGE 3: Build frontend (staging + main only) ───────────────
+  build-frontend:
+    name: Build Frontend
+    needs: [test, detect-frontend]
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main') && needs.detect-frontend.outputs.exists == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm", cache-dependency-path: apps/web/package-lock.json }
+      - name: Install and build
+        run: cd apps/web && npm ci && npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }} # e.g. https://api.fintrack.yourdomain.com
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with: { name: frontend-dist, path: apps/web/dist }
+
+  # ─── STAGE 4a: Deploy to STAGING ─────────────────────────────────
+  # Railway: auto-deploys apps/api from the staging branch (connected via Railway's
+  # own GitHub integration -- not triggered from this workflow).
+  # Frontend: FTP to Hostinger staging subdomain.
+  deploy-frontend-staging:
+    name: Deploy Frontend -> Staging (Hostinger)
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging' && needs.build-frontend.result == 'success'
+    environment: staging
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: frontend-dist, path: dist }
+      - name: FTP deploy to Hostinger staging
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.HOSTINGER_FTP_HOST }}
+          username: ${{ secrets.HOSTINGER_FTP_USER }}
+          password: ${{ secrets.HOSTINGER_FTP_PASS }}
+          local-dir: dist/
+          server-dir: /public_html/staging/ # staging subdomain folder
+
+  # ─── STAGE 4b: Deploy to PRODUCTION ──────────────────────────────
+  # environment: production -> GitHub pauses here and emails required reviewers.
+  # Works on the free plan because the repo is public (see ADR-004 in the blueprint).
+  # Human clicks "Approve" in the GitHub UI -> pipeline resumes.
+  # Railway: auto-deploys apps/api from the main branch after merge (its own trigger).
+  deploy-frontend-production:
+    name: Deploy Frontend -> Production (Hostinger)
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && needs.build-frontend.result == 'success'
+    environment: production # <- HUMAN GATE: pauses, emails reviewer, waits for approval
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: frontend-dist, path: dist }
+      - name: FTP deploy to Hostinger production
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.HOSTINGER_FTP_HOST }}
+          username: ${{ secrets.HOSTINGER_FTP_USER }}
+          password: ${{ secrets.HOSTINGER_FTP_PASS }}
+          local-dir: dist/
+          server-dir: /public_html/
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: "FinTrack Release ${{ github.run_number }}"
+          draft: false
+          prerelease: false

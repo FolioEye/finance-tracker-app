@@ -1,7 +1,8 @@
-"""JWT access + refresh token issuance. python-jose per the fixed FinTrack stack.
+"""JWT access + refresh token issuance. PyJWT per ADR-006.
 
 See docs/adr/ADR-004-authentication-strategy.md for why this is hand-rolled
-rather than a managed auth provider.
+rather than a managed auth provider, and docs/adr/ADR-006-jwt-library-migration.md
+for why PyJWT replaced python-jose.
 """
 from __future__ import annotations
 
@@ -9,7 +10,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
-from jose import jwt
+import jwt
 
 
 @dataclass(frozen=True)
