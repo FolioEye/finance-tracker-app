@@ -7,10 +7,15 @@ name: FinTrack CI/CD
 # builds and ships the frontend. Railway's own dashboard (one-time setup) owns the
 # API build/deploy, not this file.
 #
-# build-frontend / deploy-frontend-* are guarded with `hashFiles('apps/web/package.json')`
-# because apps/web does not exist yet -- only backend stories have shipped so far
-# (FINTRACK-13). Those jobs will start running automatically the day a frontend
-# story adds apps/web/, with no change needed here.
+# build-frontend / deploy-frontend-* are guarded on whether apps/web exists yet
+# (it doesn't -- only backend stories have shipped so far, FINTRACK-13). That
+# check has to happen in its own job with a real checkout: a job-level `if:`
+# is evaluated by the orchestrator before any runner/checkout exists for that
+# job, so a filesystem-dependent function like hashFiles() isn't available
+# there at all (this is what broke the first two attempts at this workflow --
+# "Unrecognized function: hashFiles", not a YAML syntax problem). detect-frontend
+# below does the actual checkout + shell test and exposes a plain string output,
+# which downstream jobs can safely read in their own job-level `if:`.
 
 on:
   push:
@@ -19,6 +24,22 @@ on:
     branches: [develop, staging, main]
 
 jobs:
+  # ─── STAGE 0: Detect whether a frontend exists yet ───────────────
+  detect-frontend:
+    name: Detect Frontend
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.check.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          if [ -f "apps/web/package.json" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
   # ─── STAGE 1: Security scan (all branches) ───────────────────────
   security-scan:
     name: Security Scan
@@ -80,11 +101,9 @@ jobs:
   # ─── STAGE 3: Build frontend (staging + main only) ───────────────
   build-frontend:
     name: Build Frontend
-    needs: test
+    needs: [test, detect-frontend]
     runs-on: ubuntu-latest
-    if: |
-      (github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main') &&
-      hashFiles('apps/web/package.json') != ''
+    if: (github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main') && needs.detect-frontend.outputs.exists == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
