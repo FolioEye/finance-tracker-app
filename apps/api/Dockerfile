@@ -51,4 +51,16 @@ USER nonroot
 
 EXPOSE 8000
 
-ENTRYPOINT ["python", "-m", "uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Migration runs here now, not via Railway's Pre-Deploy Command (see
+# ADR-008) -- that separate ephemeral container kept resolving DATABASE_URL
+# to a stale value no matter what we set it to, and produced zero log
+# output on every failure, making it undebuggable from our side. Running
+# alembic first in the app's own entrypoint reuses this container's
+# environment (already proven to resolve correctly) and its log stream
+# (already proven to show up in Railway's dashboard). The `cd` is
+# load-bearing -- alembic.ini's script_location resolves against the
+# invoking shell's cwd, not the ini file's own location (see ADR-007).
+# `exec` at the end replaces this shell with uvicorn as PID 1 so SIGTERM
+# reaches it directly for a clean shutdown, instead of hitting the wrapper
+# shell.
+ENTRYPOINT ["sh", "-c", "cd /app/apps/api && python -m alembic upgrade head && exec python -m uvicorn apps.api.main:app --host 0.0.0.0 --port 8000"]

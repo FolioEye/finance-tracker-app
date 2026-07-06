@@ -1,7 +1,12 @@
 # ADR-007: Migration Execution Strategy — Relocate Alembic, Use Railway Pre-Deploy Command
 
 ## Status
-Accepted
+Superseded by [ADR-008](ADR-008-migration-execution-strategy-v2.md) (2026-07-06) —
+decision 1 (relocate Alembic into `apps/api/`) still stands; decision 2
+(Railway's Pre-Deploy Command) is replaced after the command consistently
+resolved `DATABASE_URL` to a stale value across multiple fixes and fresh
+redeploys, with zero log output every time it failed -- see ADR-008 for
+the full account and the replacement approach.
 
 ## Context
 The app has been deploying and starting successfully on Railway (after the

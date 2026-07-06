@@ -1,0 +1,15 @@
+# Normalize line endings to LF in the repository regardless of what OS
+# checks a file out or copies it in -- avoids the CRLF/LF noise seen when
+# syncing between the Linux-backed FolioEye workspace and a native Windows
+# git clone (every text file showing as "modified" with zero real content
+# change, purely from an end-of-line flip).
+* text=auto eol=lf
+
+# Binary files -- never touch line endings, never diff as text.
+*.pyc binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
