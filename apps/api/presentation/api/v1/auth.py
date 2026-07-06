@@ -84,7 +84,6 @@ async def register(
         user_id=result.user.id,
         email=str(result.user.email),
         access_token=result.tokens.access_token,
-        refresh_token=result.tokens.refresh_token,
         expires_in=result.tokens.access_token_expires_in_seconds,
         email_verification_pending=True,
     )
