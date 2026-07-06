@@ -25,10 +25,16 @@ class RegisterRequest(BaseModel):
 
 
 class RegisterResponse(BaseModel):
+    # refresh_token is deliberately NOT included here (F-02, fixed 2026-07-06).
+    # It is issued only as an httpOnly/Secure/SameSite=Strict cookie (see
+    # apps/api/presentation/api/v1/auth.py) -- returning it in the JSON body
+    # too meant an XSS could exfiltrate it from the response even without
+    # reading the cookie directly, partially defeating httpOnly's purpose.
+    # Flagged at Tech Lead/QA Lead/Release Pro stages and by three
+    # consecutive audit runs before being fixed.
     user_id: uuid.UUID
     email: str
     access_token: str
-    refresh_token: str
     token_type: str = "bearer"
     expires_in: int
     email_verification_pending: bool = True
