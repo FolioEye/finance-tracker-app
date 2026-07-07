@@ -10,12 +10,19 @@ from typing import AsyncIterator
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from apps.api.application.commands.create_transaction import CreateTransactionHandler
+from apps.api.application.commands.delete_transaction import DeleteTransactionHandler
 from apps.api.application.commands.login_user import LoginUserHandler
 from apps.api.application.commands.logout_user import LogoutUserHandler
 from apps.api.application.commands.register_user import RegisterUserHandler
+from apps.api.application.commands.update_transaction import UpdateTransactionHandler
+from apps.api.application.queries.list_transactions import ListTransactionsHandler
 from apps.api.config import Settings, get_settings
 from apps.api.infrastructure.cache.redis_client import redis_client
 from apps.api.infrastructure.database.session import get_session
+from apps.api.infrastructure.repositories.sqlalchemy_transaction_repository import (
+    SqlAlchemyTransactionRepository,
+)
 from apps.api.infrastructure.repositories.sqlalchemy_user_repository import (
     SqlAlchemyUserRepository,
 )
@@ -82,3 +89,31 @@ def get_logout_user_handler(settings: Settings = Depends(get_settings)) -> Logou
     )
     revocation_store = RedisTokenRevocationStore(redis_client)
     return LogoutUserHandler(token_service=tokens, revocation_store=revocation_store)
+
+
+def get_create_transaction_handler(
+    session: AsyncSession = Depends(get_db_session),
+) -> CreateTransactionHandler:
+    repository = SqlAlchemyTransactionRepository(session)
+    return CreateTransactionHandler(transaction_repository=repository)
+
+
+def get_list_transactions_handler(
+    session: AsyncSession = Depends(get_db_session),
+) -> ListTransactionsHandler:
+    repository = SqlAlchemyTransactionRepository(session)
+    return ListTransactionsHandler(transaction_repository=repository)
+
+
+def get_update_transaction_handler(
+    session: AsyncSession = Depends(get_db_session),
+) -> UpdateTransactionHandler:
+    repository = SqlAlchemyTransactionRepository(session)
+    return UpdateTransactionHandler(transaction_repository=repository)
+
+
+def get_delete_transaction_handler(
+    session: AsyncSession = Depends(get_db_session),
+) -> DeleteTransactionHandler:
+    repository = SqlAlchemyTransactionRepository(session)
+    return DeleteTransactionHandler(transaction_repository=repository)

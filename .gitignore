@@ -30,7 +30,6 @@ Thumbs.db
 # Env files with real secrets -- .env.example is fine, real .env never is
 .env
 .env.local
-
-#Curl Cookies.txt
+# Local smoke-test artifacts (e.g. curl -c cookies.txt) -- may contain a
+# captured session/refresh token, never commit even if already revoked
 cookies.txt
-
