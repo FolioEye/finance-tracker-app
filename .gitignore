@@ -30,3 +30,7 @@ Thumbs.db
 # Env files with real secrets -- .env.example is fine, real .env never is
 .env
 .env.local
+
+#Curl Cookies.txt
+cookies.txt
+

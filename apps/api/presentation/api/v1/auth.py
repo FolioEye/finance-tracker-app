@@ -181,6 +181,21 @@ async def logout(
         # session) is identical.
         pass
 
-    response.delete_cookie(key="refresh_token", path="/api/v1/auth")
+    # Explicitly match set_cookie's attributes (httponly/secure/samesite) --
+    # without repeating them here, delete_cookie() falls back to
+    # Starlette's own defaults (samesite="lax") instead of this project's
+    # SameSite=Strict policy. Found via a live production smoke test
+    # (2026-07-07): functionally harmless since browsers match a cookie
+    # for deletion by name+domain+path, not by attributes, so the cookie
+    # was still cleared correctly either way -- but leaving it implicit
+    # meant this endpoint silently depended on a framework default rather
+    # than this project's own stated cookie policy.
+    response.delete_cookie(
+        key="refresh_token",
+        path="/api/v1/auth",
+        httponly=True,
+        secure=True,
+        samesite="strict",
+    )
     logger.info("logout_succeeded", extra={"context": {}})
     return LogoutResponse()
