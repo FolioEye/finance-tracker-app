@@ -228,6 +228,42 @@ def security_event_logged(caplog) -> None:
 # ---------------------------------------------------------------------------
 
 
+def test_logout_clears_cookie_with_same_security_attributes_it_was_set_with(client) -> None:
+    """Regression test for a live production finding (2026-07-07, Release
+    Pro smoke test): logout's delete_cookie() call didn't repeat
+    httponly/secure/samesite, so it silently fell back to Starlette's
+    default (samesite=lax) instead of this project's SameSite=Strict
+    cookie policy. Functionally harmless -- browsers match a cookie for
+    deletion by name+domain+path, not by attributes -- but the clearing
+    Set-Cookie header should still honestly reflect the same policy the
+    cookie was issued under, not depend on an implicit framework default.
+    """
+    register_resp = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "logout-cookie-attrs-check@example.com",
+            "password": "StrongPass1",
+            "confirm_password": "StrongPass1",
+        },
+    )
+    assert register_resp.status_code == 201
+
+    login_resp = client.post(
+        "/api/v1/auth/login",
+        json={"email": "logout-cookie-attrs-check@example.com", "password": "StrongPass1"},
+    )
+    assert login_resp.status_code == 200
+    refresh_token = login_resp.cookies.get("refresh_token")
+
+    logout_resp = client.post("/api/v1/auth/logout", cookies={"refresh_token": refresh_token})
+    assert logout_resp.status_code == 200
+
+    clear_cookie = logout_resp.headers.get("set-cookie", "")
+    assert "HttpOnly" in clear_cookie
+    assert "Secure" in clear_cookie
+    assert "samesite=strict" in clear_cookie.lower()
+
+
 def test_logout_actually_revokes_the_session_end_to_end(client) -> None:
     """Session edge case the Gherkin doesn't spell out: verifies logout's
     effect is real and observable through the actual HTTP layer, not just
