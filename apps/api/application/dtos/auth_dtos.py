@@ -40,3 +40,31 @@ class RegisterResponse(BaseModel):
     email_verification_pending: bool = True
 
     model_config = {"from_attributes": True}
+
+
+class LoginRequest(BaseModel):
+    # Same rationale as RegisterRequest: plain str, not EmailStr -- format
+    # validation happens in the domain layer so malformed/SQLi-shaped input
+    # gets the same generic invalid-credentials handling as any other
+    # login failure, rather than a distinguishable 422 from Pydantic.
+    email: str = Field(..., min_length=1, max_length=320)
+    password: str = Field(..., min_length=1, max_length=128)
+
+    # NOTE for maintainers: `password` must never be passed to a logger,
+    # error message, or anywhere else outside this request/handler boundary.
+
+
+class LoginResponse(BaseModel):
+    # No refresh_token in the body -- same F-02 rationale as RegisterResponse.
+    # Issued only as an httpOnly/Secure/SameSite=Strict cookie.
+    user_id: uuid.UUID
+    email: str
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+    model_config = {"from_attributes": True}
+
+
+class LogoutResponse(BaseModel):
+    detail: str = "Logged out successfully"
