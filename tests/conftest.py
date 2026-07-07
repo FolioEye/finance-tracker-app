@@ -8,7 +8,8 @@ FINTRACK-13) are real integration tests: a genuine in-memory SQLite DB
 behind SQLAlchemy's async engine, and FastAPI's TestClient driving actual
 HTTP requests through the real router, real Pydantic validation, real
 bcrypt hashing, and real JWT issuance. Only the DB backend (SQLite instead
-of Postgres) and the FastAPI dependency wiring are swapped for tests.
+of Postgres), the Redis backend (fakeredis instead of real Redis, added
+for FINTRACK-14), and the FastAPI dependency wiring are swapped for tests.
 """
 import os
 
@@ -22,6 +23,23 @@ from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.pool import StaticPool
+
+# fakeredis stands in for Redis the same way aiosqlite stands in for
+# Postgres above: FINTRACK-14's rate limiter and token-revocation store
+# both depend on Redis, and tests shouldn't depend on CI's real redis:7
+# service being reachable or starting from a clean slate any more than
+# they depend on the real Postgres service. This patch MUST happen at
+# module level (not inside a fixture) and before anything else in this
+# process imports apps.api.main / dependencies.py, because
+# presentation/api/v1/dependencies.py does
+# `from apps.api.infrastructure.cache.redis_client import redis_client` --
+# a `from X import Y` binds Y's value at that import's time, so this only
+# takes effect for every downstream import if it runs first.
+import fakeredis.aioredis
+
+import apps.api.infrastructure.cache.redis_client as _redis_client_module
+
+_redis_client_module.redis_client = fakeredis.aioredis.FakeRedis(decode_responses=True)
 
 
 # UserModel's id column uses the Postgres-specific UUID type. SQLite has no
@@ -90,6 +108,19 @@ def _reset_rate_limiter():
     from apps.api.presentation.api.v1.auth import limiter
 
     limiter.reset()
+    yield
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def _flush_redis():
+    """The fake Redis client is a process-wide singleton (real Redis in
+    production is too) -- flush it before each test so rate-limit counters
+    and revoked-token entries from one test don't bleed into another,
+    exactly like _reset_rate_limiter does for slowapi's in-memory store.
+    """
+    from apps.api.infrastructure.cache.redis_client import redis_client
+
+    await redis_client.flushdb()
     yield
 
 
