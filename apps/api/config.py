@@ -33,9 +33,14 @@ class Settings(BaseSettings):
     bcrypt_rounds: int = 12
     password_min_length: int = 10
 
-    # Rate limiting
+    # Rate limiting -- registration (slowapi, IP-only)
     register_rate_limit_attempts: int = 5
     register_rate_limit_window_minutes: int = 15
+
+    # Rate limiting -- login (Redis-backed, email+IP compound key; see
+    # docs/adr/ADR-009-login-session-management.md)
+    login_rate_limit_attempts: int = 5
+    login_rate_limit_window_minutes: int = 15
 
 
 @lru_cache

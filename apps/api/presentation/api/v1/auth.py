@@ -15,16 +15,33 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+from apps.api.application.commands.login_user import InvalidCredentialsError, LoginUserCommand, LoginUserHandler
+from apps.api.application.commands.logout_user import (
+    LogoutUserCommand,
+    LogoutUserHandler,
+    NoActiveSessionError,
+)
 from apps.api.application.commands.register_user import (
     PasswordMismatchError,
     RegisterUserCommand,
     RegisterUserHandler,
 )
-from apps.api.application.dtos.auth_dtos import RegisterRequest, RegisterResponse
+from apps.api.application.dtos.auth_dtos import (
+    LoginRequest,
+    LoginResponse,
+    LogoutResponse,
+    RegisterRequest,
+    RegisterResponse,
+)
 from apps.api.config import get_settings
 from apps.api.domain.models.user import InvalidEmailError, WeakPasswordError
 from apps.api.domain.repositories.user_repository import EmailAlreadyExistsError
-from apps.api.presentation.api.v1.dependencies import get_register_user_handler
+from apps.api.infrastructure.security.rate_limiter import RateLimitExceededError
+from apps.api.presentation.api.v1.dependencies import (
+    get_login_user_handler,
+    get_logout_user_handler,
+    get_register_user_handler,
+)
 
 logger = logging.getLogger("fintrack.auth")
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
@@ -87,3 +104,83 @@ async def register(
         expires_in=result.tokens.access_token_expires_in_seconds,
         email_verification_pending=True,
     )
+
+
+@router.post("/login", response_model=LoginResponse, status_code=status.HTTP_200_OK)
+async def login(
+    request: Request,
+    payload: LoginRequest,
+    response: Response,
+    handler: LoginUserHandler = Depends(get_login_user_handler),
+) -> LoginResponse:
+    # Same domain-only logging discipline as /register: no password, no
+    # full email, only the domain portion for basic observability.
+    logger.info(
+        "login_attempt",
+        extra={
+            "context": {
+                "email_domain": payload.email.split("@")[-1] if "@" in payload.email else "n/a"
+            }
+        },
+    )
+
+    command = LoginUserCommand(
+        email=payload.email,
+        password=payload.password,
+        client_ip=get_remote_address(request),
+    )
+
+    try:
+        result = await handler.handle(command)
+    except RateLimitExceededError:
+        logger.warning("login_rate_limited", extra={"context": {}})
+        raise HTTPException(status_code=429, detail="Too many attempts, try again later")
+    except InvalidCredentialsError:
+        # Deliberately the same log event and HTTP response regardless of
+        # *why* the credentials were rejected (unknown email, malformed/
+        # SQLi-shaped email, deactivated account, or wrong password) --
+        # see LoginUserHandler for the no-user-enumeration rationale.
+        logger.info("login_failed", extra={"context": {}})
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    # Refresh token as httpOnly Secure cookie, SameSite=Strict -- same
+    # shape as /register's cookie.
+    response.set_cookie(
+        key="refresh_token",
+        value=result.tokens.refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        max_age=_settings.refresh_token_expire_days * 24 * 60 * 60,
+        path="/api/v1/auth",
+    )
+
+    logger.info("login_succeeded", extra={"context": {"user_id": str(result.user.id)}})
+
+    return LoginResponse(
+        user_id=result.user.id,
+        email=str(result.user.email),
+        access_token=result.tokens.access_token,
+        expires_in=result.tokens.access_token_expires_in_seconds,
+    )
+
+
+@router.post("/logout", response_model=LogoutResponse, status_code=status.HTTP_200_OK)
+async def logout(
+    request: Request,
+    response: Response,
+    handler: LogoutUserHandler = Depends(get_logout_user_handler),
+) -> LogoutResponse:
+    refresh_token = request.cookies.get("refresh_token", "")
+
+    try:
+        await handler.handle(LogoutUserCommand(refresh_token=refresh_token))
+    except NoActiveSessionError:
+        # Logout is safe to call with no session -- clear any stray cookie
+        # and report success either way, since the end state (no valid
+        # session) is identical.
+        pass
+
+    response.delete_cookie(key="refresh_token", path="/api/v1/auth")
+    logger.info("logout_succeeded", extra={"context": {}})
+    return LogoutResponse()

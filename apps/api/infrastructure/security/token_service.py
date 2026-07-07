@@ -13,6 +13,14 @@ from datetime import datetime, timedelta, timezone
 import jwt
 
 
+class ExpiredTokenError(Exception):
+    """Raised when a token's signature is valid but it has expired."""
+
+
+class InvalidTokenError(Exception):
+    """Raised when a token's signature is invalid or it is otherwise malformed."""
+
+
 @dataclass(frozen=True)
 class TokenPair:
     access_token: str
@@ -40,6 +48,11 @@ class TokenService:
         access_payload = {
             "sub": str(user_id),
             "type": "access",
+            "jti": str(uuid.uuid4()),  # unique id -- kept for parity with the refresh
+            # token and future use (e.g. a P2 "log out everywhere" feature);
+            # FINTRACK-14's logout does not check this jti against the
+            # revocation store -- see ADR-009 for why access-token
+            # revocation is out of scope for this story.
             "iat": now,
             "exp": now + self._access_expire,
         }
@@ -57,3 +70,15 @@ class TokenService:
             refresh_token=refresh_token,
             access_token_expires_in_seconds=int(self._access_expire.total_seconds()),
         )
+
+    def decode(self, token: str) -> dict:
+        """Verifies signature + expiry and returns the claims. Used by
+        logout (FINTRACK-14) to extract the refresh token's `jti`/`exp`
+        without needing a separate parsing path.
+        """
+        try:
+            return jwt.decode(token, self._secret_key, algorithms=[self._algorithm])
+        except jwt.ExpiredSignatureError as exc:
+            raise ExpiredTokenError("Token has expired") from exc
+        except jwt.InvalidTokenError as exc:
+            raise InvalidTokenError("Token is invalid") from exc
