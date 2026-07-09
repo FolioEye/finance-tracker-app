@@ -31,6 +31,6 @@ Thumbs.db
 .env
 .env.local
 
-#Curl Cookies.txt
+# Local smoke-test artifacts (e.g. curl -c cookies.txt) -- may contain a
+# captured session/refresh token, never commit even if already revoked
 cookies.txt
-
