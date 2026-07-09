@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import base64
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import and_, delete, or_, select
@@ -52,6 +52,17 @@ class SqlAlchemyTransactionRepository(TransactionRepository):
         self._session = session
 
     async def add(self, transaction: Transaction) -> None:
+        # created_at/updated_at are set explicitly from the domain object
+        # (computed with microsecond precision by Transaction.new()) rather
+        # than left to the DB's server_default=func.now(). Two reasons:
+        # (1) it's the only way the Transaction returned to the API caller
+        # here actually matches what's persisted, rather than silently
+        # diverging from whatever timestamp the DB assigns later; (2) under
+        # SQLite (this project's test backend), CURRENT_TIMESTAMP has only
+        # second-level precision while a bound Python datetime is compared
+        # with microsecond precision -- ties between rows created in the
+        # same second broke list_for_user's cursor pagination tie-break
+        # (found by a QA Lead large-dataset test, FINTRACK-15).
         row = TransactionModel(
             id=transaction.id,
             user_id=transaction.user_id,
@@ -59,6 +70,8 @@ class SqlAlchemyTransactionRepository(TransactionRepository):
             category=transaction.category,
             transaction_date=transaction.transaction_date,
             note=transaction.note,
+            created_at=transaction.created_at,
+            updated_at=transaction.updated_at,
         )
         self._session.add(row)
         await self._session.flush()
@@ -125,7 +138,12 @@ class SqlAlchemyTransactionRepository(TransactionRepository):
         row.category = transaction.category
         row.transaction_date = transaction.transaction_date
         row.note = transaction.note
-        row.updated_at = datetime.now(timezone.utc)
+        # Reuse the timestamp apply_update() already set on the domain
+        # object rather than calling now() a second time here -- one
+        # source of truth for "when did this update happen", and
+        # consistent microsecond precision for the pagination cursor (see
+        # the comment in add() above).
+        row.updated_at = transaction.updated_at
         await self._session.flush()
 
     async def delete(self, transaction_id: uuid.UUID, user_id: uuid.UUID) -> bool:
