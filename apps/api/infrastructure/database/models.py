@@ -42,6 +42,10 @@ class TransactionModel(Base):
     category: Mapped[str] = mapped_column(String(100), nullable=False)
     transaction_date: Mapped[date] = mapped_column(Date, nullable=False)
     note: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # FINTRACK-16: distinguishes manual entry from statement import (and,
+    # later, receipt OCR) -- all three share the same CreateTransactionCommand
+    # shape per the PM's epic-level architecture constraint.
+    entry_source: Mapped[str] = mapped_column(String(20), nullable=False, server_default="manual")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

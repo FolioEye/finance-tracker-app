@@ -117,6 +117,7 @@ class Transaction:
     category: str
     transaction_date: date_type
     note: str | None = None
+    entry_source: str = "manual"  # "manual" | "csv_import" (FINTRACK-16) | "receipt_ocr" (P1)
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -127,6 +128,7 @@ class Transaction:
         category: str,
         transaction_date: date_type,
         note: str | None = None,
+        entry_source: str = "manual",
     ) -> "Transaction":
         category = category.strip()
         if not category:
@@ -144,6 +146,7 @@ class Transaction:
             category=category,
             transaction_date=transaction_date,
             note=note or None,
+            entry_source=entry_source,
             created_at=now,
             updated_at=now,
         )

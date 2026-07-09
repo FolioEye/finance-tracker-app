@@ -57,6 +57,7 @@ def _to_response(transaction) -> TransactionResponse:
         category=transaction.category,
         transaction_date=transaction.transaction_date,
         note=transaction.note,
+        entry_source=transaction.entry_source,
     )
 
 

@@ -31,6 +31,7 @@ class TransactionResponse(BaseModel):
     category: str
     transaction_date: date
     note: str | None
+    entry_source: str
 
     model_config = {"from_attributes": True}
 
