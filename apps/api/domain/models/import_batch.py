@@ -30,13 +30,15 @@ from enum import Enum
 
 class CorruptedFileError(ValueError):
     """Raised only when the whole file can't be safely reviewed at all --
-    undecodable bytes, no header row, missing a required column, or zero
-    data rows. AC6: "clear error, not a silent partial import". A file
-    that parses structurally but whose rows fail date/amount validation
-    is NOT corrupted -- see RowStatus.INVALID below, which is surfaced on
-    the review screen (AC3) instead, since the BA's zero-valid-rows
-    scenario expects a normal staged-import response with 0 committable
-    rows, not an exception.
+    undecodable bytes, no header row, or a missing required column. AC6:
+    "clear error, not a silent partial import". Neither a header-only
+    file with zero data rows NOR a file whose rows parse structurally but
+    fail date/amount validation is "corrupted" -- both stage successfully
+    (found_count possibly 0, or rows marked RowStatus.INVALID) and are
+    surfaced on the review screen (AC3) instead, per the BA's Gherkin
+    scenario 3 ("File contains zero valid transactions" expects "0
+    transactions found", not an exception). commit_import.py's
+    NothingToCommitError is what actually blocks committing either case.
     """
 
 
@@ -159,13 +161,13 @@ def parse_csv_statement(raw_bytes: bytes) -> list[StagedImportRow]:
     """Parses a CSV bank statement export into staged rows for review.
 
     Raises CorruptedFileError only for cases that would otherwise produce
-    a silent partial import (AC6): undecodable bytes, no header row,
-    missing a required date/amount column, or zero data rows at all.
-    Rows with unparseable date/amount values are NOT an error here --
+    a silent partial import (AC6): undecodable bytes, no header row, or a
+    missing required date/amount column. A header-only file with zero
+    data rows is NOT an error -- it returns an empty list, matching the
+    BA's Gherkin scenario 3 ("0 transactions found", not an exception).
+    Rows with unparseable date/amount values are also NOT an error --
     they're marked RowStatus.INVALID and surfaced on the review screen
-    (AC3's "X found, Y flagged"), matching the BA's zero-valid-rows edge
-    case, which expects a normal (if all-invalid) staged import back, not
-    an exception.
+    (AC3's "X found, Y flagged") instead of aborting the whole file.
     """
     try:
         text = raw_bytes.decode("utf-8-sig")
@@ -217,7 +219,12 @@ def parse_csv_statement(raw_bytes: bytes) -> list[StagedImportRow]:
             )
         )
 
-    if not rows:
-        raise CorruptedFileError("File contains no data rows")
-
+    # A header-only file (zero data rows) is NOT corrupted -- the BA's
+    # Gherkin scenario 3 ("File contains zero valid transactions")
+    # expects this to stage successfully and show "0 transactions found",
+    # not raise an error. commit_import.py's NothingToCommitError already
+    # blocks committing an empty staged import, which is the only
+    # behaviour that scenario actually requires. (Found during QA Lead's
+    # test-writing pass -- this function previously raised
+    # CorruptedFileError here, which contradicted the Gherkin.)
     return rows

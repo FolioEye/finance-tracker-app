@@ -161,6 +161,27 @@ async def commit_import(
     except NothingToCommitError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
+    if result.skipped_count:
+        # A skipped row means CommitImportHandler caught a per-row
+        # domain-validation failure (SuspiciousInputError,
+        # AmountExceedsMaximumError, or InvalidAmountError) rather than
+        # aborting the whole batch -- that's the correct behaviour, but it
+        # was previously silent. Found during QA Lead's security sweep:
+        # FINTRACK-15's direct manual-entry path logs a warning every time
+        # SQLi-shaped content is rejected; this batch path had no
+        # equivalent signal at all. Logged at WARNING (not INFO like the
+        # line below) so it's visible by default, matching that precedent.
+        logger.warning(
+            "import_commit_rows_skipped",
+            extra={
+                "context": {
+                    "user_id": str(user_id),
+                    "import_id": str(import_id),
+                    "skipped_count": result.skipped_count,
+                }
+            },
+        )
+
     logger.info(
         "import_committed",
         extra={

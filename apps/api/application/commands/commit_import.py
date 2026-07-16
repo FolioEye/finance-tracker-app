@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 from apps.api.domain.models.import_batch import is_valid_date
 from apps.api.domain.models.transaction import (
+    AmountExceedsMaximumError,
     InvalidAmountError,
     Money,
     SuspiciousInputError,
@@ -83,7 +84,14 @@ class CommitImportHandler:
                 )
                 await self._transactions.add(transaction)
                 committed += 1
-            except (InvalidAmountError, SuspiciousInputError):
+            except (InvalidAmountError, AmountExceedsMaximumError, SuspiciousInputError):
+                # AmountExceedsMaximumError found missing from this tuple
+                # during QA Lead's test-writing pass: is_valid_amount()'s
+                # lighter check doesn't enforce MAX_TRANSACTION_AMOUNT, so
+                # a row could pass staging/edit and still hit this ceiling
+                # only at commit time -- without this exception type here,
+                # that would have propagated as an unhandled 500 instead
+                # of skipping just the one row as intended.
                 skipped += 1
                 continue
 
