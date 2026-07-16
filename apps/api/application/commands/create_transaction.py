@@ -46,6 +46,7 @@ class CreateTransactionHandler:
             category=command.category,
             transaction_date=command.transaction_date,
             note=command.note,
+            entry_source=command.entry_source,
         )
 
         await self._transactions.add(transaction)

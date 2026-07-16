@@ -31,6 +31,7 @@ def _to_domain(row: TransactionModel) -> Transaction:
         category=row.category,
         transaction_date=row.transaction_date,
         note=row.note,
+        entry_source=row.entry_source,
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
@@ -70,6 +71,7 @@ class SqlAlchemyTransactionRepository(TransactionRepository):
             category=transaction.category,
             transaction_date=transaction.transaction_date,
             note=transaction.note,
+            entry_source=transaction.entry_source,
             created_at=transaction.created_at,
             updated_at=transaction.updated_at,
         )

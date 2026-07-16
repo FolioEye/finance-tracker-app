@@ -10,16 +10,23 @@ from typing import AsyncIterator
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from apps.api.application.commands.commit_import import CommitImportHandler
 from apps.api.application.commands.create_transaction import CreateTransactionHandler
 from apps.api.application.commands.delete_transaction import DeleteTransactionHandler
 from apps.api.application.commands.login_user import LoginUserHandler
 from apps.api.application.commands.logout_user import LogoutUserHandler
 from apps.api.application.commands.register_user import RegisterUserHandler
+from apps.api.application.commands.stage_import import StageImportHandler
+from apps.api.application.commands.update_staged_rows import UpdateStagedRowsHandler
 from apps.api.application.commands.update_transaction import UpdateTransactionHandler
 from apps.api.application.queries.list_transactions import ListTransactionsHandler
 from apps.api.config import Settings, get_settings
+from apps.api.domain.repositories.import_staging_repository import ImportStagingRepository
 from apps.api.infrastructure.cache.redis_client import redis_client
 from apps.api.infrastructure.database.session import get_session
+from apps.api.infrastructure.repositories.redis_import_staging_repository import (
+    RedisImportStagingRepository,
+)
 from apps.api.infrastructure.repositories.sqlalchemy_transaction_repository import (
     SqlAlchemyTransactionRepository,
 )
@@ -117,3 +124,29 @@ def get_delete_transaction_handler(
 ) -> DeleteTransactionHandler:
     repository = SqlAlchemyTransactionRepository(session)
     return DeleteTransactionHandler(transaction_repository=repository)
+
+
+def get_import_staging_repository() -> ImportStagingRepository:
+    return RedisImportStagingRepository(redis_client)
+
+
+def get_stage_import_handler(
+    staging: ImportStagingRepository = Depends(get_import_staging_repository),
+) -> StageImportHandler:
+    return StageImportHandler(staging_repository=staging)
+
+
+def get_update_staged_rows_handler(
+    staging: ImportStagingRepository = Depends(get_import_staging_repository),
+) -> UpdateStagedRowsHandler:
+    return UpdateStagedRowsHandler(staging_repository=staging)
+
+
+def get_commit_import_handler(
+    session: AsyncSession = Depends(get_db_session),
+    staging: ImportStagingRepository = Depends(get_import_staging_repository),
+) -> CommitImportHandler:
+    transaction_repository = SqlAlchemyTransactionRepository(session)
+    return CommitImportHandler(
+        staging_repository=staging, transaction_repository=transaction_repository
+    )
