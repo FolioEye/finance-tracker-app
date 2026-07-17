@@ -11,6 +11,9 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.api.application.commands.commit_import import CommitImportHandler
+from apps.api.application.commands.create_categorisation_rule import (
+    CreateCategorisationRuleHandler,
+)
 from apps.api.application.commands.create_transaction import CreateTransactionHandler
 from apps.api.application.commands.delete_transaction import DeleteTransactionHandler
 from apps.api.application.commands.login_user import LoginUserHandler
@@ -21,11 +24,17 @@ from apps.api.application.commands.update_staged_rows import UpdateStagedRowsHan
 from apps.api.application.commands.update_transaction import UpdateTransactionHandler
 from apps.api.application.queries.list_transactions import ListTransactionsHandler
 from apps.api.config import Settings, get_settings
+from apps.api.domain.repositories.categorisation_rule_repository import (
+    CategorisationRuleRepository,
+)
 from apps.api.domain.repositories.import_staging_repository import ImportStagingRepository
 from apps.api.infrastructure.cache.redis_client import redis_client
 from apps.api.infrastructure.database.session import get_session
 from apps.api.infrastructure.repositories.redis_import_staging_repository import (
     RedisImportStagingRepository,
+)
+from apps.api.infrastructure.repositories.sqlalchemy_categorisation_rule_repository import (
+    SqlAlchemyCategorisationRuleRepository,
 )
 from apps.api.infrastructure.repositories.sqlalchemy_transaction_repository import (
     SqlAlchemyTransactionRepository,
@@ -112,11 +121,30 @@ def get_list_transactions_handler(
     return ListTransactionsHandler(transaction_repository=repository)
 
 
+def get_categorisation_rule_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> CategorisationRuleRepository:
+    return SqlAlchemyCategorisationRuleRepository(session)
+
+
+def get_create_categorisation_rule_handler(
+    categorisation_rules: CategorisationRuleRepository = Depends(
+        get_categorisation_rule_repository
+    ),
+) -> CreateCategorisationRuleHandler:
+    return CreateCategorisationRuleHandler(categorisation_rule_repository=categorisation_rules)
+
+
 def get_update_transaction_handler(
     session: AsyncSession = Depends(get_db_session),
+    categorisation_rules: CategorisationRuleRepository = Depends(
+        get_categorisation_rule_repository
+    ),
 ) -> UpdateTransactionHandler:
     repository = SqlAlchemyTransactionRepository(session)
-    return UpdateTransactionHandler(transaction_repository=repository)
+    return UpdateTransactionHandler(
+        transaction_repository=repository, categorisation_rule_repository=categorisation_rules
+    )
 
 
 def get_delete_transaction_handler(
@@ -132,8 +160,13 @@ def get_import_staging_repository() -> ImportStagingRepository:
 
 def get_stage_import_handler(
     staging: ImportStagingRepository = Depends(get_import_staging_repository),
+    categorisation_rules: CategorisationRuleRepository = Depends(
+        get_categorisation_rule_repository
+    ),
 ) -> StageImportHandler:
-    return StageImportHandler(staging_repository=staging)
+    return StageImportHandler(
+        staging_repository=staging, categorisation_rule_repository=categorisation_rules
+    )
 
 
 def get_update_staged_rows_handler(

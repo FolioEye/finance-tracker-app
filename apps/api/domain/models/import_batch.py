@@ -27,6 +27,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from enum import Enum
 
+from apps.api.domain.models.categorisation_rule import CategorisationRule, find_matching_rule
+
 
 class CorruptedFileError(ValueError):
     """Raised only when the whole file can't be safely reviewed at all --
@@ -111,6 +113,11 @@ class StagedImportRow:
     note: str | None
     status: RowStatus
     warning: str | None = None
+    # FINTRACK-17: which CategorisationRule (if any) produced `category`,
+    # so the review screen can show "which rule produced the match"
+    # (AC6, auditability). None means either no rule matched (category is
+    # the "Uncategorised" default) or auto-categorisation hasn't run yet.
+    matched_rule_id: uuid.UUID | None = None
 
 
 @dataclass
@@ -138,6 +145,19 @@ class StagedImport:
         sanitised, not rejected. INVALID rows are excluded until the user
         edits them via update_staged_rows.py (AC4)."""
         return [r for r in self.rows if r.status in (RowStatus.OK, RowStatus.FLAGGED)]
+
+    @property
+    def auto_categorised_count(self) -> int:
+        """FINTRACK-17 AC5: half of the "X of Y auto-categorised, Z need
+        review" review-screen summary."""
+        return sum(1 for r in self.rows if r.matched_rule_id is not None)
+
+    @property
+    def needs_review_count(self) -> int:
+        """The other half of AC5's summary -- rows left 'Uncategorised'
+        because no rule matched (AC2), not rows that merely failed
+        date/amount parsing (that's invalid_count, a different concern)."""
+        return self.found_count - self.auto_categorised_count
 
 
 # Flexible header matching -- bank export column names vary widely and
@@ -228,3 +248,50 @@ def parse_csv_statement(raw_bytes: bytes) -> list[StagedImportRow]:
     # test-writing pass -- this function previously raised
     # CorruptedFileError here, which contradicted the Gherkin.)
     return rows
+
+
+def apply_auto_categorisation(
+    rows: list[StagedImportRow], rules: list[CategorisationRule]
+) -> None:
+    """FINTRACK-17 AC1/AC2: mutates each row's category in place based on
+    matching its description (`note`) against the user's rule set.
+
+    Deliberate behaviour change from FINTRACK-16: this rules engine is now
+    authoritative for an imported row's category. The CSV's own
+    category/type column (parsed into `row.category` by
+    parse_csv_statement, defaulting to "Uncategorised" when absent) is
+    overwritten here regardless of what it held -- a match assigns the
+    rule's category, no match forces "Uncategorised". The BA's Gherkin
+    scenario 2 is explicit that an unmatched merchant must show
+    "Uncategorised", which a "keep the CSV's own column as a fallback"
+    design would contradict whenever that column happened to be
+    populated. Flagged for QA Lead: FINTRACK-16's existing "category
+    defaulting from CSV column" unit test may need updating to reflect
+    this supersession.
+
+    INVALID rows are skipped -- they're not committable regardless of
+    category (see StagedImport.committable_rows), so categorising them
+    would be wasted work with no observable effect.
+    """
+    for row in rows:
+        if row.status == RowStatus.INVALID:
+            continue
+
+        matched = find_matching_rule(rules, row.note or "")
+        if matched is None:
+            row.category = "Uncategorised"
+            row.matched_rule_id = None
+            continue
+
+        category, was_sanitised = sanitise_if_formula(matched.category)
+        row.category = category
+        row.matched_rule_id = matched.id
+        if was_sanitised and row.status == RowStatus.OK:
+            # A rule's category shouldn't itself be able to carry a
+            # formula-injection payload (CategorisationRule.new() doesn't
+            # check for this, only for SQLi-shaped input), but this is
+            # cheap defence-in-depth reusing the same
+            # sanitise-and-flag discipline ADR-011 established for CSV
+            # cell values, applied consistently to rule-sourced values too.
+            row.status = RowStatus.FLAGGED
+            row.warning = "Suspicious content sanitised (possible spreadsheet formula injection)"
