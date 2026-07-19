@@ -27,3 +27,25 @@ Feature: Threshold Alerts
     Given I am authenticated as User A
     When I request my active alerts
     Then I should only see alerts generated from my own account's data
+
+  Scenario: An unusually large single transaction triggers an alert
+    Given my typical "Dining" transactions are well under "$50"
+    When I add a single transaction of "$500" in "Dining"
+    Then I should see an alert that this transaction is unusually large
+
+  Scenario: A transaction within normal range does not trigger a large-transaction alert
+    Given my typical spending pattern for "Dining" is under "$50" per transaction
+    When I add a transaction of "$45" in "Dining"
+    Then no large-transaction alert should fire
+
+  Scenario: Dismissing an alert does not suppress future alerts
+    Given I have an active threshold alert for "Groceries"
+    When I dismiss that alert
+    And my "Groceries" spend later crosses a new threshold
+    Then I should see a new alert for that new threshold crossing
+
+  Scenario: Attempt to dismiss another user's alert
+    Given I am authenticated as User A
+    When I attempt to dismiss an alert belonging to User B
+    Then the request should be rejected
+    And User B's alert should remain active

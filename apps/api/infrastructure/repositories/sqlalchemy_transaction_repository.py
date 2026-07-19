@@ -178,3 +178,21 @@ class SqlAlchemyTransactionRepository(TransactionRepository):
         )
         result = await self._session.execute(stmt)
         return {category: total for category, total in result.all()}
+
+    async def get_recent_amounts_for_category(
+        self, user_id: uuid.UUID, category: str, exclude_transaction_id: uuid.UUID, limit: int
+    ) -> list[Decimal]:
+        stmt = (
+            select(TransactionModel.amount)
+            .where(
+                and_(
+                    TransactionModel.user_id == user_id,
+                    TransactionModel.category == category,
+                    TransactionModel.id != exclude_transaction_id,
+                )
+            )
+            .order_by(TransactionModel.created_at.desc())
+            .limit(limit)
+        )
+        result = await self._session.execute(stmt)
+        return [amount for (amount,) in result.all()]

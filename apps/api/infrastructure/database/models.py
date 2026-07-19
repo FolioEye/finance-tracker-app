@@ -104,3 +104,40 @@ class BudgetModel(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class AlertModel(Base):
+    """FINTRACK-22. Two alert shapes share this table (see
+    domain.models.alert.Alert's docstring for the full rationale):
+    THRESHOLD_CROSSING rows are deduplicated per (user_id, category,
+    alert_type, period_start, threshold_pct); LARGE_TRANSACTION rows are
+    deduplicated per transaction_id. Both unique constraints below rely
+    on Postgres's standard "NULL is distinct from NULL" semantics --
+    threshold_pct is NULL on LARGE_TRANSACTION rows and transaction_id is
+    NULL on THRESHOLD_CROSSING rows, so each constraint only meaningfully
+    binds the alert type it's meant for, with no partial/filtered index
+    needed.
+    """
+
+    __tablename__ = "alerts"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "category", "alert_type", "period_start", "threshold_pct",
+            name="uq_alerts_threshold_crossing",
+        ),
+        UniqueConstraint("transaction_id", name="uq_alerts_transaction_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    alert_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    period_start: Mapped[date] = mapped_column(Date, nullable=False)
+    threshold_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    transaction_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("transactions.id"), nullable=True
+    )
+    fired_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    dismissed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

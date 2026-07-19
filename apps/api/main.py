@@ -9,6 +9,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from apps.api.config import get_settings
+from apps.api.presentation.api.v1.alerts import router as alerts_router
 from apps.api.presentation.api.v1.auth import limiter
 from apps.api.presentation.api.v1.auth import router as auth_router
 from apps.api.presentation.api.v1.budgets import router as budgets_router
@@ -35,6 +36,7 @@ app.include_router(transactions_router)
 app.include_router(imports_router)
 app.include_router(categorisation_rules_router)
 app.include_router(budgets_router)
+app.include_router(alerts_router)
 
 
 @app.get("/health")

@@ -18,6 +18,10 @@ from apps.api.application.commands.delete_transaction import (
     DeleteTransactionCommand,
     DeleteTransactionHandler,
 )
+from apps.api.application.commands.evaluate_alerts_for_transaction import (
+    EvaluateAlertsForTransactionCommand,
+    EvaluateAlertsForTransactionHandler,
+)
 from apps.api.application.commands.update_transaction import (
     UpdateTransactionCommand,
     UpdateTransactionHandler,
@@ -42,6 +46,7 @@ from apps.api.infrastructure.security.current_user import get_current_user_id
 from apps.api.presentation.api.v1.dependencies import (
     get_create_transaction_handler,
     get_delete_transaction_handler,
+    get_evaluate_alerts_for_transaction_handler,
     get_list_transactions_handler,
     get_update_transaction_handler,
 )
@@ -66,6 +71,9 @@ async def create_transaction(
     payload: CreateTransactionRequest,
     user_id: uuid.UUID = Depends(get_current_user_id),
     handler: CreateTransactionHandler = Depends(get_create_transaction_handler),
+    alert_handler: EvaluateAlertsForTransactionHandler = Depends(
+        get_evaluate_alerts_for_transaction_handler
+    ),
 ) -> TransactionResponse:
     command = CreateTransactionCommand(
         user_id=user_id,
@@ -91,6 +99,28 @@ async def create_transaction(
     logger.info(
         "transaction_created", extra={"context": {"user_id": str(user_id), "transaction_id": str(transaction.id)}}
     )
+
+    # FINTRACK-22: best-effort alert evaluation. Composed here at the
+    # presentation layer -- deliberately not inside CreateTransactionHandler
+    # -- so a bug in threshold/large-transaction logic can never turn a
+    # successful transaction write into a failed request. See
+    # docs/adr/ADR-014-threshold-alerts-write-time-detection.md.
+    try:
+        await alert_handler.handle(
+            EvaluateAlertsForTransactionCommand(
+                user_id=user_id,
+                transaction_id=transaction.id,
+                category=transaction.category,
+                amount=transaction.amount.value,
+                transaction_date=transaction.transaction_date,
+            )
+        )
+    except Exception:  # noqa: BLE001 -- deliberate catch-all, see comment above
+        logger.error(
+            "alert_evaluation_failed",
+            extra={"context": {"user_id": str(user_id), "transaction_id": str(transaction.id)}},
+        )
+
     return _to_response(transaction)
 
 

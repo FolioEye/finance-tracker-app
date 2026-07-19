@@ -76,3 +76,15 @@ class TransactionRepository(ABC):
         not present with a Decimal("0") value; callers (the budget
         overview query) treat "absent" and "zero" the same way."""
         ...
+
+    @abstractmethod
+    async def get_recent_amounts_for_category(
+        self, user_id: uuid.UUID, category: str, exclude_transaction_id: uuid.UUID, limit: int
+    ) -> list[Decimal]:
+        """FINTRACK-22: the user's own last `limit` transaction amounts in
+        this category, most-recent-first, excluding one specific
+        transaction (the one currently being evaluated for a
+        large-transaction alert -- it must never be averaged against
+        itself). Used to compute a personal rolling-average baseline; see
+        docs/adr/ADR-014-threshold-alerts-write-time-detection.md."""
+        ...
