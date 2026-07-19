@@ -61,6 +61,11 @@ class UpdateStagedRowsHandler:
             if edit.category is not None:
                 stripped = edit.category.strip() or "Uncategorised"
                 row.category, category_sanitised = sanitise_if_formula(stripped)
+                # FINTRACK-17: a manual category edit during review is no
+                # longer "the rule's suggestion" -- clear the audit
+                # pointer so auto_categorised_count doesn't keep counting
+                # a row the user has since overridden by hand.
+                row.matched_rule_id = None
 
             note_sanitised = False
             if edit.note is not None:

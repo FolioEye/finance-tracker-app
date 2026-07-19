@@ -9,6 +9,18 @@ every text input, auth bypass, IDOR. This story's IDOR checks are covered
 in depth in tests/integration/test_imports_api.py; this file focuses on
 injection and auth-bypass, plus the CSV-formula-injection vector that is
 this story's own dedicated security scenario (distinct from SQLi/XSS).
+
+FINTRACK-17 update: the category-column tests below were rewritten, not
+just re-passed. apply_auto_categorisation() (ADR-012, decision D) means
+the CSV's own category/type column is no longer used as transaction
+category data at all -- a rule match or "Uncategorised" is now
+authoritative. So SQLi/XSS payloads planted in that column (this file's
+original FINTRACK-16 tests) never reach Transaction.new() as data in the
+first place; they don't need to be rejected-and-skipped because they're
+never used as a value to begin with. This is a stronger guarantee, not a
+weaker one, but it changes what these tests need to assert. The
+description/note column is unaffected -- it still flows into
+Transaction.new() unchanged, so its SQLi/XSS tests are untouched.
 """
 from __future__ import annotations
 
@@ -56,7 +68,14 @@ def _stage(client, token: str, csv_bytes: bytes):
 # ---------------------------------------------------------------------------
 
 
-def test_sql_injection_in_csv_category_is_skipped_at_commit_not_committed(client) -> None:
+def test_sql_injection_in_csv_category_column_never_becomes_transaction_data(client) -> None:
+    """FINTRACK-17 rewrite (was test_sql_injection_in_csv_category_is_skipped_at_commit_not_committed,
+    which asserted a commit-time skip -- no skip happens now, because the
+    category column this payload lives in is never read as data at all).
+    Both rows commit; the auto-categorisation engine assigns
+    "Uncategorised" to the second row (no rule matches "Normal purchase"),
+    so the injection payload is discarded during staging, well before
+    Transaction.new() would even see it."""
     token = _register_and_login(client, "import-sqli-category@example.com")
     csv_bytes = _csv_bytes(
         "2026-07-01,10.00,Coffee,Food",
@@ -68,11 +87,12 @@ def test_sql_injection_in_csv_category_is_skipped_at_commit_not_committed(client
     # Not caught at stage time -- formula-injection sanitisation only
     # triggers on a LEADING =/+/-/@/tab/CR, which this payload doesn't have.
     assert stage_resp.json()["rows"][1]["status"] == "ok"
+    assert stage_resp.json()["rows"][1]["category"] == "Uncategorised"
 
     commit_resp = client.post(f"/api/v1/imports/{import_id}/commit", headers=_auth(token))
     assert commit_resp.status_code == 200, commit_resp.text
-    assert commit_resp.json()["committed_count"] == 1
-    assert commit_resp.json()["skipped_count"] == 1
+    assert commit_resp.json()["committed_count"] == 2
+    assert commit_resp.json()["skipped_count"] == 0
 
     list_resp = client.get("/api/v1/transactions", headers=_auth(token))
     categories = [item["category"] for item in list_resp.json()["items"]]
@@ -126,13 +146,22 @@ def test_sql_injection_payload_does_not_disturb_other_users_data(client) -> None
 def test_security_event_is_logged_on_csv_row_sql_injection_attempt(client, caplog) -> None:
     """The commit-time skip is silent to the HTTP response by design
     (best-effort batch import), but it must still be observable in logs.
-    Regression test for the gap found during this QA pass: skipped rows
-    previously produced zero log signal; import_commit_rows_skipped is
-    logged at WARNING whenever a row is skipped during commit."""
+    Regression test for the gap found during FINTRACK-16's QA pass:
+    skipped rows previously produced zero log signal; import_commit_rows_skipped
+    is logged at WARNING whenever a row is skipped during commit.
+
+    FINTRACK-17 update: the payload now targets the description/note
+    column, not category -- as of ADR-012, an SQLi payload in the
+    category column is discarded during staging and never reaches
+    Transaction.new(), so it can no longer trigger a commit-time skip
+    (see test_sql_injection_in_csv_category_column_never_becomes_transaction_data
+    above). The note column is unaffected by that change and still
+    flows into Transaction.new() unchanged, so it's still the live
+    vector this log line needs to cover."""
     token = _register_and_login(client, "import-sqli-log@example.com")
     csv_bytes = _csv_bytes(
         "2026-07-01,10.00,Coffee,Food",
-        f"2026-07-02,20.00,Normal,{SQLI_PAYLOAD}",
+        f"2026-07-02,20.00,{SQLI_PAYLOAD},Food",
     )
     stage_resp = _stage(client, token, csv_bytes)
     import_id = stage_resp.json()["import_id"]
@@ -187,17 +216,30 @@ def test_formula_injection_in_multiple_trigger_characters_all_sanitised(client) 
 # ---------------------------------------------------------------------------
 
 
-def test_xss_payload_in_csv_category_is_stored_as_inert_text_not_executed(client) -> None:
+def test_xss_payload_in_csv_category_column_never_becomes_transaction_data(client) -> None:
+    """FINTRACK-17 rewrite (was test_xss_payload_in_csv_category_is_stored_as_inert_text_not_executed,
+    which asserted the payload was "stored verbatim, as data" -- it no
+    longer is stored at all, verbatim or otherwise). The category column
+    is superseded by the auto-categorisation engine (ADR-012, decision
+    D): no rule matches "Purchase", so the row's category becomes
+    "Uncategorised" and the XSS-shaped text in the CSV's category column
+    is simply discarded during staging. See
+    test_xss_payload_in_csv_note_is_stored_as_inert_text_not_executed
+    below for the description/note column, which is unaffected and still
+    stores its payload verbatim as inert JSON data."""
     token = _register_and_login(client, "import-xss-category@example.com")
     csv_bytes = _csv_bytes(f"2026-07-01,10.00,Purchase,{XSS_PAYLOAD}")
     stage_resp = _stage(client, token, csv_bytes)
     import_id = stage_resp.json()["import_id"]
+    assert stage_resp.json()["rows"][0]["category"] == "Uncategorised"
     commit_resp = client.post(f"/api/v1/imports/{import_id}/commit", headers=_auth(token))
     assert commit_resp.status_code == 200, commit_resp.text
+    assert commit_resp.json()["committed_count"] == 1
 
     list_resp = client.get("/api/v1/transactions", headers=_auth(token))
     assert list_resp.headers["content-type"].startswith("application/json")
-    assert list_resp.json()["items"][0]["category"] == XSS_PAYLOAD  # stored verbatim, as data
+    assert list_resp.json()["items"][0]["category"] == "Uncategorised"
+    assert XSS_PAYLOAD not in list_resp.text
 
 
 def test_xss_payload_in_csv_note_is_stored_as_inert_text_not_executed(client) -> None:

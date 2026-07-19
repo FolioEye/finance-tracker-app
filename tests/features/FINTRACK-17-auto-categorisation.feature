@@ -33,3 +33,9 @@ Feature: AI Auto-Categorisation
     Then the input should be sanitised
     And I should see validation error "Invalid characters detected"
     And the rules table should remain intact
+
+  Scenario: User's manual category correction updates their personal rule set
+    Given an imported transaction from "XZQ HOLDINGS LLC" was left "Uncategorised"
+    When I manually assign it to category "Business Expenses"
+    Then a new personal rule mapping "XZQ HOLDINGS LLC" to "Business Expenses" should be created
+    And a future transaction from "XZQ HOLDINGS LLC" should be auto-categorised as "Business Expenses"

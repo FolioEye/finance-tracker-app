@@ -18,6 +18,10 @@ class StagedRowResponse(BaseModel):
     note: str | None
     status: str
     warning: str | None
+    # FINTRACK-17 AC6: which CategorisationRule produced `category`, so
+    # the review screen can show "which rule produced the match" (null
+    # when no rule matched and category is the "Uncategorised" default).
+    matched_rule_id: uuid.UUID | None = None
 
 
 class StageImportResponse(BaseModel):
@@ -25,6 +29,9 @@ class StageImportResponse(BaseModel):
     found_count: int
     flagged_count: int
     invalid_count: int
+    # FINTRACK-17 AC5: "X of Y auto-categorised, Z need review" summary.
+    auto_categorised_count: int
+    needs_review_count: int
     rows: list[StagedRowResponse]
 
 

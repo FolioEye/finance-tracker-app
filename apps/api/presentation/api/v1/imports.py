@@ -61,6 +61,8 @@ def _to_response(staged_import: StagedImport) -> StageImportResponse:
         found_count=staged_import.found_count,
         flagged_count=staged_import.flagged_count,
         invalid_count=staged_import.invalid_count,
+        auto_categorised_count=staged_import.auto_categorised_count,
+        needs_review_count=staged_import.needs_review_count,
         rows=[
             StagedRowResponse(
                 row_index=r.row_index,
@@ -70,6 +72,7 @@ def _to_response(staged_import: StagedImport) -> StageImportResponse:
                 note=r.note,
                 status=r.status.value,
                 warning=r.warning,
+                matched_rule_id=r.matched_rule_id,
             )
             for r in staged_import.rows
         ],
@@ -113,6 +116,8 @@ async def stage_import(
                 "found_count": staged_import.found_count,
                 "flagged_count": staged_import.flagged_count,
                 "invalid_count": staged_import.invalid_count,
+                "auto_categorised_count": staged_import.auto_categorised_count,
+                "needs_review_count": staged_import.needs_review_count,
             }
         },
     )

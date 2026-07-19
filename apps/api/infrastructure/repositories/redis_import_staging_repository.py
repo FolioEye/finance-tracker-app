@@ -41,7 +41,20 @@ class RedisImportStagingRepository(ImportStagingRepository):
             "user_id": str(staged_import.user_id),
             "created_at": staged_import.created_at.isoformat(),
             "rows": [
-                {**dataclasses.asdict(row), "status": row.status.value}
+                {
+                    **dataclasses.asdict(row),
+                    "status": row.status.value,
+                    # FINTRACK-17: matched_rule_id is a uuid.UUID | None on
+                    # the domain model -- dataclasses.asdict() leaves it as
+                    # a raw UUID object, which json.dumps() can't encode.
+                    # Bug found by QA Lead's integration tests: the
+                    # fixture-based unit tests never touch this real
+                    # serialization path, so a real auto-categorised import
+                    # (an actual rule match) always raised a 500 here.
+                    "matched_rule_id": (
+                        str(row.matched_rule_id) if row.matched_rule_id is not None else None
+                    ),
+                }
                 for row in staged_import.rows
             ],
         }
@@ -72,6 +85,18 @@ class RedisImportStagingRepository(ImportStagingRepository):
                 note=r["note"],
                 status=RowStatus(r["status"]),
                 warning=r["warning"],
+                # FINTRACK-17: same bug as save() above -- this key was
+                # previously dropped entirely on read, silently reverting
+                # every row's matched_rule_id to the dataclass default of
+                # None even after the write side is fixed. .get() (not
+                # r["matched_rule_id"]) also keeps this backward-compatible
+                # with any import already staged in Redis under the old
+                # payload shape before this fix.
+                matched_rule_id=(
+                    uuid.UUID(r["matched_rule_id"])
+                    if r.get("matched_rule_id") is not None
+                    else None
+                ),
             )
             for r in data["rows"]
         ]

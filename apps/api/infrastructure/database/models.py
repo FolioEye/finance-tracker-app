@@ -5,7 +5,7 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Numeric, String, func
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Numeric, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -46,6 +46,32 @@ class TransactionModel(Base):
     # later, receipt OCR) -- all three share the same CreateTransactionCommand
     # shape per the PM's epic-level architecture constraint.
     entry_source: Mapped[str] = mapped_column(String(20), nullable=False, server_default="manual")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class CategorisationRuleModel(Base):
+    """FINTRACK-17. merchant_pattern is stored upper-cased (normalised at
+    the domain layer, CategorisationRule.new()) so matching is a plain
+    case-insensitive substring check with no per-query LOWER()/ILIKE
+    needed. unique(user_id, merchant_pattern) backs the upsert semantics
+    in SqlAlchemyCategorisationRuleRepository.upsert() -- one rule per
+    merchant pattern per user, not an append-only history.
+    """
+
+    __tablename__ = "categorisation_rules"
+    __table_args__ = (
+        UniqueConstraint("user_id", "merchant_pattern", name="uq_categorisation_rules_user_pattern"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
+    merchant_pattern: Mapped[str] = mapped_column(String(255), nullable=False)
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
