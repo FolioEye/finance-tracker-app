@@ -9,10 +9,12 @@ from __future__ import annotations
 
 import base64
 import uuid
+from datetime import date as date_type
 from datetime import datetime
+from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import and_, delete, or_, select
+from sqlalchemy import and_, delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.api.domain.models.transaction import Money, Transaction
@@ -155,3 +157,24 @@ class SqlAlchemyTransactionRepository(TransactionRepository):
         result = await self._session.execute(stmt)
         await self._session.flush()
         return result.rowcount > 0
+
+    async def sum_by_category_for_user_in_range(
+        self, user_id: uuid.UUID, start_date: date_type, end_date: date_type
+    ) -> dict[str, Decimal]:
+        # SUM/GROUP BY pushed down to the DB rather than summing in Python
+        # over a full row fetch -- same "aggregate at the query layer, not
+        # in application code" principle as list_for_user's cursor
+        # pagination avoiding an in-memory OFFSET scan.
+        stmt = (
+            select(TransactionModel.category, func.sum(TransactionModel.amount))
+            .where(
+                and_(
+                    TransactionModel.user_id == user_id,
+                    TransactionModel.transaction_date >= start_date,
+                    TransactionModel.transaction_date < end_date,
+                )
+            )
+            .group_by(TransactionModel.category)
+        )
+        result = await self._session.execute(stmt)
+        return {category: total for category, total in result.all()}

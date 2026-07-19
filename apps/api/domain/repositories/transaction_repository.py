@@ -4,6 +4,8 @@ from __future__ import annotations
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from datetime import date as date_type
+from decimal import Decimal
 from typing import Optional
 
 from apps.api.domain.models.transaction import Transaction
@@ -54,4 +56,23 @@ class TransactionRepository(ABC):
     async def delete(self, transaction_id: uuid.UUID, user_id: uuid.UUID) -> bool:
         """Returns True if a row belonging to user_id was deleted, False if
         no matching row existed (already-gone or not this user's)."""
+        ...
+
+    @abstractmethod
+    async def sum_by_category_for_user_in_range(
+        self, user_id: uuid.UUID, start_date: date_type, end_date: date_type
+    ) -> dict[str, Decimal]:
+        """FINTRACK-20: category -> total spend for transactions with
+        transaction_date in [start_date, end_date) (end exclusive).
+        Computed via SQL SUM/GROUP BY, not by loading every transaction
+        into memory -- this is the read side of the "resets each calendar
+        month" behaviour (AC3): the caller passes the current month's
+        bounds, so last month's spend simply isn't in the result set,
+        with no batch job or reset step required. See
+        docs/adr/ADR-013-budget-tracking-compute-on-read.md.
+
+        Only returns categories with at least one transaction in range --
+        a category with zero spend this month is absent from the dict,
+        not present with a Decimal("0") value; callers (the budget
+        overview query) treat "absent" and "zero" the same way."""
         ...
