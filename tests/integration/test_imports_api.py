@@ -22,6 +22,27 @@ from pytest_bdd import given, parsers, scenarios, then, when
 scenarios("../features/FINTRACK-16-statement-import.feature")
 
 
+class _InMemoryCategorisationRuleRepository:
+    """FINTRACK-17: minimal stand-in for CategorisationRuleRepository, for
+    the two tests below that construct StageImportHandler directly against
+    the real Redis staging repository (rather than via the TestClient, so
+    they can exercise true async concurrency). These tests don't exercise
+    rule-matching at all -- an empty rule set is all they need to satisfy
+    the handler's constructor."""
+
+    async def add(self, rule) -> None:
+        pass
+
+    async def list_for_user(self, user_id) -> list:
+        return []
+
+    async def find_by_pattern_for_user(self, user_id, merchant_pattern):
+        return None
+
+    async def upsert(self, user_id, merchant_pattern, category):
+        raise NotImplementedError("not exercised by these tests")
+
+
 class ImportContext:
     """Per-scenario mutable state shared between Given/When/Then steps."""
 
@@ -425,7 +446,10 @@ async def test_concurrent_staging_for_different_users_does_not_cross_contaminate
     )
 
     staging = RedisImportStagingRepository(redis_client)
-    handler = StageImportHandler(staging_repository=staging)
+    handler = StageImportHandler(
+        staging_repository=staging,
+        categorisation_rule_repository=_InMemoryCategorisationRuleRepository(),
+    )
 
     async def _stage_one(user_id: uuid.UUID, amount: str):
         csv_bytes = f"Date,Amount,Description,Category\n2026-07-01,{amount},Row,Food\n".encode()
@@ -455,7 +479,10 @@ async def test_staged_import_is_stored_with_the_expected_ttl() -> None:
     )
 
     staging = RedisImportStagingRepository(redis_client)
-    handler = StageImportHandler(staging_repository=staging)
+    handler = StageImportHandler(
+        staging_repository=staging,
+        categorisation_rule_repository=_InMemoryCategorisationRuleRepository(),
+    )
     user_id = uuid.uuid4()
     csv_bytes = b"Date,Amount,Description,Category\n2026-07-01,10.00,Row,Food\n"
 
