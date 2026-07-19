@@ -31,13 +31,47 @@ from apps.api.application.queries.list_transactions import (
 from apps.api.domain.models.transaction import (
     AmountExceedsMaximumError,
     InvalidAmountError,
+    Money,
     SuspiciousInputError,
     Transaction,
 )
+from apps.api.domain.models.categorisation_rule import CategorisationRule
 from apps.api.domain.repositories.transaction_repository import (
     TransactionNotFoundError,
     TransactionPage,
 )
+
+
+class FakeCategorisationRuleRepository:
+    """In-memory stand-in for SqlAlchemyCategorisationRuleRepository.
+    FINTRACK-17. Mirrors the real adapter's upsert semantics (one rule per
+    normalised merchant_pattern per user) in plain Python -- no real DB in
+    this file."""
+
+    def __init__(self) -> None:
+        self.rules: dict[uuid.UUID, CategorisationRule] = {}
+
+    async def add(self, rule: CategorisationRule) -> None:
+        self.rules[rule.id] = rule
+
+    async def list_for_user(self, user_id: uuid.UUID) -> list[CategorisationRule]:
+        return [r for r in self.rules.values() if r.user_id == user_id]
+
+    async def find_by_pattern_for_user(self, user_id: uuid.UUID, merchant_pattern: str):
+        normalised = merchant_pattern.strip().upper()
+        for rule in self.rules.values():
+            if rule.user_id == user_id and rule.merchant_pattern == normalised:
+                return rule
+        return None
+
+    async def upsert(self, user_id: uuid.UUID, merchant_pattern: str, category: str) -> CategorisationRule:
+        existing = await self.find_by_pattern_for_user(user_id, merchant_pattern)
+        if existing is not None:
+            existing.apply_correction(category)
+            return existing
+        rule = CategorisationRule.new(user_id=user_id, merchant_pattern=merchant_pattern, category=category)
+        await self.add(rule)
+        return rule
 
 
 class FakeTransactionRepository:
@@ -80,6 +114,11 @@ class FakeTransactionRepository:
 @pytest.fixture
 def repo() -> FakeTransactionRepository:
     return FakeTransactionRepository()
+
+
+@pytest.fixture
+def categorisation_rules() -> FakeCategorisationRuleRepository:
+    return FakeCategorisationRuleRepository()
 
 
 # ---------------------------------------------------------------------------
@@ -162,7 +201,7 @@ async def test_create_transaction_handler_propagates_suspicious_input_error(repo
 
 
 @pytest.mark.asyncio
-async def test_update_transaction_handler_applies_a_partial_update(repo) -> None:
+async def test_update_transaction_handler_applies_a_partial_update(repo, categorisation_rules) -> None:
     user_id = uuid.uuid4()
     handler_create = CreateTransactionHandler(transaction_repository=repo)
     created = await handler_create.handle(
@@ -171,7 +210,9 @@ async def test_update_transaction_handler_applies_a_partial_update(repo) -> None
         )
     )
 
-    handler = UpdateTransactionHandler(transaction_repository=repo)
+    handler = UpdateTransactionHandler(
+        transaction_repository=repo, categorisation_rule_repository=categorisation_rules
+    )
     updated = await handler.handle(
         UpdateTransactionCommand(transaction_id=created.id, user_id=user_id, amount="55.00")
     )
@@ -181,8 +222,10 @@ async def test_update_transaction_handler_applies_a_partial_update(repo) -> None
 
 
 @pytest.mark.asyncio
-async def test_update_transaction_handler_raises_not_found_for_unknown_id(repo) -> None:
-    handler = UpdateTransactionHandler(transaction_repository=repo)
+async def test_update_transaction_handler_raises_not_found_for_unknown_id(repo, categorisation_rules) -> None:
+    handler = UpdateTransactionHandler(
+        transaction_repository=repo, categorisation_rule_repository=categorisation_rules
+    )
     with pytest.raises(TransactionNotFoundError):
         await handler.handle(
             UpdateTransactionCommand(transaction_id=uuid.uuid4(), user_id=uuid.uuid4(), amount="10.00")
@@ -190,7 +233,9 @@ async def test_update_transaction_handler_raises_not_found_for_unknown_id(repo) 
 
 
 @pytest.mark.asyncio
-async def test_update_transaction_handler_raises_not_found_for_another_users_transaction(repo) -> None:
+async def test_update_transaction_handler_raises_not_found_for_another_users_transaction(
+    repo, categorisation_rules
+) -> None:
     """IDOR prevention at the handler layer: owner_a's transaction must be
     invisible to owner_b, surfaced as the same TransactionNotFoundError a
     truly-nonexistent id would raise -- not a distinguishable 403."""
@@ -203,11 +248,146 @@ async def test_update_transaction_handler_raises_not_found_for_another_users_tra
         )
     )
 
-    handler = UpdateTransactionHandler(transaction_repository=repo)
+    handler = UpdateTransactionHandler(
+        transaction_repository=repo, categorisation_rule_repository=categorisation_rules
+    )
     with pytest.raises(TransactionNotFoundError):
         await handler.handle(
             UpdateTransactionCommand(transaction_id=created.id, user_id=owner_b, amount="99.00")
         )
+
+
+# ---------------------------------------------------------------------------
+# UpdateTransactionHandler -- FINTRACK-17 AC3 correction-feedback loop
+# (Gherkin scenario 5: "User's manual category correction updates their
+# personal rule set")
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_update_transaction_handler_creates_a_rule_when_correcting_an_imported_uncategorised_transaction(
+    repo, categorisation_rules
+) -> None:
+    user_id = uuid.uuid4()
+    txn = Transaction.new(
+        user_id=user_id,
+        amount=Money.parse("42.50"),
+        category="Uncategorised",
+        transaction_date=date(2026, 7, 2),
+        note="XZQ HOLDINGS LLC",
+        entry_source="csv_import",
+    )
+    await repo.add(txn)
+
+    handler = UpdateTransactionHandler(
+        transaction_repository=repo, categorisation_rule_repository=categorisation_rules
+    )
+    await handler.handle(
+        UpdateTransactionCommand(transaction_id=txn.id, user_id=user_id, category="Business Expenses")
+    )
+
+    rules = await categorisation_rules.list_for_user(user_id)
+    assert len(rules) == 1
+    assert rules[0].merchant_pattern == "XZQ HOLDINGS LLC"
+    assert rules[0].category == "Business Expenses"
+
+
+@pytest.mark.asyncio
+async def test_update_transaction_handler_does_not_create_a_rule_for_a_manual_entry(
+    repo, categorisation_rules
+) -> None:
+    """AC3's Gherkin is explicit about "an imported transaction" -- a
+    manual entry correction (entry_source="manual") must not feed the
+    rule set, even if its category happens to be the literal string
+    "Uncategorised"."""
+    user_id = uuid.uuid4()
+    handler_create = CreateTransactionHandler(transaction_repository=repo)
+    created = await handler_create.handle(
+        CreateTransactionCommand(
+            user_id=user_id,
+            amount="42.50",
+            category="Uncategorised",
+            transaction_date=date(2026, 7, 2),
+            note="XZQ HOLDINGS LLC",
+        )
+    )
+    assert created.entry_source == "manual"
+
+    handler = UpdateTransactionHandler(
+        transaction_repository=repo, categorisation_rule_repository=categorisation_rules
+    )
+    await handler.handle(
+        UpdateTransactionCommand(transaction_id=created.id, user_id=user_id, category="Business Expenses")
+    )
+
+    assert await categorisation_rules.list_for_user(user_id) == []
+
+
+@pytest.mark.asyncio
+async def test_update_transaction_handler_does_not_create_a_rule_when_category_stays_uncategorised(
+    repo, categorisation_rules
+) -> None:
+    user_id = uuid.uuid4()
+    txn = Transaction.new(
+        user_id=user_id,
+        amount=Money.parse("42.50"),
+        category="Uncategorised",
+        transaction_date=date(2026, 7, 2),
+        note="XZQ HOLDINGS LLC",
+        entry_source="csv_import",
+    )
+    await repo.add(txn)
+
+    handler = UpdateTransactionHandler(
+        transaction_repository=repo, categorisation_rule_repository=categorisation_rules
+    )
+    # Update something other than category -- no correction happened.
+    await handler.handle(UpdateTransactionCommand(transaction_id=txn.id, user_id=user_id, amount="10.00"))
+
+    assert await categorisation_rules.list_for_user(user_id) == []
+
+
+@pytest.mark.asyncio
+async def test_update_transaction_handler_upserts_rather_than_duplicates_on_repeated_correction(
+    repo, categorisation_rules
+) -> None:
+    """A second correction for the same merchant updates the existing
+    rule's category rather than creating a second one -- backs AC3's
+    "personal rule set" framing (one current mapping per merchant, not an
+    append-only history)."""
+    user_id = uuid.uuid4()
+    txn_1 = Transaction.new(
+        user_id=user_id,
+        amount=Money.parse("10.00"),
+        category="Uncategorised",
+        transaction_date=date(2026, 7, 1),
+        note="XZQ HOLDINGS LLC",
+        entry_source="csv_import",
+    )
+    txn_2 = Transaction.new(
+        user_id=user_id,
+        amount=Money.parse("20.00"),
+        category="Uncategorised",
+        transaction_date=date(2026, 7, 2),
+        note="XZQ HOLDINGS LLC",
+        entry_source="csv_import",
+    )
+    await repo.add(txn_1)
+    await repo.add(txn_2)
+
+    handler = UpdateTransactionHandler(
+        transaction_repository=repo, categorisation_rule_repository=categorisation_rules
+    )
+    await handler.handle(
+        UpdateTransactionCommand(transaction_id=txn_1.id, user_id=user_id, category="Business Expenses")
+    )
+    await handler.handle(
+        UpdateTransactionCommand(transaction_id=txn_2.id, user_id=user_id, category="Office Supplies")
+    )
+
+    rules = await categorisation_rules.list_for_user(user_id)
+    assert len(rules) == 1
+    assert rules[0].category == "Office Supplies"
 
 
 # ---------------------------------------------------------------------------
