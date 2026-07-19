@@ -11,19 +11,24 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.api.application.commands.commit_import import CommitImportHandler
+from apps.api.application.commands.create_budget import CreateBudgetHandler
 from apps.api.application.commands.create_categorisation_rule import (
     CreateCategorisationRuleHandler,
 )
 from apps.api.application.commands.create_transaction import CreateTransactionHandler
+from apps.api.application.commands.delete_budget import DeleteBudgetHandler
 from apps.api.application.commands.delete_transaction import DeleteTransactionHandler
 from apps.api.application.commands.login_user import LoginUserHandler
 from apps.api.application.commands.logout_user import LogoutUserHandler
 from apps.api.application.commands.register_user import RegisterUserHandler
 from apps.api.application.commands.stage_import import StageImportHandler
+from apps.api.application.commands.update_budget import UpdateBudgetHandler
 from apps.api.application.commands.update_staged_rows import UpdateStagedRowsHandler
 from apps.api.application.commands.update_transaction import UpdateTransactionHandler
+from apps.api.application.queries.get_budget_overview import GetBudgetOverviewHandler
 from apps.api.application.queries.list_transactions import ListTransactionsHandler
 from apps.api.config import Settings, get_settings
+from apps.api.domain.repositories.budget_repository import BudgetRepository
 from apps.api.domain.repositories.categorisation_rule_repository import (
     CategorisationRuleRepository,
 )
@@ -32,6 +37,9 @@ from apps.api.infrastructure.cache.redis_client import redis_client
 from apps.api.infrastructure.database.session import get_session
 from apps.api.infrastructure.repositories.redis_import_staging_repository import (
     RedisImportStagingRepository,
+)
+from apps.api.infrastructure.repositories.sqlalchemy_budget_repository import (
+    SqlAlchemyBudgetRepository,
 )
 from apps.api.infrastructure.repositories.sqlalchemy_categorisation_rule_repository import (
     SqlAlchemyCategorisationRuleRepository,
@@ -182,4 +190,38 @@ def get_commit_import_handler(
     transaction_repository = SqlAlchemyTransactionRepository(session)
     return CommitImportHandler(
         staging_repository=staging, transaction_repository=transaction_repository
+    )
+
+
+def get_budget_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> BudgetRepository:
+    return SqlAlchemyBudgetRepository(session)
+
+
+def get_create_budget_handler(
+    budgets: BudgetRepository = Depends(get_budget_repository),
+) -> CreateBudgetHandler:
+    return CreateBudgetHandler(budget_repository=budgets)
+
+
+def get_update_budget_handler(
+    budgets: BudgetRepository = Depends(get_budget_repository),
+) -> UpdateBudgetHandler:
+    return UpdateBudgetHandler(budget_repository=budgets)
+
+
+def get_delete_budget_handler(
+    budgets: BudgetRepository = Depends(get_budget_repository),
+) -> DeleteBudgetHandler:
+    return DeleteBudgetHandler(budget_repository=budgets)
+
+
+def get_get_budget_overview_handler(
+    session: AsyncSession = Depends(get_db_session),
+    budgets: BudgetRepository = Depends(get_budget_repository),
+) -> GetBudgetOverviewHandler:
+    transaction_repository = SqlAlchemyTransactionRepository(session)
+    return GetBudgetOverviewHandler(
+        budget_repository=budgets, transaction_repository=transaction_repository
     )

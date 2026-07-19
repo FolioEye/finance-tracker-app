@@ -28,3 +28,27 @@ Feature: Simple Budget Tracking
     Given I am authenticated as User A
     When I attempt to request budget data scoped to User B's account ID
     Then the request should be rejected
+
+  Scenario: Budget progress resets at the start of a new calendar month
+    Given I spent "$450" against my "$500" "Groceries" budget last month
+    When the calendar month rolls over
+    Then my "Groceries" budget progress for the new month should show "$0" spent
+    And last month's spend should not carry into the new month's total
+
+  Scenario: User edits an existing budget limit
+    Given I have a "$500" monthly budget for "Groceries"
+    When I change the limit to "$600"
+    Then my "Groceries" budget should reflect the new "$600" limit
+    And my progress percentage should be recalculated against the new limit
+
+  Scenario: User removes an existing budget
+    Given I have a "$500" monthly budget for "Groceries"
+    When I remove the "Groceries" budget
+    Then "Groceries" should no longer show a budget limit or progress indicator
+    And my past spend in "Groceries" should remain visible in transaction history
+
+  Scenario: Category with no budget set shows spend without a false "over" state
+    Given I have no budget set for "Entertainment"
+    And I have spent "$120" in "Entertainment" this month
+    Then I should see "$120" spent for "Entertainment"
+    And I should not see any "over budget" or percentage-used indicator for it
