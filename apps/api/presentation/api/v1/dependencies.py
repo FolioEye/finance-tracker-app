@@ -18,6 +18,10 @@ from apps.api.application.commands.create_categorisation_rule import (
 from apps.api.application.commands.create_transaction import CreateTransactionHandler
 from apps.api.application.commands.delete_budget import DeleteBudgetHandler
 from apps.api.application.commands.delete_transaction import DeleteTransactionHandler
+from apps.api.application.commands.dismiss_alert import DismissAlertHandler
+from apps.api.application.commands.evaluate_alerts_for_transaction import (
+    EvaluateAlertsForTransactionHandler,
+)
 from apps.api.application.commands.login_user import LoginUserHandler
 from apps.api.application.commands.logout_user import LogoutUserHandler
 from apps.api.application.commands.register_user import RegisterUserHandler
@@ -26,8 +30,10 @@ from apps.api.application.commands.update_budget import UpdateBudgetHandler
 from apps.api.application.commands.update_staged_rows import UpdateStagedRowsHandler
 from apps.api.application.commands.update_transaction import UpdateTransactionHandler
 from apps.api.application.queries.get_budget_overview import GetBudgetOverviewHandler
+from apps.api.application.queries.list_alerts import ListAlertsHandler
 from apps.api.application.queries.list_transactions import ListTransactionsHandler
 from apps.api.config import Settings, get_settings
+from apps.api.domain.repositories.alert_repository import AlertRepository
 from apps.api.domain.repositories.budget_repository import BudgetRepository
 from apps.api.domain.repositories.categorisation_rule_repository import (
     CategorisationRuleRepository,
@@ -37,6 +43,9 @@ from apps.api.infrastructure.cache.redis_client import redis_client
 from apps.api.infrastructure.database.session import get_session
 from apps.api.infrastructure.repositories.redis_import_staging_repository import (
     RedisImportStagingRepository,
+)
+from apps.api.infrastructure.repositories.sqlalchemy_alert_repository import (
+    SqlAlchemyAlertRepository,
 )
 from apps.api.infrastructure.repositories.sqlalchemy_budget_repository import (
     SqlAlchemyBudgetRepository,
@@ -225,3 +234,34 @@ def get_get_budget_overview_handler(
     return GetBudgetOverviewHandler(
         budget_repository=budgets, transaction_repository=transaction_repository
     )
+
+
+def get_alert_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> AlertRepository:
+    return SqlAlchemyAlertRepository(session)
+
+
+def get_evaluate_alerts_for_transaction_handler(
+    session: AsyncSession = Depends(get_db_session),
+    alerts: AlertRepository = Depends(get_alert_repository),
+    budgets: BudgetRepository = Depends(get_budget_repository),
+) -> EvaluateAlertsForTransactionHandler:
+    transaction_repository = SqlAlchemyTransactionRepository(session)
+    return EvaluateAlertsForTransactionHandler(
+        alert_repository=alerts,
+        budget_repository=budgets,
+        transaction_repository=transaction_repository,
+    )
+
+
+def get_dismiss_alert_handler(
+    alerts: AlertRepository = Depends(get_alert_repository),
+) -> DismissAlertHandler:
+    return DismissAlertHandler(alert_repository=alerts)
+
+
+def get_list_alerts_handler(
+    alerts: AlertRepository = Depends(get_alert_repository),
+) -> ListAlertsHandler:
+    return ListAlertsHandler(alert_repository=alerts)
