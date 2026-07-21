@@ -1,0 +1,13 @@
+{
+  "_comment": "FinTrack pipeline Ed25519 PUBLIC signing keys, per ADR-015. Safe to store in the open -- these are not secret. Used by gatekeeper's Scan 4 to verify an envelope's signature against its claimed agent identity, and by the weekly assurance audit for the same purpose. Corresponding private keys are held outside this repo by design -- never expect them here.",
+  "generated": "2026-07-20",
+  "algorithm": "Ed25519",
+  "keys": {
+    "PM": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAId65g70EGIIRIJlum0lJ4020XDcXSYQiLRqACPAtS/0=\n-----END PUBLIC KEY-----\n",
+    "BA": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA4asV6WCJ5lB057Pf5d5ISz3iqnEqQV8AHcWUyXmnx/A=\n-----END PUBLIC KEY-----\n",
+    "TECH_LEAD": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAQsCyvlqeaU47673vkYp0k/4tnU/Pt/xkIdQSP6nAhnI=\n-----END PUBLIC KEY-----\n",
+    "QA_LEAD": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA4NATESUEQzqB0vvw3CMdH0xT6FIYQL+OgnGIEdzochs=\n-----END PUBLIC KEY-----\n",
+    "RELEASE_PRO": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA2voyXwrCL6ayZWEYYDoN8aBn6MSZNQv9OL5kyCaDwSM=\n-----END PUBLIC KEY-----\n",
+    "GATEKEEPER": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAKuxWy2C6iIt3pnkK0YWNK6iFP4vSL+rhy0yDQm2gxyw=\n-----END PUBLIC KEY-----\n"
+  }
+}
