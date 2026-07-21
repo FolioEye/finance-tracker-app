@@ -79,8 +79,24 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - name: Install dependencies
-        run: pip install -r apps/api/requirements.txt -r requirements-test.txt
+      - name: Verify requirements.lock.txt is current (F-12)
+        # Regenerates a throwaway copy the same way generate-lock-file does and
+        # diffs it against the committed lock file. Catches anyone editing
+        # apps/api/requirements.txt or requirements-test.txt without also
+        # regenerating+committing the lock file -- if this fails, run the
+        # "Regenerate requirements.lock.txt (F-12, manual)" job and commit
+        # the result.
+        run: |
+          pip install pip-tools
+          pip-compile --generate-hashes --allow-unsafe \
+            --output-file=requirements.lock.txt.check \
+            apps/api/requirements.txt requirements-test.txt
+          diff requirements.lock.txt requirements.lock.txt.check
+      - name: Install dependencies (hash-pinned, F-12)
+        # --require-hashes: pip refuses to install anything whose downloaded
+        # file doesn't match the hash recorded here, catching a compromised
+        # package/mirror even when the version number looks identical.
+        run: pip install --require-hashes -r requirements.lock.txt
       - name: Run pytest with coverage
         env:
           # Not actually used by the current suite -- tests/unit, tests/security,
