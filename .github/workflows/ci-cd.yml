@@ -103,7 +103,22 @@ jobs:
             --cov=apps.api \
             --cov-fail-under=80 \
             --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov \
+            --junitxml=test-results.xml \
             -v
+      - name: Upload test & coverage artifacts (F-10)
+        # if: always() -- a failing/red run's evidence matters more, not less;
+        # QA Lead's envelope should be able to cite this run whether it passed or not.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: |
+            test-results.xml
+            coverage.xml
+            htmlcov/
+          retention-days: 30
 
   # ─── STAGE 3: Build frontend (staging + main only) ───────────────
   build-frontend:
