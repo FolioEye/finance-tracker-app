@@ -5,7 +5,7 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Numeric, String, UniqueConstraint, func
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -141,3 +141,36 @@ class AlertModel(Base):
     )
     fired_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     dismissed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class SubscriptionModel(Base):
+    """FINTRACK-18. One row per (user_id, merchant) -- unlike AlertModel's
+    per-period rows, a subscription pattern isn't scoped to a billing
+    period, so there's a single evolving row per merchant rather than a
+    new row each time detection re-runs. See domain.models.subscription's
+    docstring for the full write-time-detection rationale (same ADR-014
+    pattern as alerts).
+    """
+
+    __tablename__ = "subscriptions"
+    __table_args__ = (
+        UniqueConstraint("user_id", "merchant", name="uq_subscriptions_user_merchant"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
+    merchant: Mapped[str] = mapped_column(String(255), nullable=False)
+    amount_estimate: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    interval_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    occurrences: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, server_default="DETECTED")
+    last_transaction_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("transactions.id"), nullable=False
+    )
+    first_detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

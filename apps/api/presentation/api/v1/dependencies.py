@@ -11,6 +11,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.api.application.commands.commit_import import CommitImportHandler
+from apps.api.application.commands.confirm_subscription import ConfirmSubscriptionHandler
 from apps.api.application.commands.create_budget import CreateBudgetHandler
 from apps.api.application.commands.create_categorisation_rule import (
     CreateCategorisationRuleHandler,
@@ -18,12 +19,17 @@ from apps.api.application.commands.create_categorisation_rule import (
 from apps.api.application.commands.create_transaction import CreateTransactionHandler
 from apps.api.application.commands.delete_budget import DeleteBudgetHandler
 from apps.api.application.commands.delete_transaction import DeleteTransactionHandler
+from apps.api.application.commands.detect_subscriptions_for_transaction import (
+    DetectSubscriptionsForTransactionHandler,
+)
 from apps.api.application.commands.dismiss_alert import DismissAlertHandler
+from apps.api.application.commands.dismiss_subscription import DismissSubscriptionHandler
 from apps.api.application.commands.evaluate_alerts_for_transaction import (
     EvaluateAlertsForTransactionHandler,
 )
 from apps.api.application.commands.login_user import LoginUserHandler
 from apps.api.application.commands.logout_user import LogoutUserHandler
+from apps.api.application.commands.mark_not_subscription import MarkNotSubscriptionHandler
 from apps.api.application.commands.register_user import RegisterUserHandler
 from apps.api.application.commands.stage_import import StageImportHandler
 from apps.api.application.commands.update_budget import UpdateBudgetHandler
@@ -31,6 +37,7 @@ from apps.api.application.commands.update_staged_rows import UpdateStagedRowsHan
 from apps.api.application.commands.update_transaction import UpdateTransactionHandler
 from apps.api.application.queries.get_budget_overview import GetBudgetOverviewHandler
 from apps.api.application.queries.list_alerts import ListAlertsHandler
+from apps.api.application.queries.list_subscriptions import ListSubscriptionsHandler
 from apps.api.application.queries.list_transactions import ListTransactionsHandler
 from apps.api.config import Settings, get_settings
 from apps.api.domain.repositories.alert_repository import AlertRepository
@@ -39,6 +46,7 @@ from apps.api.domain.repositories.categorisation_rule_repository import (
     CategorisationRuleRepository,
 )
 from apps.api.domain.repositories.import_staging_repository import ImportStagingRepository
+from apps.api.domain.repositories.subscription_repository import SubscriptionRepository
 from apps.api.infrastructure.cache.redis_client import redis_client
 from apps.api.infrastructure.database.session import get_session
 from apps.api.infrastructure.repositories.redis_import_staging_repository import (
@@ -52,6 +60,9 @@ from apps.api.infrastructure.repositories.sqlalchemy_budget_repository import (
 )
 from apps.api.infrastructure.repositories.sqlalchemy_categorisation_rule_repository import (
     SqlAlchemyCategorisationRuleRepository,
+)
+from apps.api.infrastructure.repositories.sqlalchemy_subscription_repository import (
+    SqlAlchemySubscriptionRepository,
 )
 from apps.api.infrastructure.repositories.sqlalchemy_transaction_repository import (
     SqlAlchemyTransactionRepository,
@@ -265,3 +276,44 @@ def get_list_alerts_handler(
     alerts: AlertRepository = Depends(get_alert_repository),
 ) -> ListAlertsHandler:
     return ListAlertsHandler(alert_repository=alerts)
+
+
+def get_subscription_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> SubscriptionRepository:
+    return SqlAlchemySubscriptionRepository(session)
+
+
+def get_detect_subscriptions_for_transaction_handler(
+    session: AsyncSession = Depends(get_db_session),
+    subscriptions: SubscriptionRepository = Depends(get_subscription_repository),
+) -> DetectSubscriptionsForTransactionHandler:
+    transaction_repository = SqlAlchemyTransactionRepository(session)
+    return DetectSubscriptionsForTransactionHandler(
+        subscription_repository=subscriptions,
+        transaction_repository=transaction_repository,
+    )
+
+
+def get_confirm_subscription_handler(
+    subscriptions: SubscriptionRepository = Depends(get_subscription_repository),
+) -> ConfirmSubscriptionHandler:
+    return ConfirmSubscriptionHandler(subscription_repository=subscriptions)
+
+
+def get_dismiss_subscription_handler(
+    subscriptions: SubscriptionRepository = Depends(get_subscription_repository),
+) -> DismissSubscriptionHandler:
+    return DismissSubscriptionHandler(subscription_repository=subscriptions)
+
+
+def get_mark_not_subscription_handler(
+    subscriptions: SubscriptionRepository = Depends(get_subscription_repository),
+) -> MarkNotSubscriptionHandler:
+    return MarkNotSubscriptionHandler(subscription_repository=subscriptions)
+
+
+def get_list_subscriptions_handler(
+    subscriptions: SubscriptionRepository = Depends(get_subscription_repository),
+) -> ListSubscriptionsHandler:
+    return ListSubscriptionsHandler(subscription_repository=subscriptions)

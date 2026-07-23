@@ -196,3 +196,27 @@ class SqlAlchemyTransactionRepository(TransactionRepository):
         )
         result = await self._session.execute(stmt)
         return [amount for (amount,) in result.all()]
+
+    async def list_all_for_user_by_merchant(
+        self, user_id: uuid.UUID, merchant: str
+    ) -> list[Transaction]:
+        # Case-insensitive comparison via func.upper() pushed to the DB
+        # (not Python-side filtering after a full fetch) -- consistent
+        # with this repository's other aggregate-at-the-query-layer
+        # methods. `merchant` is expected pre-normalised (upper-cased,
+        # stripped) by the caller, but comparing via func.upper(note) here
+        # too means this method is correct even if that convention is
+        # ever violated by a future caller.
+        stmt = (
+            select(TransactionModel)
+            .where(
+                and_(
+                    TransactionModel.user_id == user_id,
+                    TransactionModel.note.isnot(None),
+                    func.upper(func.trim(TransactionModel.note)) == merchant,
+                )
+            )
+            .order_by(TransactionModel.transaction_date.asc())
+        )
+        result = await self._session.execute(stmt)
+        return [_to_domain(row) for row in result.scalars().all()]

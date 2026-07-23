@@ -18,6 +18,10 @@ from apps.api.application.commands.delete_transaction import (
     DeleteTransactionCommand,
     DeleteTransactionHandler,
 )
+from apps.api.application.commands.detect_subscriptions_for_transaction import (
+    DetectSubscriptionsForTransactionCommand,
+    DetectSubscriptionsForTransactionHandler,
+)
 from apps.api.application.commands.evaluate_alerts_for_transaction import (
     EvaluateAlertsForTransactionCommand,
     EvaluateAlertsForTransactionHandler,
@@ -46,6 +50,7 @@ from apps.api.infrastructure.security.current_user import get_current_user_id
 from apps.api.presentation.api.v1.dependencies import (
     get_create_transaction_handler,
     get_delete_transaction_handler,
+    get_detect_subscriptions_for_transaction_handler,
     get_evaluate_alerts_for_transaction_handler,
     get_list_transactions_handler,
     get_update_transaction_handler,
@@ -73,6 +78,9 @@ async def create_transaction(
     handler: CreateTransactionHandler = Depends(get_create_transaction_handler),
     alert_handler: EvaluateAlertsForTransactionHandler = Depends(
         get_evaluate_alerts_for_transaction_handler
+    ),
+    subscription_handler: DetectSubscriptionsForTransactionHandler = Depends(
+        get_detect_subscriptions_for_transaction_handler
     ),
 ) -> TransactionResponse:
     command = CreateTransactionCommand(
@@ -118,6 +126,25 @@ async def create_transaction(
     except Exception:  # noqa: BLE001 -- deliberate catch-all, see comment above
         logger.error(
             "alert_evaluation_failed",
+            extra={"context": {"user_id": str(user_id), "transaction_id": str(transaction.id)}},
+        )
+
+    # FINTRACK-18: best-effort subscription detection, same
+    # composed-at-the-presentation-layer/never-fail-the-request rationale
+    # as the alert evaluation immediately above.
+    try:
+        await subscription_handler.handle(
+            DetectSubscriptionsForTransactionCommand(
+                user_id=user_id,
+                transaction_id=transaction.id,
+                note=transaction.note,
+                amount=transaction.amount.value,
+                transaction_date=transaction.transaction_date,
+            )
+        )
+    except Exception:  # noqa: BLE001 -- deliberate catch-all, see comment above
+        logger.error(
+            "subscription_detection_failed",
             extra={"context": {"user_id": str(user_id), "transaction_id": str(transaction.id)}},
         )
 
