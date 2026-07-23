@@ -88,3 +88,24 @@ class TransactionRepository(ABC):
         itself). Used to compute a personal rolling-average baseline; see
         docs/adr/ADR-014-threshold-alerts-write-time-detection.md."""
         ...
+
+    @abstractmethod
+    async def list_all_for_user_by_merchant(
+        self, user_id: uuid.UUID, merchant: str
+    ) -> list[Transaction]:
+        """FINTRACK-18: every one of this user's transactions whose `note`
+        field matches `merchant` case-insensitively (merchant is expected
+        to already be normalised upper-case via
+        domain.models.subscription.normalise_merchant -- this method does
+        the comparison case-insensitively regardless, so callers don't
+        have to trust that convention is followed everywhere). Unlike
+        get_recent_amounts_for_category's fixed rolling window, this
+        returns every matching row -- subscription detection needs the
+        full history for a merchant to compute a reliable interval, not
+        just a recent sample, and per-merchant transaction counts are
+        small enough (recurring charges, by definition) that this is
+        cheap. No limit/pagination -- see
+        docs/adr/ADR-014-threshold-alerts-write-time-detection.md's
+        precedent for why write-time detection favours a full, simple
+        re-scan over incremental bookkeeping at this data scale."""
+        ...
