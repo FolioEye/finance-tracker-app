@@ -73,12 +73,18 @@ def test_sql_injection_shaped_subscription_id_path_param_rejected_as_malformed_u
     assert resp.json()["detail"][0]["type"] == "uuid_parsing"
 
 
-def test_sql_injection_shaped_merchant_does_not_disturb_other_users_subscriptions(client) -> None:
-    """If a SQLi-shaped merchant string ever reached an unparameterised
-    query anywhere in the detection path, a DROP TABLE would take out
-    every subscription, not just one user's. A real, unrelated user's
-    subscription surviving right after -- and still listable -- is the
-    strongest evidence the table is intact."""
+def test_sql_injection_shaped_note_is_rejected_at_transaction_creation_not_subscription_detection(client) -> None:
+    """CORRECTED (2026-07-23): the first version of this test wrongly
+    asserted the SQLi-shaped transaction succeeds (201). It doesn't --
+    Transaction.new() runs _reject_if_suspicious() on `note` as well as
+    `category` (see apps/api/domain/models/transaction.py), so this is
+    rejected with 400 before subscription detection ever sees it, exactly
+    like test_alerts_security.py's equivalent test for Alert.category.
+    That earlier wrong assertion is almost certainly what was failing in
+    CI. The real security property here is: the SQLi-shaped input never
+    reaches the merchant-clustering path at all, and an unrelated victim's
+    own subscription data is completely unaffected by the attacker's
+    rejected attempt."""
     victim_token = _register_and_login(client, "sub-sqli-bystander-victim@example.com")
     for d in ("2026-01-01", "2026-01-31", "2026-03-02"):
         _create_transaction(client, victim_token, "15.99", d, "Netflix.com")
@@ -87,10 +93,14 @@ def test_sql_injection_shaped_merchant_does_not_disturb_other_users_subscription
     attacker_token = _register_and_login(client, "sub-sqli-bystander-attacker@example.com")
     for d in ("2026-01-01", "2026-01-31", "2026-03-02"):
         resp = _create_transaction(client, attacker_token, "9.99", d, SQLI_PAYLOAD)
-        assert resp.status_code == 201  # note is free text, not rejected at Transaction layer
+        assert resp.status_code == 400  # rejected at Transaction.new(), never reaches detection
+        assert resp.json()["detail"] == "Invalid characters detected"
+
+    attacker_items = _list_subscriptions(client, attacker_token).json()["items"]
+    assert attacker_items == []  # nothing was ever created for the attacker
 
     victim_items = _list_subscriptions(client, victim_token).json()["items"]
-    assert len(victim_items) == 1  # victim's table/rows untouched
+    assert len(victim_items) == 1  # victim's data completely untouched
     assert victim_items[0]["merchant"] == "NETFLIX.COM"
 
 
