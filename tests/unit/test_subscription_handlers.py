@@ -33,6 +33,7 @@ from apps.api.application.queries.list_subscriptions import (
     ListSubscriptionsQuery,
 )
 from apps.api.domain.models.subscription import Subscription, SubscriptionStatus
+from apps.api.domain.models.transaction import Money
 from apps.api.domain.repositories.subscription_repository import SubscriptionNotFoundError
 
 
@@ -71,7 +72,16 @@ class FakeSubscriptionRepository:
 
 class _FakeTxn:
     def __init__(self, amount: str, txn_date: date, txn_id=None):
-        self.amount = Decimal(amount)
+        # CORRECTED (2026-07-23): the real Transaction.amount is a Money
+        # value object (transaction.py), not a raw Decimal -- the
+        # production handler correctly does `t.amount.value`. This fake
+        # previously stored a bare Decimal, which passed in isolation but
+        # broke every test the moment the handler's real `.value` access
+        # ran against it (AttributeError: 'decimal.Decimal' object has no
+        # attribute 'value') -- caught by CI, not by this stage's own
+        # unexecuted-in-isolation run. Wrapping in Money matches the real
+        # domain shape the SQLAlchemy repository's _to_domain() produces.
+        self.amount = Money(value=Decimal(amount))
         self.transaction_date = txn_date
         self.id = txn_id or uuid.uuid4()
 

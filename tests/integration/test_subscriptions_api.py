@@ -268,16 +268,26 @@ def test_subscriptions_list_is_correct_across_many_independent_merchants(client)
 
 
 # ---------------------------------------------------------------------------
-# Gap-fill: concurrent-modification-shaped case -- two transactions for
-# the same merchant landing back-to-back must still converge on a single
-# row (unique constraint on (user_id, merchant) backs this at the DB
-# layer; this test exercises the sequential path the constraint guards).
+# Gap-fill: concurrent-modification-shaped case -- several transactions
+# for the same merchant landing back-to-back must still converge on a
+# single row (unique constraint on (user_id, merchant) backs this at the
+# DB layer; this test exercises the sequential path the constraint
+# guards).
+#
+# CORRECTED (2026-07-23): this test originally used dates 14-16 days
+# apart (avg gap ~15 days). detect_pattern() requires avg_gap within
+# INTERVAL_TARGET_DAYS (30) +/- INTERVAL_TOLERANCE_DAYS (7) -- a ~15-day
+# cadence is correctly rejected as "not monthly", so no subscription was
+# ever created and the original assertion (len == 1) failed against 0,
+# not because of a duplicate-row bug. Fixed to use ~30-day spacing so the
+# test actually exercises "5 writes converge on one row" rather than
+# "no pattern is ever detected in the first place".
 # ---------------------------------------------------------------------------
 
 
 def test_rapid_back_to_back_transactions_for_the_same_merchant_converge_on_one_row(client) -> None:
     token = _register_and_login(client, "sub-concurrent@example.com")
-    for d in ("2026-01-01", "2026-01-15", "2026-01-31", "2026-02-14", "2026-03-02"):
+    for d in ("2026-01-01", "2026-01-31", "2026-03-02", "2026-04-01", "2026-05-01"):
         _create_transaction(client, token, "15.99", d, "Netflix.com")
 
     items = _list_subscriptions(client, token).json()["items"]
