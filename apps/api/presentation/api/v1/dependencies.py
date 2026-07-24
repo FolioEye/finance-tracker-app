@@ -36,6 +36,7 @@ from apps.api.application.commands.update_budget import UpdateBudgetHandler
 from apps.api.application.commands.update_staged_rows import UpdateStagedRowsHandler
 from apps.api.application.commands.update_transaction import UpdateTransactionHandler
 from apps.api.application.queries.get_budget_overview import GetBudgetOverviewHandler
+from apps.api.application.queries.get_spending_insights import GetSpendingInsightsHandler
 from apps.api.application.queries.list_alerts import ListAlertsHandler
 from apps.api.application.queries.list_subscriptions import ListSubscriptionsHandler
 from apps.api.application.queries.list_transactions import ListTransactionsHandler
@@ -245,6 +246,13 @@ def get_get_budget_overview_handler(
     return GetBudgetOverviewHandler(
         budget_repository=budgets, transaction_repository=transaction_repository
     )
+
+
+def get_get_spending_insights_handler(
+    session: AsyncSession = Depends(get_db_session),
+) -> GetSpendingInsightsHandler:
+    transaction_repository = SqlAlchemyTransactionRepository(session)
+    return GetSpendingInsightsHandler(transaction_repository=transaction_repository)
 
 
 def get_alert_repository(
