@@ -14,7 +14,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import and_, delete, func, or_, select
+from sqlalchemy import and_, delete, extract, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.api.domain.models.transaction import Money, Transaction
@@ -178,6 +178,32 @@ class SqlAlchemyTransactionRepository(TransactionRepository):
         )
         result = await self._session.execute(stmt)
         return {category: total for category, total in result.all()}
+
+    async def sum_by_month_for_user_in_range(
+        self, user_id: uuid.UUID, start_date: date_type, end_date: date_type
+    ) -> dict[tuple[int, int], Decimal]:
+        # FINTRACK-19: same aggregate-at-the-query-layer principle as
+        # sum_by_category_for_user_in_range, bucketed by calendar month
+        # instead of category. `extract()` is SQLAlchemy's cross-dialect
+        # construct -- it compiles to EXTRACT(...) on PostgreSQL
+        # (production) and to strftime(...) on SQLite (this project's
+        # test backend), so this works identically against both without
+        # a dialect-specific date-formatting function.
+        year = extract("year", TransactionModel.transaction_date)
+        month = extract("month", TransactionModel.transaction_date)
+        stmt = (
+            select(year.label("year"), month.label("month"), func.sum(TransactionModel.amount))
+            .where(
+                and_(
+                    TransactionModel.user_id == user_id,
+                    TransactionModel.transaction_date >= start_date,
+                    TransactionModel.transaction_date < end_date,
+                )
+            )
+            .group_by(year, month)
+        )
+        result = await self._session.execute(stmt)
+        return {(int(y), int(m)): total for y, m, total in result.all()}
 
     async def get_recent_amounts_for_category(
         self, user_id: uuid.UUID, category: str, exclude_transaction_id: uuid.UUID, limit: int
