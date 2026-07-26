@@ -1,0 +1,33 @@
+{
+  "trace_id": "ff568d646dd3a5a50033a31b9fd31f5b",
+  "span_id": "16048145ca739c8f",
+  "timestamp_utc": "2026-07-26T03:47:29Z",
+  "agent": "TECH_LEAD",
+  "agent_version": "1.5.0",
+  "story_id": "FINTRACK-21",
+  "schema_version": "2.0",
+  "summary": "Compute-on-read read-side feature, no new persisted domain entity -- same pattern as FINTRACK-19/20. GetWeeklyRecommendationHandler checks 3 trigger types (BUDGET_RISK: any budget >=80% of monthly limit; NEW_SUBSCRIPTION: any DETECTED subscription first seen in the trailing 7 days; SPENDING_SPIKE: a category's trailing-7-day spend >=1.5x its 4-week baseline average, only when a real baseline exists) in a fixed priority order, with a neutral fallback when none fire. Resolved BA's open question on priority ordering: BUDGET_RISK > NEW_SUBSCRIPTION > SPENDING_SPIKE. No new repository port methods -- reuses sum_by_category_for_user_in_range and list_for_user, avoiding a breaking Fake-repository change on top of an already 5-point story. GET /api/v1/recommendations/weekly, user_id from JWT only. Smoke-tested locally (fake repos) before handoff: budget-risk, neutral, new-subscription-only, spending-spike-only, multi-trigger priority resolution, cross-user scoping.",
+  "output_type": "TECH_LEAD",
+  "payload": {
+    "payload_type": "TECH_LEAD",
+    "pr_url": "https://github.com/FolioEye/finance-tracker-app/pull/26",
+    "branch_name": "feature/FINTRACK-21-weekly-recommendation-engine",
+    "files_changed": [
+      "apps/api/application/queries/get_weekly_recommendation.py",
+      "apps/api/application/dtos/recommendation_dtos.py",
+      "apps/api/presentation/api/v1/recommendations.py",
+      "apps/api/main.py",
+      "apps/api/presentation/api/v1/dependencies.py",
+      "tests/features/FINTRACK-21-weekly-recommendation-engine.feature"
+    ],
+    "architecture_decision": "Priority order for simultaneous triggers: BUDGET_RISK > NEW_SUBSCRIPTION > SPENDING_SPIKE (documented in get_weekly_recommendation.py's module docstring; resolves BA's open question)"
+  },
+  "status": "IN_DEV",
+  "next_agent": "QA_LEAD",
+  "human_gate_required": true,
+  "gate_type": "APPROVAL",
+  "idempotency_key": "6e3a416ab6f578eb08f0ecbfe20a533f96d7ec7f5a9e617a14dbaf80e6717544",
+  "signature": "b66ef1e1e02f933127c880b5227e89fb73115c4f1f83f3906be224a152d5323ebb5df419922260f1fc3b3c612e3df33593a80a70d5fc3721765f25dad6466601",
+  "retry_count": 0,
+  "max_retries": 3
+}
