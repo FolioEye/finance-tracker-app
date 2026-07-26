@@ -1,14 +1,6 @@
 fastapi==0.139.0
 uvicorn[standard]==0.32.0
 pydantic==2.13.4
-# Pinned explicitly (not just a transitive pull from pydantic) -- PyPI
-# published annotated-types 0.8.0 after requirements.lock.txt was last
-# generated, which made the F-12 lock-drift check (pip-compile vs. the
-# committed lock file) fail on every PR touching this branch, unrelated
-# to any actual code change. Pinning here keeps pip-compile's fresh
-# resolution matching the existing lock file. Revisit/bump both together
-# in a dedicated dependency-update pass rather than as a drive-by fix.
-annotated-types==0.7.0
 pydantic-settings==2.14.2
 sqlalchemy[asyncio]==2.0.36
 asyncpg==0.30.0
