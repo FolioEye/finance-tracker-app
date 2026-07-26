@@ -1,0 +1,27 @@
+{
+  "trace_id": "8bb73ccb9669800f7fdeedf1e26ae254",
+  "span_id": "1e5f8eee7852e26c",
+  "timestamp_utc": "2026-07-26T03:06:17Z",
+  "agent": "RELEASE_PRO",
+  "agent_version": "1.4.0",
+  "story_id": "FINTRACK-19",
+  "schema_version": "2.0",
+  "summary": "Production deploy verified via Railway API. Feature commit 4cd25e1 (PR #22) deployed to the finance-tracker-app service on Railway, deployment id b7333936-73cb-450a-86ca-4c68474998f4, SUCCESS, ~4s after merge (2026-07-26T02:21:40Z). Superseded moments later by a second SUCCESS deploy of the docs-only audit-trail commit ee19faf (PR #23) -- no runtime code changed there. No DB migration in this story (read-side aggregation only, existing tables). Rollback tag: f64d93f (main HEAD immediately before FINTRACK-19). No GitHub Release/tag cut for this story.",
+  "output_type": "RELEASE_PRO",
+  "payload": {
+    "payload_type": "RELEASE_PRO",
+    "environment": "production",
+    "image_tag": "4cd25e1be6f0e424fa798fb97408c68573815108",
+    "deployed_at": "2026-07-26T02:21:40Z",
+    "rollback_tag": "f64d93f51c08af7f13699549cef4fa9a1e88c317",
+    "github_release_url": null
+  },
+  "status": "Done",
+  "next_agent": null,
+  "human_gate_required": true,
+  "gate_type": "APPROVAL",
+  "idempotency_key": "737e3f4691d9d403af0237ec1e870aa373ae1c21570df17a0bb35eadf1001c5b",
+  "signature": "5e48805d707521a3f17e4fdaff87aa735abdcb8c11664691c24b9f7c7b0c5c3eec6b8d5ee1a700c915d2fb8bc39bb8f3d5b534fedf577e361f669f92c8e48307",
+  "retry_count": 0,
+  "max_retries": 3
+}
