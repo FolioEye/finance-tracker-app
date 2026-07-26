@@ -1,0 +1,28 @@
+{
+  "trace_id": "8bb73ccb9669800f7fdeedf1e26ae254",
+  "span_id": "c9d8518d82072ab3",
+  "timestamp_utc": "2026-07-26T02:29:21Z",
+  "agent": "QA_LEAD",
+  "agent_version": "1.0",
+  "story_id": "FINTRACK-19",
+  "schema_version": "2.0",
+  "summary": "Full QA suite (unit/integration/security) mapped to all 5 BA Gherkin scenarios plus gap-fills, run against merged main (post PR #22). Mandatory regression check: full existing suite run alongside this story's new tests -- no prior-story tests broken. 501 passed, 0 failed, 92.61% coverage (80% gate met). Security sweep: auth bypass + IDOR covered; no SQLi/XSS input surface exists on this read-only endpoint (documented explicitly rather than skipped).",
+  "output_type": "QA_LEAD",
+  "payload": {
+    "payload_type": "QA_LEAD",
+    "passed": 501,
+    "failed": 0,
+    "skipped": 0,
+    "coverage_pct": 92.61,
+    "allure_report_url": null,
+    "security_tests_passed": true
+  },
+  "status": "READY_RELEASE",
+  "next_agent": "RELEASE_PRO",
+  "human_gate_required": true,
+  "gate_type": "APPROVAL",
+  "idempotency_key": "3b1ed00cb0050ba739e5f9fb050c08be7d8a0ec4b134fafaf8ada305a6fec180",
+  "signature": "2b20a096232807743747a1df71af7ae5b0639366ac82e8664bfcee9521fae4ad035e3f31ed188d89ebf7270358f2b5567d27447cf7bb7f4ef38bd4972a87060b",
+  "retry_count": 0,
+  "max_retries": 3
+}
