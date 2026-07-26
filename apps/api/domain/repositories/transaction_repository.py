@@ -78,6 +78,24 @@ class TransactionRepository(ABC):
         ...
 
     @abstractmethod
+    async def sum_by_month_for_user_in_range(
+        self, user_id: uuid.UUID, start_date: date_type, end_date: date_type
+    ) -> dict[tuple[int, int], Decimal]:
+        """FINTRACK-19: (year, month) -> total spend across ALL categories,
+        for transactions with transaction_date in [start_date, end_date)
+        (end exclusive). Computed via SQL SUM/GROUP BY on the DB-portable
+        `extract(year/month, ...)` construct -- works against both
+        PostgreSQL (production) and SQLite (this project's test backend)
+        without a dialect-specific date-formatting function.
+
+        Only returns (year, month) keys with at least one transaction --
+        a month with zero spend is absent from the dict, same
+        absent-means-zero convention as sum_by_category_for_user_in_range.
+        Callers wanting a gap-free trend series (e.g. GetSpendingInsightsHandler)
+        are responsible for filling in zero-spend months themselves."""
+        ...
+
+    @abstractmethod
     async def get_recent_amounts_for_category(
         self, user_id: uuid.UUID, category: str, exclude_transaction_id: uuid.UUID, limit: int
     ) -> list[Decimal]:
