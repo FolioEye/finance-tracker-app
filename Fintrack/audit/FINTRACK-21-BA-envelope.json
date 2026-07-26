@@ -1,0 +1,30 @@
+{
+  "trace_id": "ff568d646dd3a5a50033a31b9fd31f5b",
+  "span_id": "df87f691eaae19b0",
+  "timestamp_utc": "2026-07-26T03:23:00Z",
+  "agent": "BA",
+  "agent_version": "1.0",
+  "story_id": "FINTRACK-21",
+  "schema_version": "2.0",
+  "summary": "PM stage not re-run: this feature is already scoped P0 and GO'd under the FINTRACK-001 project-level business case (trace_id d58dcaced31a47a99e251654244d1dc9) as 'Weekly what-should-I-do-next recommendation + threshold-based alerts'. Reviewed the pre-existing 4-scenario Gherkin draft against Jira's ACs. AC2 names three distinct trigger types (budget overrun risk, new subscriptions, spending spikes) but only budget-overrun had standalone scenario coverage -- the other two only appeared bundled together in the multi-trigger scenario, never individually. Added 2 scenarios (subscription-only trigger, spending-spike-only trigger) to close that gap. 6 scenarios total in tests/features/FINTRACK-21-weekly-recommendation-engine.feature.",
+  "output_type": "BA",
+  "payload": {
+    "payload_type": "BA",
+    "feature_file_path": "tests/features/FINTRACK-21-weekly-recommendation-engine.feature",
+    "story_ids": ["FINTRACK-21"],
+    "scenario_count": 6,
+    "story_points_total": 5
+  },
+  "status": "IN_ANALYSIS",
+  "next_agent": "TECH_LEAD",
+  "human_gate_required": true,
+  "gate_type": "APPROVAL",
+  "idempotency_key": "fa529782793618c8b17ed98d7459f4785ef62e5c7063330cf79428f3d2400373",
+  "signature": "168a05380ac08ffcfdb1f568529b6411208f148676bddc904937c679a8ad412647578e709d73835defc1f170d63389fccb13aa6f31f871825f6d3b4a14c53806",
+  "retry_count": 0,
+  "max_retries": 3,
+  "open_questions": [
+    "Exact priority ordering across all three trigger types (budget overrun vs. new subscription vs. spending spike) when more than one qualifies in the same week -- the multi-trigger scenario assumes budget-overrun wins but AC2 doesn't state a ranking. Flagging for Tech Lead to pick a rule, not prescribing one here.",
+    "5 story points for a rules engine with 3 trigger types + priority resolution + neutral fallback + user-scoping may exceed the ~3-day-per-story guideline -- flagging as a size concern rather than unilaterally splitting an already-created Jira story."
+  ]
+}
