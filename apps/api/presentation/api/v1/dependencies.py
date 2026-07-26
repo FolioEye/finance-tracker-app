@@ -37,6 +37,9 @@ from apps.api.application.commands.update_staged_rows import UpdateStagedRowsHan
 from apps.api.application.commands.update_transaction import UpdateTransactionHandler
 from apps.api.application.queries.get_budget_overview import GetBudgetOverviewHandler
 from apps.api.application.queries.get_spending_insights import GetSpendingInsightsHandler
+from apps.api.application.queries.get_weekly_recommendation import (
+    GetWeeklyRecommendationHandler,
+)
 from apps.api.application.queries.list_alerts import ListAlertsHandler
 from apps.api.application.queries.list_subscriptions import ListSubscriptionsHandler
 from apps.api.application.queries.list_transactions import ListTransactionsHandler
@@ -290,6 +293,19 @@ def get_subscription_repository(
     session: AsyncSession = Depends(get_db_session),
 ) -> SubscriptionRepository:
     return SqlAlchemySubscriptionRepository(session)
+
+
+def get_get_weekly_recommendation_handler(
+    session: AsyncSession = Depends(get_db_session),
+    budgets: BudgetRepository = Depends(get_budget_repository),
+    subscriptions: SubscriptionRepository = Depends(get_subscription_repository),
+) -> GetWeeklyRecommendationHandler:
+    transaction_repository = SqlAlchemyTransactionRepository(session)
+    return GetWeeklyRecommendationHandler(
+        budget_repository=budgets,
+        subscription_repository=subscriptions,
+        transaction_repository=transaction_repository,
+    )
 
 
 def get_detect_subscriptions_for_transaction_handler(
