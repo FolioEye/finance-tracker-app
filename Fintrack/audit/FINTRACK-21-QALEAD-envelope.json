@@ -1,0 +1,28 @@
+{
+  "trace_id": "ff568d646dd3a5a50033a31b9fd31f5b",
+  "span_id": "063e87262340e3ac",
+  "timestamp_utc": "2026-07-26T14:28:35Z",
+  "agent": "QA_LEAD",
+  "agent_version": "1.5.0",
+  "story_id": "FINTRACK-21",
+  "schema_version": "2.0",
+  "summary": "28 tests written and run against FINTRACK-21's merged code (PR #26): 15 unit (fake repos, all 6 BA Gherkin scenarios plus 9 gap-fill cases -- rolling-window boundary, CONFIRMED-vs-DETECTED subscription status, no-baseline-history guard, sub-threshold spike, second priority tier NEW_SUBSCRIPTION>SPENDING_SPIKE, multiple-budgets-at-risk tie-break, zero-limit defensive case, 1000+ row large-dataset case), 5 integration (real TestClient+SQLite, budget/transaction state via the real API, subscription state via the real 3-transaction detection path, not a shortcut), 8 security (auth bypass x5, IDOR x2 -- no SQLi/XSS surface exists since this is a read-only endpoint with zero caller-supplied fields, documented rather than skipped, same precedent as test_insights_security.py). All 28 passing both locally and in real CI (PR #28, Test Suite green, coverage gate >=80% satisfied). Module-specific coverage measured directly: 98% (124 stmts, 3 missed -- 1 defensive branch in the handler, 2 lines of a multi-line logger.info() call in the route that coverage.py attributes oddly across physical lines despite executing on every request, confirmed by all 28 tests passing through that exact code path). Regression: full existing suite (280 unit, 121 security, 116 integration) re-run locally alongside these -- all passing, confirming Tech Lead's dependencies.py fix (shared DI wiring file, touched because of the earlier missing-factory bug) broke nothing else.",
+  "output_type": "QA_LEAD",
+  "payload": {
+    "payload_type": "QA_LEAD",
+    "passed": 28,
+    "failed": 0,
+    "skipped": 0,
+    "coverage_pct": 98.0,
+    "ci_run_url": "https://github.com/FolioEye/finance-tracker-app/actions/runs/30205813964",
+    "security_tests_passed": true
+  },
+  "status": "IN_TEST",
+  "next_agent": "RELEASE_PRO",
+  "human_gate_required": true,
+  "gate_type": "APPROVAL",
+  "idempotency_key": "e5d99d7e4cd195399df4ed6f1b08e906e0df3e7aa97491d715bab0064f5558a0",
+  "signature": "8daa6ab7ef07e484dd9d3432cdd6973ee4b5bced1e02db018d34f51718e0c6b51942db27f17a67ceeaf170b22c9be7311885dea98325393b9fc4120675602401",
+  "retry_count": 0,
+  "max_retries": 3
+}
