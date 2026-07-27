@@ -4,6 +4,7 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Optional
 
 from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -174,3 +175,27 @@ class SubscriptionModel(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+
+class FollowThroughRecordModel(Base):
+    """FINTRACK-23. One row per (user_id, period_start) -- period_start is
+    the calendar date the user was first shown a recommendation that day
+    (see domain.models.follow_through_record's docstring for the full
+    architecture rationale, and why this is deliberately independent of
+    FINTRACK-21's own compute-on-read handler).
+    """
+
+    __tablename__ = "follow_through_records"
+    __table_args__ = (
+        UniqueConstraint("user_id", "period_start", name="uq_follow_through_user_period"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
+    period_start: Mapped[date] = mapped_column(Date, nullable=False)
+    recommendation_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, server_default="PENDING")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    actioned_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

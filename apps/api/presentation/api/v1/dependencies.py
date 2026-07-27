@@ -23,6 +23,9 @@ from apps.api.application.commands.detect_subscriptions_for_transaction import (
     DetectSubscriptionsForTransactionHandler,
 )
 from apps.api.application.commands.dismiss_alert import DismissAlertHandler
+from apps.api.application.commands.ensure_follow_through_record import (
+    EnsureFollowThroughRecordHandler,
+)
 from apps.api.application.commands.dismiss_subscription import DismissSubscriptionHandler
 from apps.api.application.commands.evaluate_alerts_for_transaction import (
     EvaluateAlertsForTransactionHandler,
@@ -30,21 +33,29 @@ from apps.api.application.commands.evaluate_alerts_for_transaction import (
 from apps.api.application.commands.login_user import LoginUserHandler
 from apps.api.application.commands.logout_user import LogoutUserHandler
 from apps.api.application.commands.mark_not_subscription import MarkNotSubscriptionHandler
+from apps.api.application.commands.record_recommendation_action import (
+    RecordRecommendationActionHandler,
+)
 from apps.api.application.commands.register_user import RegisterUserHandler
 from apps.api.application.commands.stage_import import StageImportHandler
 from apps.api.application.commands.update_budget import UpdateBudgetHandler
 from apps.api.application.commands.update_staged_rows import UpdateStagedRowsHandler
 from apps.api.application.commands.update_transaction import UpdateTransactionHandler
 from apps.api.application.queries.get_budget_overview import GetBudgetOverviewHandler
+from apps.api.application.queries.get_follow_through_rate import GetFollowThroughRateHandler
 from apps.api.application.queries.get_spending_insights import GetSpendingInsightsHandler
 from apps.api.application.queries.get_weekly_recommendation import (
     GetWeeklyRecommendationHandler,
 )
 from apps.api.application.queries.list_alerts import ListAlertsHandler
+from apps.api.application.queries.list_follow_through_history import (
+    ListFollowThroughHistoryHandler,
+)
 from apps.api.application.queries.list_subscriptions import ListSubscriptionsHandler
 from apps.api.application.queries.list_transactions import ListTransactionsHandler
 from apps.api.config import Settings, get_settings
 from apps.api.domain.repositories.alert_repository import AlertRepository
+from apps.api.domain.repositories.follow_through_repository import FollowThroughRepository
 from apps.api.domain.repositories.budget_repository import BudgetRepository
 from apps.api.domain.repositories.categorisation_rule_repository import (
     CategorisationRuleRepository,
@@ -58,6 +69,9 @@ from apps.api.infrastructure.repositories.redis_import_staging_repository import
 )
 from apps.api.infrastructure.repositories.sqlalchemy_alert_repository import (
     SqlAlchemyAlertRepository,
+)
+from apps.api.infrastructure.repositories.sqlalchemy_follow_through_repository import (
+    SqlAlchemyFollowThroughRepository,
 )
 from apps.api.infrastructure.repositories.sqlalchemy_budget_repository import (
     SqlAlchemyBudgetRepository,
@@ -341,3 +355,33 @@ def get_list_subscriptions_handler(
     subscriptions: SubscriptionRepository = Depends(get_subscription_repository),
 ) -> ListSubscriptionsHandler:
     return ListSubscriptionsHandler(subscription_repository=subscriptions)
+
+
+def get_follow_through_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> FollowThroughRepository:
+    return SqlAlchemyFollowThroughRepository(session)
+
+
+def get_ensure_follow_through_record_handler(
+    follow_through: FollowThroughRepository = Depends(get_follow_through_repository),
+) -> EnsureFollowThroughRecordHandler:
+    return EnsureFollowThroughRecordHandler(follow_through_repository=follow_through)
+
+
+def get_record_recommendation_action_handler(
+    follow_through: FollowThroughRepository = Depends(get_follow_through_repository),
+) -> RecordRecommendationActionHandler:
+    return RecordRecommendationActionHandler(follow_through_repository=follow_through)
+
+
+def get_list_follow_through_history_handler(
+    follow_through: FollowThroughRepository = Depends(get_follow_through_repository),
+) -> ListFollowThroughHistoryHandler:
+    return ListFollowThroughHistoryHandler(follow_through_repository=follow_through)
+
+
+def get_get_follow_through_rate_handler(
+    follow_through: FollowThroughRepository = Depends(get_follow_through_repository),
+) -> GetFollowThroughRateHandler:
+    return GetFollowThroughRateHandler(follow_through_repository=follow_through)
