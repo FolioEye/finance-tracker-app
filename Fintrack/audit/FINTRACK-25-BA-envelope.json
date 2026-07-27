@@ -1,0 +1,26 @@
+{
+  "trace_id": "917ae1e2d63933100cf35312c6677292",
+  "span_id": "a13d9d03f7b05242",
+  "timestamp_utc": "2026-07-27T05:13:18Z",
+  "agent": "BA",
+  "agent_version": "1.3.0",
+  "story_id": "FINTRACK-25",
+  "schema_version": "2.0",
+  "summary": "Scoped FINTRACK-25 (Alert Justification Feedback Loop) into 7 acceptance criteria and 6 Gherkin scenarios (happy path, ceiling-exceeded edge case, dismiss-vs-justify distinctness, wrong-alert-type negative, cross-user IDOR negative, SQL injection security). Resolved the open matching-rule question from the original scope note by reading FINTRACK-22's actual LARGE_TRANSACTION detection code: justification is a per-(user, category) amount ceiling equal to the justified transaction's amount, directly mirroring the existing category+amount-based detection mechanism rather than inventing merchant-pattern matching (which Transaction's schema doesn't support today).",
+  "output_type": "BA",
+  "payload": {
+    "payload_type": "BA",
+    "feature_file_path": "tests/features/FINTRACK-25-alert-justification-feedback-loop.feature",
+    "story_ids": ["FINTRACK-25"],
+    "scenario_count": 6,
+    "story_points_total": 3
+  },
+  "status": "IN_ANALYSIS",
+  "next_agent": "TECH_LEAD",
+  "human_gate_required": true,
+  "gate_type": "APPROVAL",
+  "idempotency_key": "cb5e9d1a74773b1cbd24aff3b5480dbd3e556842cbae178ed57fa7e3909accd9",
+  "signature": "ace45f5a7bf769b7f2b7759e32677f4a7a9b40b729cbc848fd081f5ad1874cb93875ba7ce1db1ec1fe8c59c35d710ce976ca751be75772207dff185f5b03830c",
+  "retry_count": 0,
+  "max_retries": 3
+}
