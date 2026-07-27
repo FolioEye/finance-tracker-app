@@ -1,4 +1,5 @@
-"""EvaluateAlertsForTransactionCommand + handler. Story: FINTRACK-22.
+"""EvaluateAlertsForTransactionCommand + handler. Story: FINTRACK-22
+(base), extended by FINTRACK-25 (Alert Justification Feedback Loop).
 
 Runs after a transaction is successfully created (called from the
 transactions API endpoint, not from CreateTransactionHandler itself --
@@ -8,10 +9,14 @@ already-shipped, already-fully-tested CreateTransactionHandler). Evaluates
 both alert types for the just-created transaction:
 
 1. LARGE_TRANSACTION (AC2): is this one transaction unusually large
-   relative to the user's own recent spending in this category?
+   relative to the user's own recent spending in this category? FINTRACK-25
+   adds one more gate here: even if the amount clears the rolling-average
+   multiplier, it does NOT fire if the user has already justified this
+   category up to (or above) this amount (FINTRACK-25 AC3/AC4).
 2. THRESHOLD_CROSSING (AC1/AC5): did this transaction push the category's
    month-to-date spend across a fixed threshold of its budget, for a
-   category that has a budget?
+   category that has a budget? Justification (FINTRACK-25) does not apply
+   to this alert type at all -- see FINTRACK-25 AC7.
 
 Both checks are best-effort from the caller's point of view: a bug here
 must never prevent the transaction itself from being created. See
@@ -27,6 +32,9 @@ from decimal import Decimal
 from typing import Callable, Optional
 
 from apps.api.domain.models.alert import Alert
+from apps.api.domain.repositories.alert_justification_repository import (
+    AlertJustificationRepository,
+)
 from apps.api.domain.repositories.alert_repository import AlertRepository
 from apps.api.domain.repositories.budget_repository import BudgetRepository
 from apps.api.domain.repositories.transaction_repository import TransactionRepository
@@ -77,11 +85,18 @@ class EvaluateAlertsForTransactionHandler:
         alert_repository: AlertRepository,
         budget_repository: BudgetRepository,
         transaction_repository: TransactionRepository,
+        alert_justification_repository: Optional[AlertJustificationRepository] = None,
         clock: Callable[[], date_type] = date_type.today,
     ) -> None:
         self._alerts = alert_repository
         self._budgets = budget_repository
         self._transactions = transaction_repository
+        # Optional with a None default so FINTRACK-22's original test
+        # suite (which constructs this handler directly, without knowing
+        # about FINTRACK-25) keeps working unchanged -- None simply means
+        # "no justification check", identical to pre-FINTRACK-25 behaviour.
+        # Production wiring (dependencies.py) always passes the real one.
+        self._justifications = alert_justification_repository
         # Same injected-clock rationale as ADR-013's GetBudgetOverviewHandler
         # -- lets tests pin "today" to exercise period-boundary behaviour
         # deterministically.
@@ -123,6 +138,20 @@ class EvaluateAlertsForTransactionHandler:
 
         if command.amount < baseline * LARGE_TRANSACTION_MULTIPLIER:
             return None
+
+        # FINTRACK-25 AC3/AC4: a transaction that would otherwise fire is
+        # still suppressed if it's at or below a ceiling the user has
+        # already justified for this category -- but a transaction that
+        # EXCEEDS every previously-justified amount still fires normally.
+        # Checked here, after the baseline gate (not before), so the
+        # common no-justification-exists path pays for exactly one extra
+        # query only when the alert would otherwise have fired at all.
+        if self._justifications is not None:
+            justification = await self._justifications.get_for_user_and_category(
+                command.user_id, command.category
+            )
+            if justification is not None and command.amount <= justification.ceiling_amount:
+                return None
 
         alert = Alert.new_large_transaction(
             user_id=command.user_id,
