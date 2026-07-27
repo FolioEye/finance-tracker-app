@@ -177,6 +177,30 @@ class SubscriptionModel(Base):
     )
 
 
+class AlertJustificationModel(Base):
+    """FINTRACK-25. One row per (user_id, category) -- the highest amount
+    the user has ever explicitly justified as "expected" for that
+    category. See domain.models.alert_justification's docstring for why
+    this is a category-level ceiling rather than a per-alert flag.
+    """
+
+    __tablename__ = "alert_justifications"
+    __table_args__ = (
+        UniqueConstraint("user_id", "category", name="uq_alert_justifications_user_category"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    ceiling_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
 class FollowThroughRecordModel(Base):
     """FINTRACK-23. One row per (user_id, period_start) -- period_start is
     the calendar date the user was first shown a recommendation that day

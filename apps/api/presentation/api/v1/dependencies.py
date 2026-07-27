@@ -23,6 +23,7 @@ from apps.api.application.commands.detect_subscriptions_for_transaction import (
     DetectSubscriptionsForTransactionHandler,
 )
 from apps.api.application.commands.dismiss_alert import DismissAlertHandler
+from apps.api.application.commands.justify_alert import JustifyAlertHandler
 from apps.api.application.commands.ensure_follow_through_record import (
     EnsureFollowThroughRecordHandler,
 )
@@ -54,6 +55,9 @@ from apps.api.application.queries.list_follow_through_history import (
 from apps.api.application.queries.list_subscriptions import ListSubscriptionsHandler
 from apps.api.application.queries.list_transactions import ListTransactionsHandler
 from apps.api.config import Settings, get_settings
+from apps.api.domain.repositories.alert_justification_repository import (
+    AlertJustificationRepository,
+)
 from apps.api.domain.repositories.alert_repository import AlertRepository
 from apps.api.domain.repositories.follow_through_repository import FollowThroughRepository
 from apps.api.domain.repositories.budget_repository import BudgetRepository
@@ -66,6 +70,9 @@ from apps.api.infrastructure.cache.redis_client import redis_client
 from apps.api.infrastructure.database.session import get_session
 from apps.api.infrastructure.repositories.redis_import_staging_repository import (
     RedisImportStagingRepository,
+)
+from apps.api.infrastructure.repositories.sqlalchemy_alert_justification_repository import (
+    SqlAlchemyAlertJustificationRepository,
 )
 from apps.api.infrastructure.repositories.sqlalchemy_alert_repository import (
     SqlAlchemyAlertRepository,
@@ -278,16 +285,24 @@ def get_alert_repository(
     return SqlAlchemyAlertRepository(session)
 
 
+def get_alert_justification_repository(
+    session: AsyncSession = Depends(get_db_session),
+) -> AlertJustificationRepository:
+    return SqlAlchemyAlertJustificationRepository(session)
+
+
 def get_evaluate_alerts_for_transaction_handler(
     session: AsyncSession = Depends(get_db_session),
     alerts: AlertRepository = Depends(get_alert_repository),
     budgets: BudgetRepository = Depends(get_budget_repository),
+    justifications: AlertJustificationRepository = Depends(get_alert_justification_repository),
 ) -> EvaluateAlertsForTransactionHandler:
     transaction_repository = SqlAlchemyTransactionRepository(session)
     return EvaluateAlertsForTransactionHandler(
         alert_repository=alerts,
         budget_repository=budgets,
         transaction_repository=transaction_repository,
+        alert_justification_repository=justifications,
     )
 
 
@@ -295,6 +310,19 @@ def get_dismiss_alert_handler(
     alerts: AlertRepository = Depends(get_alert_repository),
 ) -> DismissAlertHandler:
     return DismissAlertHandler(alert_repository=alerts)
+
+
+def get_justify_alert_handler(
+    session: AsyncSession = Depends(get_db_session),
+    alerts: AlertRepository = Depends(get_alert_repository),
+    justifications: AlertJustificationRepository = Depends(get_alert_justification_repository),
+) -> JustifyAlertHandler:
+    transaction_repository = SqlAlchemyTransactionRepository(session)
+    return JustifyAlertHandler(
+        alert_repository=alerts,
+        alert_justification_repository=justifications,
+        transaction_repository=transaction_repository,
+    )
 
 
 def get_list_alerts_handler(
