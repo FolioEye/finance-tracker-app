@@ -1,0 +1,27 @@
+{
+  "trace_id": "c5d652aeff4832d4a9b42e851a8a2cc1",
+  "span_id": "2d32f8a43837584c",
+  "timestamp_utc": "2026-07-27T03:20:47Z",
+  "agent": "RELEASE_PRO",
+  "agent_version": "1.4.0",
+  "story_id": "FINTRACK-23",
+  "schema_version": "2.0",
+  "summary": "Verified (not assumed) production deploy of FINTRACK-23 on Railway: deployment 7d513038 at commit 4042144 (post PR #35), status SUCCESS since 2026-07-27T03:07:55Z. Deploy logs confirm alembic migration 0008 ran clean and Uvicorn started without error. Independently smoke-tested against the live production URL: /health -> ok, /health/ready -> ready (DB connectivity confirmed), and /openapi.json confirms all 3 new follow-through routes plus follow_through_record_id on WeeklyRecommendationResponse are live. No CI/CD workflow changes needed -- migration 0008 is additive-only (new table, no existing-table changes), no new secrets, no frontend changes. Rollback: git revert HEAD && git push origin main, back to f7c83c3e (last known-good commit before this story's docs-only follow-up).",
+  "output_type": "RELEASE_PRO",
+  "payload": {
+    "payload_type": "RELEASE_PRO",
+    "environment": "production",
+    "image_tag": "40421444b7a0b740c2b611d9376dd99610e7db5a",
+    "deployed_at": "2026-07-27T03:07:55Z",
+    "rollback_tag": "f7c83c3ee53e8bab3344d75d87b94920212c7288",
+    "github_release_url": null
+  },
+  "status": "READY_RELEASE",
+  "next_agent": null,
+  "human_gate_required": true,
+  "gate_type": "APPROVAL",
+  "idempotency_key": "c65fb3053de28a87dababe6f90230bd4f72d474cdfeaa614ac62bb6338520ed6",
+  "retry_count": 0,
+  "max_retries": 3,
+  "signature": "d2c42e84748661426cfcd9f8f7efc128e6f1ae2ca4a7cb2c74839c45594a180d6b3841c1026ba5fe407e2feac55f66c4fc7c4d73a573aea1038c969e34c12406"
+}
