@@ -14,6 +14,7 @@ from apps.api.presentation.api.v1.auth import limiter
 from apps.api.presentation.api.v1.auth import router as auth_router
 from apps.api.presentation.api.v1.budgets import router as budgets_router
 from apps.api.presentation.api.v1.categorisation_rules import router as categorisation_rules_router
+from apps.api.presentation.api.v1.follow_through import router as follow_through_router
 from apps.api.presentation.api.v1.imports import router as imports_router
 from apps.api.presentation.api.v1.insights import router as insights_router
 from apps.api.presentation.api.v1.recommendations import router as recommendations_router
@@ -43,6 +44,7 @@ app.include_router(alerts_router)
 app.include_router(subscriptions_router)
 app.include_router(insights_router)
 app.include_router(recommendations_router)
+app.include_router(follow_through_router)
 
 
 @app.get("/health")
