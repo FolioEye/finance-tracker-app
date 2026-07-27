@@ -221,3 +221,113 @@ def test_idor_a_forged_alert_id_belonging_to_no_one_returns_404_not_500(client) 
     token = _register_and_login(client, "alert-idor-forged-uuid@example.com")
     resp = client.post(f"/api/v1/alerts/{uuid.uuid4()}/dismiss", headers=_auth(token))
     assert resp.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# FINTRACK-25: Alert Justification Feedback Loop -- mandatory security
+# sweep for the new /justify endpoint (SQL injection, auth bypass, IDOR).
+# ---------------------------------------------------------------------------
+
+
+def _large_transaction_alert_id(client, token: str, category: str, seed_amounts, trigger_amount: str) -> str:
+    for amount in seed_amounts:
+        _create_transaction(client, token, amount, category, "2026-07-10")
+    _create_transaction(client, token, trigger_amount, category, "2026-07-15")
+    items = _list_alerts(client, token).json()["items"]
+    large = [a for a in items if a["alert_type"] == "LARGE_TRANSACTION"]
+    assert len(large) == 1
+    return large[0]["id"]
+
+
+def test_sql_injection_shaped_alert_id_path_param_rejected_as_malformed_uuid_on_justify(client) -> None:
+    """Mirrors the dismiss endpoint's equivalent test: the alert_id path
+    parameter is UUID-typed, so FastAPI's own validation rejects the
+    SQLi-shaped payload with a clean 422 before it ever reaches the
+    handler or a query."""
+    token = _register_and_login(client, "justify-sqli-path@example.com")
+    resp = client.post(f"/api/v1/alerts/{SQLI_PAYLOAD}/justify", headers=_auth(token))
+    assert resp.status_code == 422
+    assert resp.headers["content-type"].startswith("application/json")
+    assert resp.json()["detail"][0]["type"] == "uuid_parsing"
+
+
+def test_sql_injection_attempt_on_justify_path_does_not_disturb_other_users_data(client) -> None:
+    """Same bystander-survives shape as the dismiss suite's equivalent
+    test: a real, unrelated user's justify flow must be unaffected by the
+    injection attempt against a different (forged) path."""
+    victim_token = _register_and_login(client, "justify-sqli-bystander-victim@example.com")
+    alert_id = _large_transaction_alert_id(
+        client, victim_token, "Travel", ("20.00", "18.00", "22.00"), "900.00"
+    )
+
+    attacker_token = _register_and_login(client, "justify-sqli-bystander-attacker@example.com")
+    client.post(f"/api/v1/alerts/{SQLI_PAYLOAD}/justify", headers=_auth(attacker_token))
+
+    justify_resp = client.post(f"/api/v1/alerts/{alert_id}/justify", headers=_auth(victim_token))
+    assert justify_resp.status_code == 204
+
+
+# ---------------------------------------------------------------------------
+# Auth bypass -- justify endpoint
+# ---------------------------------------------------------------------------
+
+
+def test_auth_bypass_missing_token_rejected_on_justify(client) -> None:
+    resp = client.post(f"/api/v1/alerts/{uuid.uuid4()}/justify")
+    assert resp.status_code == 401
+    assert resp.headers.get("www-authenticate") == "Bearer"
+
+
+def test_auth_bypass_malformed_authorization_header_rejected_on_justify(client) -> None:
+    resp = client.post(f"/api/v1/alerts/{uuid.uuid4()}/justify", headers={"Authorization": "NotBearer sometoken"})
+    assert resp.status_code == 401
+
+
+def test_auth_bypass_token_signed_with_wrong_secret_rejected_on_justify(client) -> None:
+    import jwt as pyjwt
+
+    forged = pyjwt.encode(
+        {"sub": str(uuid.uuid4()), "type": "access", "jti": str(uuid.uuid4())},
+        "attacker-controlled-wrong-secret",
+        algorithm="HS256",
+    )
+    resp = client.post(f"/api/v1/alerts/{uuid.uuid4()}/justify", headers={"Authorization": f"Bearer {forged}"})
+    assert resp.status_code == 401
+
+
+def test_auth_bypass_expired_token_rejected_on_justify(client) -> None:
+    import jwt as pyjwt
+
+    from apps.api.config import get_settings
+
+    settings = get_settings()
+    expired = pyjwt.encode(
+        {"sub": str(uuid.uuid4()), "type": "access", "jti": str(uuid.uuid4()), "exp": 1},
+        settings.jwt_secret_key,
+        algorithm=settings.jwt_algorithm,
+    )
+    resp = client.post(f"/api/v1/alerts/{uuid.uuid4()}/justify", headers={"Authorization": f"Bearer {expired}"})
+    assert resp.status_code == 401
+
+
+# ---------------------------------------------------------------------------
+# IDOR -- justify endpoint
+# ---------------------------------------------------------------------------
+
+
+def test_idor_cannot_justify_another_users_alert(client) -> None:
+    victim_token = _register_and_login(client, "justify-idor-sec-victim@example.com")
+    attacker_token = _register_and_login(client, "justify-idor-sec-attacker@example.com")
+
+    alert_id = _large_transaction_alert_id(
+        client, victim_token, "Private", ("20.00", "18.00", "22.00"), "900.00"
+    )
+
+    resp = client.post(f"/api/v1/alerts/{alert_id}/justify", headers=_auth(attacker_token))
+    assert resp.status_code == 404  # not 403 -- can't be used to confirm the id exists
+
+
+def test_idor_a_forged_alert_id_belonging_to_no_one_returns_404_not_500_on_justify(client) -> None:
+    token = _register_and_login(client, "justify-idor-forged-uuid@example.com")
+    resp = client.post(f"/api/v1/alerts/{uuid.uuid4()}/justify", headers=_auth(token))
+    assert resp.status_code == 404
