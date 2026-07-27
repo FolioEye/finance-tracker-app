@@ -9,6 +9,7 @@ from __future__ import annotations
 import uuid
 from datetime import date
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 
@@ -21,10 +22,17 @@ from apps.api.application.commands.evaluate_alerts_for_transaction import (
     EvaluateAlertsForTransactionCommand,
     EvaluateAlertsForTransactionHandler,
 )
+from apps.api.application.commands.justify_alert import (
+    InvalidAlertTypeForJustificationError,
+    JustifyAlertCommand,
+    JustifyAlertHandler,
+)
 from apps.api.application.queries.list_alerts import ListAlertsHandler, ListAlertsQuery
 from apps.api.domain.models.alert import Alert, AlertType
+from apps.api.domain.models.alert_justification import AlertJustification
 from apps.api.domain.models.budget import Budget
 from apps.api.domain.repositories.alert_repository import AlertNotFoundError
+from apps.api.domain.repositories.transaction_repository import TransactionNotFoundError
 
 
 class FakeAlertRepository:
@@ -124,6 +132,18 @@ class FakeTransactionRepository:
         ]
         return [row["amount"] for row in matches[:limit]]
 
+    async def get_by_id_for_user(self, transaction_id, user_id):
+        """Only what JustifyAlertHandler needs (FINTRACK-25): the
+        triggering transaction's amount, scoped to the requesting user --
+        same None-for-not-found-or-not-yours contract as the real
+        SqlAlchemyTransactionRepository. Returns a minimal stand-in
+        (amount.value only) rather than a full Transaction, since that's
+        the only attribute JustifyAlertHandler actually reads."""
+        for row in self.rows:
+            if row["id"] == transaction_id and row["user_id"] == user_id:
+                return SimpleNamespace(amount=SimpleNamespace(value=row["amount"]))
+        return None
+
 
 @pytest.fixture
 def alerts() -> FakeAlertRepository:
@@ -138,6 +158,29 @@ def budgets() -> FakeBudgetRepository:
 @pytest.fixture
 def transactions() -> FakeTransactionRepository:
     return FakeTransactionRepository()
+
+
+class FakeAlertJustificationRepository:
+    """In-memory stand-in for SqlAlchemyAlertJustificationRepository.
+    Keyed by (user_id, category), matching the real table's unique
+    constraint (FINTRACK-25)."""
+
+    def __init__(self) -> None:
+        self.by_key: dict[tuple, AlertJustification] = {}
+
+    async def get_for_user_and_category(self, user_id, category):
+        return self.by_key.get((user_id, category))
+
+    async def add(self, justification: AlertJustification) -> None:
+        self.by_key[(justification.user_id, justification.category)] = justification
+
+    async def update(self, justification: AlertJustification) -> None:
+        self.by_key[(justification.user_id, justification.category)] = justification
+
+
+@pytest.fixture
+def justifications() -> FakeAlertJustificationRepository:
+    return FakeAlertJustificationRepository()
 
 
 # ---------------------------------------------------------------------------
@@ -525,3 +568,329 @@ async def test_list_alerts_only_returns_the_requesting_users_alerts(alerts) -> N
     handler = ListAlertsHandler(alert_repository=alerts)
     result_a = await handler.handle(ListAlertsQuery(user_id=user_a))
     assert [a.id for a in result_a] == [alert_a.id]
+
+
+# ---------------------------------------------------------------------------
+# EvaluateAlertsForTransactionHandler -- justification ceiling suppression
+# (FINTRACK-25 AC3/AC4)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_large_transaction_suppressed_when_at_or_below_justified_ceiling(
+    alerts, budgets, transactions, justifications
+) -> None:
+    """AC3: a transaction that would otherwise clear the rolling-average
+    multiplier is suppressed if it's <= the category's justified ceiling."""
+    user_id = uuid.uuid4()
+    await justifications.add(
+        AlertJustification.new(user_id=user_id, category="Travel", ceiling_amount=Decimal("900.00"))
+    )
+    new_txn = transactions.seed(user_id, "Travel", "850.00", date(2026, 7, 15))
+
+    handler = EvaluateAlertsForTransactionHandler(
+        alert_repository=alerts, budget_repository=budgets, transaction_repository=transactions,
+        alert_justification_repository=justifications, clock=lambda: date(2026, 7, 19),
+    )
+    fired = await handler.handle(
+        EvaluateAlertsForTransactionCommand(
+            user_id=user_id, transaction_id=new_txn, category="Travel",
+            amount=Decimal("850.00"), transaction_date=date(2026, 7, 15),
+        )
+    )
+    assert [a for a in fired if a.alert_type == AlertType.LARGE_TRANSACTION] == []
+
+
+@pytest.mark.asyncio
+async def test_large_transaction_suppressed_when_exactly_equal_to_the_ceiling(
+    alerts, budgets, transactions, justifications
+) -> None:
+    """AC3's "<= the ceiling" boundary: an amount exactly equal to the
+    justified ceiling must also be suppressed, not just strictly-below."""
+    user_id = uuid.uuid4()
+    await justifications.add(
+        AlertJustification.new(user_id=user_id, category="Travel", ceiling_amount=Decimal("900.00"))
+    )
+    new_txn = transactions.seed(user_id, "Travel", "900.00", date(2026, 7, 15))
+
+    handler = EvaluateAlertsForTransactionHandler(
+        alert_repository=alerts, budget_repository=budgets, transaction_repository=transactions,
+        alert_justification_repository=justifications, clock=lambda: date(2026, 7, 19),
+    )
+    fired = await handler.handle(
+        EvaluateAlertsForTransactionCommand(
+            user_id=user_id, transaction_id=new_txn, category="Travel",
+            amount=Decimal("900.00"), transaction_date=date(2026, 7, 15),
+        )
+    )
+    assert [a for a in fired if a.alert_type == AlertType.LARGE_TRANSACTION] == []
+
+
+@pytest.mark.asyncio
+async def test_large_transaction_still_fires_when_above_the_justified_ceiling(
+    alerts, budgets, transactions, justifications
+) -> None:
+    """AC4: a transaction exceeding every previously-justified amount for
+    the category still fires normally -- the ceiling suppresses, it never
+    blocks alerts outright."""
+    user_id = uuid.uuid4()
+    await justifications.add(
+        AlertJustification.new(user_id=user_id, category="Travel", ceiling_amount=Decimal("900.00"))
+    )
+    new_txn = transactions.seed(user_id, "Travel", "1500.00", date(2026, 7, 15))
+
+    handler = EvaluateAlertsForTransactionHandler(
+        alert_repository=alerts, budget_repository=budgets, transaction_repository=transactions,
+        alert_justification_repository=justifications, clock=lambda: date(2026, 7, 19),
+    )
+    fired = await handler.handle(
+        EvaluateAlertsForTransactionCommand(
+            user_id=user_id, transaction_id=new_txn, category="Travel",
+            amount=Decimal("1500.00"), transaction_date=date(2026, 7, 15),
+        )
+    )
+    large_alerts = [a for a in fired if a.alert_type == AlertType.LARGE_TRANSACTION]
+    assert len(large_alerts) == 1
+    assert large_alerts[0].transaction_id == new_txn
+
+
+@pytest.mark.asyncio
+async def test_large_transaction_fires_normally_when_no_justification_exists_for_the_category(
+    alerts, budgets, transactions, justifications
+) -> None:
+    """A justifications repository IS wired up (unlike the None-default
+    backward-compat path already covered by FINTRACK-22's original suite),
+    but no row exists yet for this category -- behaviour must be
+    unaffected."""
+    user_id = uuid.uuid4()
+    for amount in ("20.00", "18.00", "22.00"):
+        transactions.seed(user_id, "Dining", amount, date(2026, 7, 10))
+    new_txn = transactions.seed(user_id, "Dining", "500.00", date(2026, 7, 15))
+
+    handler = EvaluateAlertsForTransactionHandler(
+        alert_repository=alerts, budget_repository=budgets, transaction_repository=transactions,
+        alert_justification_repository=justifications, clock=lambda: date(2026, 7, 19),
+    )
+    fired = await handler.handle(
+        EvaluateAlertsForTransactionCommand(
+            user_id=user_id, transaction_id=new_txn, category="Dining",
+            amount=Decimal("500.00"), transaction_date=date(2026, 7, 15),
+        )
+    )
+    assert len([a for a in fired if a.alert_type == AlertType.LARGE_TRANSACTION]) == 1
+
+
+@pytest.mark.asyncio
+async def test_justification_ceiling_is_scoped_per_category_not_global(
+    alerts, budgets, transactions, justifications
+) -> None:
+    """A ceiling justified for one category must not suppress an alert in
+    a different category for the same user."""
+    user_id = uuid.uuid4()
+    await justifications.add(
+        AlertJustification.new(user_id=user_id, category="Travel", ceiling_amount=Decimal("900.00"))
+    )
+    for amount in ("20.00", "18.00", "22.00"):
+        transactions.seed(user_id, "Dining", amount, date(2026, 7, 10))
+    new_txn = transactions.seed(user_id, "Dining", "500.00", date(2026, 7, 15))
+
+    handler = EvaluateAlertsForTransactionHandler(
+        alert_repository=alerts, budget_repository=budgets, transaction_repository=transactions,
+        alert_justification_repository=justifications, clock=lambda: date(2026, 7, 19),
+    )
+    fired = await handler.handle(
+        EvaluateAlertsForTransactionCommand(
+            user_id=user_id, transaction_id=new_txn, category="Dining",
+            amount=Decimal("500.00"), transaction_date=date(2026, 7, 15),
+        )
+    )
+    assert len([a for a in fired if a.alert_type == AlertType.LARGE_TRANSACTION]) == 1
+
+
+@pytest.mark.asyncio
+async def test_justification_ceiling_is_scoped_per_user_not_global(
+    alerts, budgets, transactions, justifications
+) -> None:
+    """A ceiling justified by one user must never suppress a different
+    user's alert in the same category -- justifications are per-(user,
+    category), not per-category alone."""
+    owner_id, other_user_id = uuid.uuid4(), uuid.uuid4()
+    await justifications.add(
+        AlertJustification.new(user_id=owner_id, category="Travel", ceiling_amount=Decimal("900.00"))
+    )
+    new_txn = transactions.seed(other_user_id, "Travel", "1000.00", date(2026, 7, 15))
+
+    handler = EvaluateAlertsForTransactionHandler(
+        alert_repository=alerts, budget_repository=budgets, transaction_repository=transactions,
+        alert_justification_repository=justifications, clock=lambda: date(2026, 7, 19),
+    )
+    fired = await handler.handle(
+        EvaluateAlertsForTransactionCommand(
+            user_id=other_user_id, transaction_id=new_txn, category="Travel",
+            amount=Decimal("1000.00"), transaction_date=date(2026, 7, 15),
+        )
+    )
+    # 1000 clears 3x the $300 fallback baseline (fewer than
+    # MIN_SAMPLE_SIZE prior transactions) = 900, so it must fire for
+    # other_user_id, who has no justification of their own -- owner_id's
+    # 900.00 Travel ceiling must have zero effect on this other user.
+    assert len([a for a in fired if a.alert_type == AlertType.LARGE_TRANSACTION]) == 1
+
+
+# ---------------------------------------------------------------------------
+# JustifyAlertHandler -- FINTRACK-25 AC1/AC2/AC5/AC7
+# ---------------------------------------------------------------------------
+
+
+def _seed_large_transaction_alert(alerts: FakeAlertRepository, transactions: FakeTransactionRepository, user_id, category, amount):
+    txn_id = transactions.seed(user_id, category, amount, date(2026, 7, 15))
+    alert = Alert.new_large_transaction(
+        user_id=user_id, category=category, transaction_id=txn_id, period_start=date(2026, 7, 1)
+    )
+    return alert, txn_id
+
+
+@pytest.mark.asyncio
+async def test_justify_creates_a_new_ceiling_equal_to_the_triggering_transactions_amount(
+    alerts, transactions, justifications
+) -> None:
+    user_id = uuid.uuid4()
+    alert, _ = _seed_large_transaction_alert(alerts, transactions, user_id, "Travel", "900.00")
+    await alerts.add(alert)
+
+    handler = JustifyAlertHandler(
+        alert_repository=alerts, alert_justification_repository=justifications, transaction_repository=transactions,
+    )
+    await handler.handle(JustifyAlertCommand(alert_id=alert.id, user_id=user_id))
+
+    stored = await justifications.get_for_user_and_category(user_id, "Travel")
+    assert stored is not None
+    assert stored.ceiling_amount == Decimal("900.00")
+
+
+@pytest.mark.asyncio
+async def test_justify_raises_an_existing_lower_ceiling(alerts, transactions, justifications) -> None:
+    """AC2: justifying a larger amount than an already-existing ceiling
+    raises it."""
+    user_id = uuid.uuid4()
+    await justifications.add(
+        AlertJustification.new(user_id=user_id, category="Travel", ceiling_amount=Decimal("900.00"))
+    )
+    alert, _ = _seed_large_transaction_alert(alerts, transactions, user_id, "Travel", "1500.00")
+    await alerts.add(alert)
+
+    handler = JustifyAlertHandler(
+        alert_repository=alerts, alert_justification_repository=justifications, transaction_repository=transactions,
+    )
+    await handler.handle(JustifyAlertCommand(alert_id=alert.id, user_id=user_id))
+
+    stored = await justifications.get_for_user_and_category(user_id, "Travel")
+    assert stored.ceiling_amount == Decimal("1500.00")
+
+
+@pytest.mark.asyncio
+async def test_justify_does_not_lower_an_existing_higher_ceiling(alerts, transactions, justifications) -> None:
+    """AC2: "if a higher ceiling already exists for that category, it is
+    not lowered" -- justifying a smaller amount than the current ceiling
+    is a no-op."""
+    user_id = uuid.uuid4()
+    await justifications.add(
+        AlertJustification.new(user_id=user_id, category="Travel", ceiling_amount=Decimal("900.00"))
+    )
+    alert, _ = _seed_large_transaction_alert(alerts, transactions, user_id, "Travel", "500.00")
+    await alerts.add(alert)
+
+    handler = JustifyAlertHandler(
+        alert_repository=alerts, alert_justification_repository=justifications, transaction_repository=transactions,
+    )
+    await handler.handle(JustifyAlertCommand(alert_id=alert.id, user_id=user_id))
+
+    stored = await justifications.get_for_user_and_category(user_id, "Travel")
+    assert stored.ceiling_amount == Decimal("900.00")  # untouched, not lowered to 500
+
+
+@pytest.mark.asyncio
+async def test_justify_raises_not_found_for_a_nonexistent_alert(alerts, transactions, justifications) -> None:
+    handler = JustifyAlertHandler(
+        alert_repository=alerts, alert_justification_repository=justifications, transaction_repository=transactions,
+    )
+    with pytest.raises(AlertNotFoundError):
+        await handler.handle(JustifyAlertCommand(alert_id=uuid.uuid4(), user_id=uuid.uuid4()))
+
+
+@pytest.mark.asyncio
+async def test_justify_raises_not_found_for_another_users_alert(alerts, transactions, justifications) -> None:
+    """AC5/IDOR: same one-error-for-both-cases shape as
+    DismissAlertHandler -- the attacker gets AlertNotFoundError, never a
+    distinct 'forbidden' signal, and no justification is recorded."""
+    owner_id = uuid.uuid4()
+    alert, _ = _seed_large_transaction_alert(alerts, transactions, owner_id, "Private", "900.00")
+    await alerts.add(alert)
+
+    handler = JustifyAlertHandler(
+        alert_repository=alerts, alert_justification_repository=justifications, transaction_repository=transactions,
+    )
+    attacker_id = uuid.uuid4()
+    with pytest.raises(AlertNotFoundError):
+        await handler.handle(JustifyAlertCommand(alert_id=alert.id, user_id=attacker_id))
+
+    assert await justifications.get_for_user_and_category(owner_id, "Private") is None
+    assert await justifications.get_for_user_and_category(attacker_id, "Private") is None
+
+
+@pytest.mark.asyncio
+async def test_justify_rejects_a_threshold_crossing_alert(alerts, transactions, justifications) -> None:
+    """AC7: THRESHOLD_CROSSING alerts cannot be justified -- there's no
+    per-transaction amount to build a ceiling from."""
+    user_id = uuid.uuid4()
+    alert = Alert.new_threshold_crossing(
+        user_id=user_id, category="Groceries", threshold_pct=Decimal("90.00"), period_start=date(2026, 7, 1)
+    )
+    await alerts.add(alert)
+
+    handler = JustifyAlertHandler(
+        alert_repository=alerts, alert_justification_repository=justifications, transaction_repository=transactions,
+    )
+    with pytest.raises(InvalidAlertTypeForJustificationError):
+        await handler.handle(JustifyAlertCommand(alert_id=alert.id, user_id=user_id))
+
+    assert await justifications.get_for_user_and_category(user_id, "Groceries") is None
+
+
+@pytest.mark.asyncio
+async def test_justify_raises_transaction_not_found_if_the_triggering_transaction_is_missing(
+    alerts, transactions, justifications
+) -> None:
+    """Defensive path: alert.transaction_id points at a transaction that
+    no longer resolves for this user (data-corruption edge case, not a
+    normal user flow) -- must fail closed with a clear error, never a
+    raw AttributeError from a None transaction."""
+    user_id = uuid.uuid4()
+    alert = Alert.new_large_transaction(
+        user_id=user_id, category="Travel", transaction_id=uuid.uuid4(), period_start=date(2026, 7, 1)
+    )
+    await alerts.add(alert)
+
+    handler = JustifyAlertHandler(
+        alert_repository=alerts, alert_justification_repository=justifications, transaction_repository=transactions,
+    )
+    with pytest.raises(TransactionNotFoundError):
+        await handler.handle(JustifyAlertCommand(alert_id=alert.id, user_id=user_id))
+
+
+@pytest.mark.asyncio
+async def test_justifying_the_same_alert_twice_at_the_same_amount_is_a_harmless_no_op(
+    alerts, transactions, justifications
+) -> None:
+    user_id = uuid.uuid4()
+    alert, _ = _seed_large_transaction_alert(alerts, transactions, user_id, "Travel", "900.00")
+    await alerts.add(alert)
+
+    handler = JustifyAlertHandler(
+        alert_repository=alerts, alert_justification_repository=justifications, transaction_repository=transactions,
+    )
+    await handler.handle(JustifyAlertCommand(alert_id=alert.id, user_id=user_id))
+    await handler.handle(JustifyAlertCommand(alert_id=alert.id, user_id=user_id))  # re-justify, same amount
+
+    stored = await justifications.get_for_user_and_category(user_id, "Travel")
+    assert stored.ceiling_amount == Decimal("900.00")
