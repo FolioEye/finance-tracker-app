@@ -350,3 +350,209 @@ def test_alerts_list_is_correct_across_a_large_number_of_categories(client) -> N
     threshold_alerts = [a for a in items if a["alert_type"] == "THRESHOLD_CROSSING"]
     assert len(threshold_alerts) == 20
     assert {a["category"] for a in threshold_alerts} == {f"Category{i}" for i in range(20)}
+
+
+# ---------------------------------------------------------------------------
+# FINTRACK-25: Alert Justification Feedback Loop
+# Every scenario in tests/features/FINTRACK-25-alert-justification-feedback-loop.feature
+# maps to a test function below, plus gap-fill for auth/404/idempotency
+# and a sequential-convergence stand-in for concurrent modification.
+# ---------------------------------------------------------------------------
+
+
+def _justify(client, token: str, alert_id: str):
+    return client.post(f"/api/v1/alerts/{alert_id}/justify", headers=_auth(token))
+
+
+def _large_transaction_alert_id(client, token: str, category: str, seed_amounts, trigger_amount: str) -> str:
+    """Helper: seeds enough prior transactions in a category for a real
+    rolling average, then posts one transaction big enough to fire a
+    LARGE_TRANSACTION alert, and returns that alert's id."""
+    for amount in seed_amounts:
+        _create_transaction(client, token, amount, category, "2026-07-10")
+    _create_transaction(client, token, trigger_amount, category, "2026-07-15")
+    items = _list_alerts(client, token).json()["items"]
+    large = [a for a in items if a["alert_type"] == "LARGE_TRANSACTION"]
+    assert len(large) == 1, f"expected exactly one LARGE_TRANSACTION alert, got {large}"
+    return large[0]["id"]
+
+
+# ---------------------------------------------------------------------------
+# Scenario 1: justify + a similar future transaction does not re-alert
+# ---------------------------------------------------------------------------
+
+
+def test_user_justifies_a_large_transaction_alert_and_a_similar_future_transaction_does_not_realert(client) -> None:
+    token = _register_and_login(client, "justify-suppress-future@example.com")
+    alert_id = _large_transaction_alert_id(
+        client, token, "Travel", ("20.00", "18.00", "22.00"), "900.00"
+    )
+
+    justify_resp = _justify(client, token, alert_id)
+    assert justify_resp.status_code == 204
+
+    # 850 is well over 3x the ~20 rolling average -- would otherwise fire.
+    resp = _create_transaction(client, token, "850.00", "Travel", "2026-07-16")
+    new_txn_id = resp.json()["id"]
+
+    items = _list_alerts(client, token).json()["items"]
+    matching = [a for a in items if a["alert_type"] == "LARGE_TRANSACTION" and a["transaction_id"] == new_txn_id]
+    assert matching == []  # suppressed by the 900.00 justification ceiling
+
+
+# ---------------------------------------------------------------------------
+# Scenario 2: exceeding every previously-justified amount still alerts
+# ---------------------------------------------------------------------------
+
+
+def test_a_transaction_that_exceeds_every_previously_justified_amount_still_alerts(client) -> None:
+    token = _register_and_login(client, "justify-exceed-ceiling@example.com")
+    alert_id = _large_transaction_alert_id(
+        client, token, "Travel", ("20.00", "18.00", "22.00"), "900.00"
+    )
+    assert _justify(client, token, alert_id).status_code == 204
+
+    resp = _create_transaction(client, token, "1500.00", "Travel", "2026-07-16")
+    new_txn_id = resp.json()["id"]
+
+    items = _list_alerts(client, token).json()["items"]
+    matching = [a for a in items if a["alert_type"] == "LARGE_TRANSACTION" and a["transaction_id"] == new_txn_id]
+    assert len(matching) == 1  # 1500 > the 900.00 ceiling -- fires normally
+
+
+# ---------------------------------------------------------------------------
+# Scenario 3: a plain dismiss does not suppress future similar alerts
+# ---------------------------------------------------------------------------
+
+
+def test_a_plain_dismiss_does_not_suppress_future_similar_alerts(client) -> None:
+    token = _register_and_login(client, "justify-vs-dismiss@example.com")
+    alert_id = _large_transaction_alert_id(
+        client, token, "Electronics", ("20.00", "18.00", "22.00"), "700.00"
+    )
+
+    dismiss_resp = _dismiss(client, token, alert_id)
+    assert dismiss_resp.status_code == 204  # dismissed, NOT justified
+
+    resp = _create_transaction(client, token, "650.00", "Electronics", "2026-07-16")
+    new_txn_id = resp.json()["id"]
+
+    items = _list_alerts(client, token, include_dismissed=True).json()["items"]
+    matching = [a for a in items if a["alert_type"] == "LARGE_TRANSACTION" and a["transaction_id"] == new_txn_id]
+    assert len(matching) == 1  # dismiss has no suppression effect -- fires normally
+
+
+# ---------------------------------------------------------------------------
+# Scenario 4: attempt to justify a threshold-crossing alert
+# ---------------------------------------------------------------------------
+
+
+def test_attempt_to_justify_a_threshold_crossing_alert(client) -> None:
+    token = _register_and_login(client, "justify-wrong-alert-type@example.com")
+    _create_budget(client, token, "Groceries", "100.00")
+    _create_transaction(client, token, "95.00", "Groceries", "2026-07-10")
+
+    items = _list_alerts(client, token).json()["items"]
+    threshold_alert_id = [a for a in items if a["alert_type"] == "THRESHOLD_CROSSING"][0]["id"]
+
+    resp = _justify(client, token, threshold_alert_id)
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "Justification only applies to large-transaction alerts"
+
+    # No justification recorded -- a later large-transaction alert in an
+    # unrelated category must still fire normally, i.e. nothing silently
+    # got created for this user.
+    resp2 = _create_transaction(client, token, "1000.00", "NewCategory", "2026-07-16")
+    later_items = _list_alerts(client, token).json()["items"]
+    assert any(a["transaction_id"] == resp2.json()["id"] for a in later_items if a["alert_type"] == "LARGE_TRANSACTION")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 5: attempt to justify another user's alert (IDOR)
+# ---------------------------------------------------------------------------
+
+
+def test_attempt_to_justify_another_users_alert(client) -> None:
+    victim_token = _register_and_login(client, "justify-idor-victim@example.com")
+    attacker_token = _register_and_login(client, "justify-idor-attacker@example.com")
+
+    alert_id = _large_transaction_alert_id(
+        client, victim_token, "Private", ("20.00", "18.00", "22.00"), "900.00"
+    )
+
+    resp = _justify(client, attacker_token, alert_id)
+    assert resp.status_code == 404  # not 403
+
+    # Victim's alert must remain unjustified -- a similar future
+    # transaction for the VICTIM must still fire normally.
+    victim_new_resp = _create_transaction(client, victim_token, "850.00", "Private", "2026-07-16")
+    victim_items = _list_alerts(client, victim_token).json()["items"]
+    matching = [
+        a for a in victim_items
+        if a["alert_type"] == "LARGE_TRANSACTION" and a["transaction_id"] == victim_new_resp.json()["id"]
+    ]
+    assert len(matching) == 1  # not suppressed -- the attacker's attempt had zero effect
+
+
+# ---------------------------------------------------------------------------
+# Gap-fill: auth, 404, idempotency
+# ---------------------------------------------------------------------------
+
+
+def test_justify_endpoint_requires_auth(client) -> None:
+    resp = client.post(f"/api/v1/alerts/{uuid.uuid4()}/justify")
+    assert resp.status_code == 401
+
+
+def test_justifying_a_nonexistent_alert_returns_404(client) -> None:
+    token = _register_and_login(client, "justify-missing@example.com")
+    resp = _justify(client, token, str(uuid.uuid4()))
+    assert resp.status_code == 404
+
+
+def test_justifying_the_same_alert_twice_at_the_same_amount_is_idempotent(client) -> None:
+    token = _register_and_login(client, "justify-twice-same-amount@example.com")
+    alert_id = _large_transaction_alert_id(
+        client, token, "Travel", ("20.00", "18.00", "22.00"), "900.00"
+    )
+    assert _justify(client, token, alert_id).status_code == 204
+    assert _justify(client, token, alert_id).status_code == 204  # second call, still succeeds
+
+
+# ---------------------------------------------------------------------------
+# Non-Gherkin addition (per fintrack-qa-lead process item 1): a
+# concurrent-modification stand-in. True simultaneous threads aren't
+# exercised here (TestClient is synchronous) -- instead this proves the
+# ceiling converges on the correct maximum regardless of which of two
+# justify calls for the SAME category is processed first, which is the
+# property that actually matters if two requests did race.
+# ---------------------------------------------------------------------------
+
+
+def test_justify_calls_for_the_same_category_in_either_order_converge_on_the_highest_ceiling(client) -> None:
+    token = _register_and_login(client, "justify-race-convergence@example.com")
+
+    # Two separate LARGE_TRANSACTION alerts in the same category, at
+    # different amounts, each producing its own justify-able alert.
+    for amount in ("20.00", "18.00", "22.00"):
+        _create_transaction(client, token, amount, "Travel", "2026-07-10")
+    lower_resp = _create_transaction(client, token, "900.00", "Travel", "2026-07-11")
+    higher_resp = _create_transaction(client, token, "1500.00", "Travel", "2026-07-12")
+
+    items = _list_alerts(client, token).json()["items"]
+    lower_alert_id = next(a["id"] for a in items if a["transaction_id"] == lower_resp.json()["id"])
+    higher_alert_id = next(a["id"] for a in items if a["transaction_id"] == higher_resp.json()["id"])
+
+    # Justify the LOWER amount first, then the HIGHER one -- ceiling ends at 1500.
+    assert _justify(client, token, lower_alert_id).status_code == 204
+    assert _justify(client, token, higher_alert_id).status_code == 204
+
+    # A transaction just above the lower-but-below-the-higher amount must
+    # now be suppressed, proving the ceiling is 1500, not 900.
+    resp = _create_transaction(client, token, "1200.00", "Travel", "2026-07-16")
+    later_items = _list_alerts(client, token).json()["items"]
+    matching = [
+        a for a in later_items
+        if a["alert_type"] == "LARGE_TRANSACTION" and a["transaction_id"] == resp.json()["id"]
+    ]
+    assert matching == []  # 1200 <= 1500 ceiling -- suppressed
