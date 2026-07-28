@@ -112,19 +112,23 @@ class FakeFollowThroughRepository:
         self._by_key: dict[tuple, list[_FakeFollowThroughRecord]] = {}
 
     def seed_deprioritised(self, user_id, recommendation_type: str, recommendation_key: str) -> None:
-        """2 done of 10 (20%) -- comfortably below the 30% threshold, with
-        the most recent occurrence NOT done, so no instant-recovery kicks
-        in either."""
-        statuses = [FollowThroughStatus.IGNORED] * 8 + [FollowThroughStatus.DONE] * 2
+        """2 done of 10 (20%) -- comfortably below the 30% threshold. The
+        2 DONE occurrences are placed OLDEST (successes long ago), with
+        IGNORED filling the 8 most recent slots, so the most-recent
+        occurrence is NOT done and the instant-recovery rule correctly
+        stays out of the way (letting the sustained-low-rate check fire
+        instead).
+        """
+        statuses_oldest_first = [FollowThroughStatus.DONE] * 2 + [FollowThroughStatus.IGNORED] * 8
         self._by_key[(user_id, recommendation_type, recommendation_key)] = [
-            _FakeFollowThroughRecord(status=s) for s in reversed(statuses)
+            _FakeFollowThroughRecord(status=s) for s in reversed(statuses_oldest_first)
         ]
 
     def seed_normal(self, user_id, recommendation_type: str, recommendation_key: str) -> None:
         """8 done of 10 (80%) -- comfortably above the 30% threshold."""
-        statuses = [FollowThroughStatus.DONE] * 8 + [FollowThroughStatus.DISMISSED] * 2
+        statuses_oldest_first = [FollowThroughStatus.DONE] * 8 + [FollowThroughStatus.DISMISSED] * 2
         self._by_key[(user_id, recommendation_type, recommendation_key)] = [
-            _FakeFollowThroughRecord(status=s) for s in reversed(statuses)
+            _FakeFollowThroughRecord(status=s) for s in reversed(statuses_oldest_first)
         ]
 
     async def list_recent_for_user_type_and_key(
@@ -258,8 +262,8 @@ async def test_budget_risk_with_low_follow_through_still_outranks_subscription_w
     rec = await handler.handle(GetWeeklyRecommendationQuery(user_id=user_id))
 
     # AC4: tier ordering holds regardless of follow-through -- BUDGET_RISK
-    # still wins even though its only candidate is deprioritised and
-    # NEW_SUBSCRIPTION's candidate isn't.
+    # still wins even though its only candidate is (genuinely) deprioritised
+    # and NEW_SUBSCRIPTION's candidate isn't.
     assert rec.type == RecommendationType.BUDGET_RISK
     assert rec.category == "Dining"
 
