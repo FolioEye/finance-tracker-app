@@ -1,5 +1,5 @@
 """SQLAlchemy adapter implementing the FollowThroughRepository port. Story:
-FINTRACK-23.
+FINTRACK-23, extended by FINTRACK-27.
 
 Every query filtered by user_id, parameterised throughout -- same
 IDOR-prevention and SQLi discipline as sqlalchemy_alert_repository.py.
@@ -24,6 +24,7 @@ def _to_domain(row: FollowThroughRecordModel) -> FollowThroughRecord:
         user_id=row.user_id,
         period_start=row.period_start,
         recommendation_type=row.recommendation_type,
+        recommendation_key=row.recommendation_key,
         status=FollowThroughStatus(row.status),
         created_at=row.created_at,
         actioned_at=row.actioned_at,
@@ -40,6 +41,7 @@ class SqlAlchemyFollowThroughRepository(FollowThroughRepository):
             user_id=record.user_id,
             period_start=record.period_start,
             recommendation_type=record.recommendation_type,
+            recommendation_key=record.recommendation_key,
             status=record.status.value,
             created_at=record.created_at,
             actioned_at=record.actioned_at,
@@ -75,6 +77,28 @@ class SqlAlchemyFollowThroughRepository(FollowThroughRepository):
             select(FollowThroughRecordModel)
             .where(FollowThroughRecordModel.user_id == user_id)
             .order_by(FollowThroughRecordModel.period_start.desc())
+        )
+        result = await self._session.execute(stmt)
+        return [_to_domain(row) for row in result.scalars().all()]
+
+    async def list_recent_for_user_type_and_key(
+        self,
+        user_id: uuid.UUID,
+        recommendation_type: str,
+        recommendation_key: str,
+        limit: int = 10,
+    ) -> list[FollowThroughRecord]:
+        stmt = (
+            select(FollowThroughRecordModel)
+            .where(
+                and_(
+                    FollowThroughRecordModel.user_id == user_id,
+                    FollowThroughRecordModel.recommendation_type == recommendation_type,
+                    FollowThroughRecordModel.recommendation_key == recommendation_key,
+                )
+            )
+            .order_by(FollowThroughRecordModel.period_start.desc())
+            .limit(limit)
         )
         result = await self._session.execute(stmt)
         return [_to_domain(row) for row in result.scalars().all()]

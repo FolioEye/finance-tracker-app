@@ -1,5 +1,5 @@
 """Response DTO for the weekly recommendation API. Story: FINTRACK-21,
-extended by FINTRACK-23.
+extended by FINTRACK-23 and FINTRACK-27.
 
 Read-only endpoint -- no request body, no query parameters at all (unlike
 insights.py's trend_months). The only input is the caller's own identity
@@ -11,6 +11,10 @@ so the client has something stable to POST an action against at
 /api/v1/follow-through/{id}/actions. This is intentionally the only
 FINTRACK-23 concept exposed on this response -- FINTRACK-21's own handler
 and payload are otherwise completely unmodified by this story.
+
+deprioritization_reason (FINTRACK-27, AC3): a plain-language explanation,
+present only when follow-through-based reordering actually changed which
+candidate within a tier was picked -- never a generic or fabricated string.
 """
 from __future__ import annotations
 
@@ -26,3 +30,4 @@ class WeeklyRecommendationResponse(BaseModel):
     category: Optional[str] = None
     merchant: Optional[str] = None
     follow_through_record_id: Optional[uuid.UUID] = None
+    deprioritization_reason: Optional[str] = None

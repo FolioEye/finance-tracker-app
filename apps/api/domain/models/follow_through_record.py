@@ -1,5 +1,5 @@
 """FollowThroughRecord domain entity. Story: FINTRACK-23 (Action
-Follow-Through Tracking).
+Follow-Through Tracking), extended by FINTRACK-27.
 
 Architecture decision (resolves the open question BA flagged): FINTRACK-21's
 GetWeeklyRecommendationHandler stays exactly as-is -- untouched, still
@@ -22,6 +22,12 @@ wiring -- satisfying the BA's second phrasing of the open question directly.
 recommendation_type is captured at creation time for display/audit purposes
 only; it is not part of the record's identity (period_start is what one
 user can have at most one row for).
+
+recommendation_key (FINTRACK-27): the fine-grained identity recommendation_
+type alone can't express -- category for BUDGET_RISK/SPENDING_SPIKE,
+merchant for NEW_SUBSCRIPTION, None for NEUTRAL. Same non-identity caveat
+applies: it's descriptive, not part of (user_id, period_start) uniqueness.
+Optional/None for any record written before this story existed.
 """
 from __future__ import annotations
 
@@ -54,12 +60,14 @@ class FollowThroughRecord:
     status: FollowThroughStatus
     created_at: datetime
     actioned_at: Optional[datetime] = None
+    recommendation_key: Optional[str] = None
 
     @staticmethod
     def new_pending(
         user_id: uuid.UUID,
         period_start: date_type,
         recommendation_type: str,
+        recommendation_key: Optional[str] = None,
     ) -> "FollowThroughRecord":
         return FollowThroughRecord(
             id=uuid.uuid4(),
@@ -68,6 +76,7 @@ class FollowThroughRecord:
             recommendation_type=recommendation_type,
             status=FollowThroughStatus.PENDING,
             created_at=datetime.now(timezone.utc),
+            recommendation_key=recommendation_key,
         )
 
     def mark_done(self) -> None:
