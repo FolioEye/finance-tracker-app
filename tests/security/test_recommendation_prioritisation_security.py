@@ -123,7 +123,7 @@ async def test_alices_low_follow_through_never_deprioritises_bobs_own_recommenda
     assert _create_transaction(client, alice_token, "90.00", "Dining", "2026-07-05").status_code == 201
     await _seed_history(
         test_session_factory, alice_id, "BUDGET_RISK", "Dining",
-        ["IGNORED"] * 8 + ["DONE"] * 2, days_ago_start=20,
+        ["DONE"] * 2 + ["IGNORED"] * 8, days_ago_start=20,
     )
 
     assert _create_budget(client, bob_token, "Dining", "100.00").status_code == 201
@@ -166,7 +166,7 @@ async def test_bobs_high_follow_through_never_leaks_into_alices_computation(
     assert _create_transaction(client, alice_token, "85.00", "Groceries", "2026-07-05").status_code == 201
     await _seed_history(
         test_session_factory, alice_id, "BUDGET_RISK", "Dining",
-        ["IGNORED"] * 8 + ["DONE"] * 2, days_ago_start=20,
+        ["DONE"] * 2 + ["IGNORED"] * 8, days_ago_start=20,
     )
     await _seed_history(
         test_session_factory, alice_id, "BUDGET_RISK", "Groceries",

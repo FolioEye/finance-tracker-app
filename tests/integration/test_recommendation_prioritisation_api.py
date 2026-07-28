@@ -140,9 +140,11 @@ async def test_deprioritised_budget_category_passed_over_via_real_api(client, te
     assert _create_transaction(client, token, "85.00", "Dining", "2026-07-05").status_code == 201
     assert _create_transaction(client, token, "95.00", "Groceries", "2026-07-05").status_code == 201
 
+    # 2 done (long ago) + 8 ignored (most recent) -- 20% overall, and the
+    # most-recent occurrence is NOT done, so no instant-recovery kicks in.
     await _seed_history(
         test_session_factory, user_id, "BUDGET_RISK", "Groceries",
-        ["IGNORED"] * 8 + ["DONE"] * 2, days_ago_start=20,
+        ["DONE"] * 2 + ["IGNORED"] * 8, days_ago_start=20,
     )
     await _seed_history(
         test_session_factory, user_id, "BUDGET_RISK", "Dining",
@@ -241,7 +243,7 @@ async def test_deprioritised_budget_risk_still_outranks_normal_subscription_via_
 
     await _seed_history(
         test_session_factory, user_id, "BUDGET_RISK", "Dining",
-        ["IGNORED"] * 8 + ["DONE"] * 2, days_ago_start=20,
+        ["DONE"] * 2 + ["IGNORED"] * 8, days_ago_start=20,
     )
 
     resp = _recommendation(client, token)
