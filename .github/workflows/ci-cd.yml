@@ -100,7 +100,14 @@ jobs:
           pip-compile --generate-hashes --allow-unsafe --no-header \
             --output-file=requirements.lock.txt.check \
             apps/api/requirements.txt requirements-test.txt
-          diff requirements.lock.txt requirements.lock.txt.check
+          # Sorted comparison: pip-compile's hash line order per package can vary
+          # between separate compile runs even when content is identical (order
+          # depends on how PyPI's JSON API returns file listings, which isn't
+          # guaranteed stable) -- a plain `diff` was failing on order alone with
+          # no real drift (confirmed 2026-07-28: a fresh manual regen reported
+          # "Everything up-to-date" for the same commit this step failed on).
+          # Sorting both sides neutralizes ordering and only fails on real content drift.
+          diff <(sort requirements.lock.txt) <(sort requirements.lock.txt.check)
       - name: Install dependencies (hash-pinned, F-12)
         # --require-hashes: pip refuses to install anything whose downloaded
         # file doesn't match the hash recorded here, catching a compromised
