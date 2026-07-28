@@ -12,6 +12,17 @@ against the handler's actual documented priority order (BUDGET_RISK >
 NEW_SUBSCRIPTION > SPENDING_SPIKE, see get_weekly_recommendation.py's
 module docstring), which was Tech Lead's own architecture decision
 resolving BA's open question, not something BA specified.
+
+FakeFollowThroughRepository (FINTRACK-27): GetWeeklyRecommendationHandler
+now requires a follow_through_repository to evaluate within-tier
+follow-through-based reordering. Every scenario below predates that
+story and seeds no follow-through history, so list_recent_for_user_type_
+and_key always returns [] -- RecommendationPrioritisationService then
+never deprioritises anything (see its own min-sample-size guard), so
+these tests keep exercising exactly the base priority-chain behavior
+they always did. FINTRACK-27's own reordering behavior is covered by
+test_recommendation_prioritisation.py and the new within-tier reorder
+tests, not here.
 """
 from __future__ import annotations
 
@@ -121,6 +132,24 @@ class FakeTransactionRepository:
         return totals
 
 
+class FakeFollowThroughRepository:
+    """FINTRACK-27. Minimal fake -- these pre-FINTRACK-27 tests never seed
+    follow-through history, so list_recent_for_user_type_and_key always
+    returns [], meaning RecommendationPrioritisationService's min-sample-
+    size guard always keeps every candidate at normal priority. The other
+    FollowThroughRepository methods aren't exercised by
+    GetWeeklyRecommendationHandler and are omitted."""
+
+    async def list_recent_for_user_type_and_key(
+        self,
+        user_id: uuid.UUID,
+        recommendation_type: str,
+        recommendation_key: str,
+        limit: int = 10,
+    ) -> list:
+        return []
+
+
 @pytest.fixture
 def budgets() -> FakeBudgetRepository:
     return FakeBudgetRepository()
@@ -136,11 +165,19 @@ def transactions() -> FakeTransactionRepository:
     return FakeTransactionRepository()
 
 
-def _handler(budgets, subscriptions, transactions, today: date) -> GetWeeklyRecommendationHandler:
+@pytest.fixture
+def follow_through() -> FakeFollowThroughRepository:
+    return FakeFollowThroughRepository()
+
+
+def _handler(
+    budgets, subscriptions, transactions, today: date, follow_through=None
+) -> GetWeeklyRecommendationHandler:
     return GetWeeklyRecommendationHandler(
         budget_repository=budgets,
         subscription_repository=subscriptions,
         transaction_repository=transactions,
+        follow_through_repository=follow_through or FakeFollowThroughRepository(),
         clock=lambda: today,
     )
 

@@ -343,10 +343,17 @@ def get_get_weekly_recommendation_handler(
     subscriptions: SubscriptionRepository = Depends(get_subscription_repository),
 ) -> GetWeeklyRecommendationHandler:
     transaction_repository = SqlAlchemyTransactionRepository(session)
+    # Constructed inline rather than via a get_follow_through_repository
+    # Depends() -- same convention already used here for
+    # transaction_repository, and avoids a forward-reference ordering
+    # issue with get_follow_through_repository (defined later in this
+    # file, used as a FastAPI default-arg value evaluated at import time).
+    follow_through_repository = SqlAlchemyFollowThroughRepository(session)
     return GetWeeklyRecommendationHandler(
         budget_repository=budgets,
         subscription_repository=subscriptions,
         transaction_repository=transaction_repository,
+        follow_through_repository=follow_through_repository,
     )
 
 

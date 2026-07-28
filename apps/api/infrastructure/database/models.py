@@ -207,6 +207,12 @@ class FollowThroughRecordModel(Base):
     (see domain.models.follow_through_record's docstring for the full
     architecture rationale, and why this is deliberately independent of
     FINTRACK-21's own compute-on-read handler).
+
+    recommendation_key (FINTRACK-27): the fine-grained identity the coarse
+    recommendation_type alone can't express -- category for BUDGET_RISK/
+    SPENDING_SPIKE, merchant for NEW_SUBSCRIPTION, null for NEUTRAL or any
+    row written before this story. Backs the per-(type, key) follow-through
+    window RecommendationPrioritisationService reads.
     """
 
     __tablename__ = "follow_through_records"
@@ -220,6 +226,7 @@ class FollowThroughRecordModel(Base):
     )
     period_start: Mapped[date] = mapped_column(Date, nullable=False)
     recommendation_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    recommendation_key: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, server_default="PENDING")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     actioned_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

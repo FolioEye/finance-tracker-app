@@ -1,4 +1,5 @@
-"""Port (interface) for FollowThroughRecord persistence. Story: FINTRACK-23."""
+"""Port (interface) for FollowThroughRecord persistence. Story: FINTRACK-23,
+extended by FINTRACK-27."""
 from __future__ import annotations
 
 import uuid
@@ -41,6 +42,23 @@ class FollowThroughRepository(ABC):
         """All records for the user, most recent period_start first.
         Callers needing only a rolling window filter in the application
         layer, same division of responsibility as list_alerts.py."""
+        ...
+
+    @abstractmethod
+    async def list_recent_for_user_type_and_key(
+        self,
+        user_id: uuid.UUID,
+        recommendation_type: str,
+        recommendation_key: str,
+        limit: int = 10,
+    ) -> list[FollowThroughRecord]:
+        """FINTRACK-27. Most recent `limit` records (most recent
+        period_start first) matching this exact (recommendation_type,
+        recommendation_key) pair for this user -- backs
+        RecommendationPrioritisationService's rolling-window read. A
+        dedicated, narrowly-scoped query rather than filtering
+        list_for_user client-side, same division of responsibility as
+        get_for_user_and_period."""
         ...
 
     @abstractmethod
