@@ -11,3 +11,9 @@ redis==5.2.0
 slowapi==0.1.9
 python-dotenv==1.2.2
 python-multipart==0.0.32
+
+# wrapt: unpinned transitive dependency was causing pip-compile's resolver to
+# non-deterministically pick between 2.2.2 and 2.3.0 on separate compile runs
+# of the exact same inputs (confirmed via two parallel CI jobs on the same
+# commit disagreeing, 2026-07-28). Pinned directly so resolution is stable.
+wrapt==2.3.0
