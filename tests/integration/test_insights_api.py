@@ -18,6 +18,13 @@ import jwt as pyjwt
 import pytest
 
 
+def _this_month(day: int) -> str:
+    """A date within the real current calendar month. See the identical
+    helper's docstring in tests/integration/test_budgets_api.py for why
+    this replaced hardcoded "2026-07-XX" literals (FINTRACK-38 Bug)."""
+    return date.today().replace(day=day).isoformat()
+
+
 def _register_and_login(client, email: str, password: str = "StrongPass1") -> str:
     resp = client.post(
         "/api/v1/auth/register",
@@ -59,9 +66,9 @@ def _dashboard(client, token: str, trend_months: int | None = None):
 
 def test_dashboard_totals_and_categorises_current_month_spending(client) -> None:
     token = _register_and_login(client, "insights-happy-path@example.com")
-    _create_transaction(client, token, "200.00", "Groceries", "2026-07-05")
-    _create_transaction(client, token, "150.00", "Dining", "2026-07-10")
-    _create_transaction(client, token, "100.00", "Transport", "2026-07-15")
+    _create_transaction(client, token, "200.00", "Groceries", _this_month(5))
+    _create_transaction(client, token, "150.00", "Dining", _this_month(10))
+    _create_transaction(client, token, "100.00", "Transport", _this_month(15))
 
     resp = _dashboard(client, token)
     assert resp.status_code == 200, resp.text
@@ -170,7 +177,7 @@ async def test_dashboard_loads_acceptably_and_stays_accurate_with_1000_plus_tran
                 user_id=user_id,
                 amount=Money.parse("1.00"),
                 category=f"Category{i % 5}",
-                transaction_date=date(2026, 7, 1),
+                transaction_date=date.today().replace(day=1),
             )
             await repo.add(txn)
         await session.commit()
@@ -198,7 +205,7 @@ async def test_dashboard_loads_acceptably_and_stays_accurate_with_1000_plus_tran
 def test_attempt_to_access_another_users_dashboard_data(client) -> None:
     victim_token = _register_and_login(client, "insights-idor-victim@example.com")
     attacker_token = _register_and_login(client, "insights-idor-attacker@example.com")
-    _create_transaction(client, victim_token, "999.00", "Private", "2026-07-10")
+    _create_transaction(client, victim_token, "999.00", "Private", _this_month(10))
 
     # There is no account-scoped path/body parameter for the attacker to
     # target at all -- user_id always comes from the attacker's own JWT.
@@ -243,7 +250,7 @@ def test_trend_months_above_maximum_is_rejected(client) -> None:
 
 def test_custom_trend_months_is_honoured(client) -> None:
     token = _register_and_login(client, "insights-trend-custom@example.com")
-    _create_transaction(client, token, "10.00", "Groceries", "2026-07-05")
+    _create_transaction(client, token, "10.00", "Groceries", _this_month(5))
     resp = _dashboard(client, token, trend_months=3)
     assert resp.status_code == 200
     assert len(resp.json()["monthly_trend"]) == 3
