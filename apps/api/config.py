@@ -42,6 +42,15 @@ class Settings(BaseSettings):
     login_rate_limit_attempts: int = 5
     login_rate_limit_window_minutes: int = 15
 
+    # OAuth (FINTRACK-42/43, ADR-016). Both are audience/client-id values,
+    # not secrets -- verifying a Google/Apple ID token needs no server-side
+    # client secret, only the expected audience to check the token's `aud`
+    # claim against. apple_oauth_client_ids is comma-separated because
+    # Apple issues a distinct client id per platform (web, iOS) that can
+    # all sign in the same user -- see oauth_verifier.AppleIdTokenVerifier.
+    google_oauth_client_id: str = ""
+    apple_oauth_client_ids: str = ""
+
 
 @lru_cache
 def get_settings() -> Settings:
