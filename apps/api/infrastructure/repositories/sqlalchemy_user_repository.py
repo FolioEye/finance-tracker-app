@@ -27,6 +27,8 @@ def _to_domain(row: UserModel) -> User:
         password_hash=row.password_hash,
         email_verified=row.email_verified,
         is_active=row.is_active,
+        oauth_provider=row.oauth_provider,
+        oauth_subject=row.oauth_subject,
         created_at=row.created_at,
     )
 
@@ -47,6 +49,14 @@ class SqlAlchemyUserRepository(UserRepository):
         row = result.scalar_one_or_none()
         return _to_domain(row) if row else None
 
+    async def get_by_oauth_identity(self, provider: str, subject: str) -> Optional[User]:
+        stmt = select(UserModel).where(
+            UserModel.oauth_provider == provider, UserModel.oauth_subject == subject
+        )
+        result = await self._session.execute(stmt)
+        row = result.scalar_one_or_none()
+        return _to_domain(row) if row else None
+
     async def add(self, user: User) -> None:
         row = UserModel(
             id=user.id,
@@ -54,11 +64,37 @@ class SqlAlchemyUserRepository(UserRepository):
             password_hash=user.password_hash,
             email_verified=user.email_verified,
             is_active=user.is_active,
+            oauth_provider=user.oauth_provider,
+            oauth_subject=user.oauth_subject,
         )
         self._session.add(row)
         try:
             await self._session.flush()
         except IntegrityError as exc:
             # DB unique constraint is the final backstop against a race
-            # between the get_by_email check and this insert.
+            # between the get_by_email/get_by_oauth_identity check and
+            # this insert. Both the email unique index and the
+            # (oauth_provider, oauth_subject) unique constraint route
+            # through this same except -- the caller-facing error is
+            # framed around email since that's the field every signup
+            # path (password or OAuth) always has.
             raise EmailAlreadyExistsError("An account with this email already exists") from exc
+
+    async def link_oauth_identity(self, user_id: uuid.UUID, provider: str, subject: str) -> None:
+        stmt = select(UserModel).where(UserModel.id == user_id)
+        result = await self._session.execute(stmt)
+        row = result.scalar_one_or_none()
+        if row is None:
+            # Should be unreachable in practice -- OAuthLoginUserHandler
+            # only calls this immediately after loading the same user by
+            # email within the same unit of work -- but fail loudly rather
+            # than silently no-op if it ever is.
+            raise ValueError(f"Cannot link OAuth identity: user {user_id} not found")
+        row.oauth_provider = provider
+        row.oauth_subject = subject
+        try:
+            await self._session.flush()
+        except IntegrityError as exc:
+            raise EmailAlreadyExistsError(
+                "This OAuth identity is already linked to a different account"
+            ) from exc
