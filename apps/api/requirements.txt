@@ -22,6 +22,12 @@ wrapt==2.3.0
 # tokens; cryptography backs PyJWT's RS256 support, needed to verify
 # Apple's RS256-signed ID tokens; httpx fetches Apple's JWKS
 # (oauth_verifier.AppleIdTokenVerifier) asynchronously.
+#
+# cryptography pinned to 48.0.1, not the first version that worked
+# locally (43.0.3) -- CI's Trivy security scan flagged two HIGH CVEs on
+# 43.0.3 (CVE-2026-26007, a subgroup-attack issue fixed in 46.0.5; and
+# GHSA-537c-gmf6-5ccf, a vulnerable bundled OpenSSL fixed in 48.0.1).
+# 48.0.1 clears both -- keep this at or above 48.0.1 on any future bump.
 google-auth==2.35.0
-cryptography==43.0.3
+cryptography==48.0.1
 httpx==0.27.2
