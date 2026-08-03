@@ -28,6 +28,13 @@ import pytest
 from apps.api.config import get_settings
 
 
+def _this_month(day: int) -> str:
+    """A date within the real current calendar month. See the identical
+    helper's docstring in tests/integration/test_budgets_api.py for why
+    this replaced hardcoded "2026-07-XX" literals (FINTRACK-38 Bug)."""
+    return date.today().replace(day=day).isoformat()
+
+
 def _register_and_login(client, email: str, password: str = "StrongPass1") -> str:
     resp = client.post(
         "/api/v1/auth/register",
@@ -120,14 +127,14 @@ async def test_alices_low_follow_through_never_deprioritises_bobs_own_recommenda
     alice_id = _decode_user_id(alice_token)
 
     assert _create_budget(client, alice_token, "Dining", "100.00").status_code == 201
-    assert _create_transaction(client, alice_token, "90.00", "Dining", "2026-07-05").status_code == 201
+    assert _create_transaction(client, alice_token, "90.00", "Dining", _this_month(5)).status_code == 201
     await _seed_history(
         test_session_factory, alice_id, "BUDGET_RISK", "Dining",
         ["DONE"] * 2 + ["IGNORED"] * 8, days_ago_start=20,
     )
 
     assert _create_budget(client, bob_token, "Dining", "100.00").status_code == 201
-    assert _create_transaction(client, bob_token, "90.00", "Dining", "2026-07-05").status_code == 201
+    assert _create_transaction(client, bob_token, "90.00", "Dining", _this_month(5)).status_code == 201
 
     bob_resp = _recommendation(client, bob_token)
     assert bob_resp.status_code == 200, bob_resp.text
@@ -154,7 +161,7 @@ async def test_bobs_high_follow_through_never_leaks_into_alices_computation(
     bob_id = _decode_user_id(bob_token)
 
     assert _create_budget(client, bob_token, "Dining", "100.00").status_code == 201
-    assert _create_transaction(client, bob_token, "90.00", "Dining", "2026-07-05").status_code == 201
+    assert _create_transaction(client, bob_token, "90.00", "Dining", _this_month(5)).status_code == 201
     await _seed_history(
         test_session_factory, bob_id, "BUDGET_RISK", "Dining",
         ["DONE"] * 8 + ["DISMISSED"] * 2, days_ago_start=20,
@@ -162,8 +169,8 @@ async def test_bobs_high_follow_through_never_leaks_into_alices_computation(
 
     assert _create_budget(client, alice_token, "Dining", "100.00").status_code == 201
     assert _create_budget(client, alice_token, "Groceries", "100.00").status_code == 201
-    assert _create_transaction(client, alice_token, "90.00", "Dining", "2026-07-05").status_code == 201
-    assert _create_transaction(client, alice_token, "85.00", "Groceries", "2026-07-05").status_code == 201
+    assert _create_transaction(client, alice_token, "90.00", "Dining", _this_month(5)).status_code == 201
+    assert _create_transaction(client, alice_token, "85.00", "Groceries", _this_month(5)).status_code == 201
     await _seed_history(
         test_session_factory, alice_id, "BUDGET_RISK", "Dining",
         ["DONE"] * 2 + ["IGNORED"] * 8, days_ago_start=20,
@@ -197,7 +204,7 @@ def test_follow_through_history_endpoint_never_exposes_another_users_prioritisat
 
     assert _create_budget(client, victim_token, "SecretCategory", "100.00").status_code == 201
     assert (
-        _create_transaction(client, victim_token, "90.00", "SecretCategory", "2026-07-05").status_code
+        _create_transaction(client, victim_token, "90.00", "SecretCategory", _this_month(5)).status_code
         == 201
     )
     _recommendation(client, victim_token)  # creates today's follow-through record
