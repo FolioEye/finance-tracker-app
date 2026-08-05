@@ -15,8 +15,16 @@ tests/security/test_budgets_security.py.
 from __future__ import annotations
 
 import uuid
+from datetime import date
 
 import jwt as pyjwt
+
+
+def _this_month(day: int) -> str:
+    """A date within the real current calendar month. See the identical
+    helper's docstring in tests/integration/test_budgets_api.py for why
+    this replaced hardcoded "2026-07-XX" literals (FINTRACK-38 Bug)."""
+    return date.today().replace(day=day).isoformat()
 
 
 def _register_and_login(client, email: str, password: str = "StrongPass1") -> str:
@@ -130,7 +138,7 @@ def test_auth_bypass_refresh_token_rejected_as_access_token(client) -> None:
 def test_idor_dashboard_never_includes_another_users_categories(client) -> None:
     victim_token = _register_and_login(client, "insights-idor-sec-victim@example.com")
     attacker_token = _register_and_login(client, "insights-idor-sec-attacker@example.com")
-    _create_transaction(client, victim_token, "500.00", "Private", "2026-07-10")
+    _create_transaction(client, victim_token, "500.00", "Private", _this_month(10))
 
     attacker_resp = _dashboard(client, attacker_token)
     assert attacker_resp.status_code == 200
@@ -142,8 +150,8 @@ def test_idor_dashboard_never_includes_another_users_categories(client) -> None:
 def test_idor_dashboard_totals_are_not_inflated_by_other_users_spend(client) -> None:
     other_token = _register_and_login(client, "insights-idor-sec-other@example.com")
     my_token = _register_and_login(client, "insights-idor-sec-me@example.com")
-    _create_transaction(client, other_token, "9999.00", "Groceries", "2026-07-10")
-    _create_transaction(client, my_token, "25.00", "Groceries", "2026-07-10")
+    _create_transaction(client, other_token, "9999.00", "Groceries", _this_month(10))
+    _create_transaction(client, my_token, "25.00", "Groceries", _this_month(10))
 
     my_resp = _dashboard(client, my_token)
     assert my_resp.json()["current_month_total"] == "25.00"

@@ -1,4 +1,5 @@
-"""Auth API endpoints. Story: FINTRACK-13 (User Registration).
+"""Auth API endpoints. Story: FINTRACK-13 (User Registration); FINTRACK-42/43
+(Google + Apple OAuth login) added the /oauth/* routes below.
 
 Note: deliberately NOT using `from __future__ import annotations` here.
 Combined with this project's pinned fastapi==0.115.0 + pydantic==2.9.2,
@@ -21,6 +22,11 @@ from apps.api.application.commands.logout_user import (
     LogoutUserHandler,
     NoActiveSessionError,
 )
+from apps.api.application.commands.oauth_login_user import (
+    OAuthLoginCommand,
+    OAuthLoginError,
+    OAuthLoginUserHandler,
+)
 from apps.api.application.commands.register_user import (
     PasswordMismatchError,
     RegisterUserCommand,
@@ -30,16 +36,20 @@ from apps.api.application.dtos.auth_dtos import (
     LoginRequest,
     LoginResponse,
     LogoutResponse,
+    OAuthLoginRequest,
+    OAuthLoginResponse,
     RegisterRequest,
     RegisterResponse,
 )
 from apps.api.config import get_settings
 from apps.api.domain.models.user import InvalidEmailError, WeakPasswordError
 from apps.api.domain.repositories.user_repository import EmailAlreadyExistsError
+from apps.api.infrastructure.security.oauth_verifier import OAuthProviderUnavailableError
 from apps.api.infrastructure.security.rate_limiter import RateLimitExceededError
 from apps.api.presentation.api.v1.dependencies import (
     get_login_user_handler,
     get_logout_user_handler,
+    get_oauth_login_user_handler,
     get_register_user_handler,
 )
 
@@ -199,3 +209,85 @@ async def logout(
     )
     logger.info("logout_succeeded", extra={"context": {}})
     return LogoutResponse()
+
+
+async def _handle_oauth_login(
+    request: Request,
+    payload: OAuthLoginRequest,
+    response: Response,
+    handler: OAuthLoginUserHandler,
+    expected_provider: str,
+) -> OAuthLoginResponse:
+    if payload.provider != expected_provider:
+        # The provider is also part of the URL path (/oauth/google vs
+        # /oauth/apple) -- if the body disagrees, reject rather than
+        # silently trusting one or the other, since which verifier runs
+        # is a security-relevant decision, not just a routing convenience.
+        raise HTTPException(status_code=400, detail="provider does not match endpoint")
+
+    logger.info("oauth_login_attempt", extra={"context": {"provider": expected_provider}})
+
+    command = OAuthLoginCommand(
+        provider=payload.provider,
+        id_token=payload.id_token,
+        client_ip=get_remote_address(request),
+    )
+
+    try:
+        result = await handler.handle(command)
+    except RateLimitExceededError:
+        logger.warning(
+            "oauth_login_rate_limited", extra={"context": {"provider": expected_provider}}
+        )
+        raise HTTPException(status_code=429, detail="Too many attempts, try again later")
+    except OAuthProviderUnavailableError:
+        logger.error(
+            "oauth_provider_unavailable", extra={"context": {"provider": expected_provider}}
+        )
+        raise HTTPException(status_code=503, detail="OAuth provider temporarily unavailable")
+    except OAuthLoginError:
+        logger.info("oauth_login_failed", extra={"context": {"provider": expected_provider}})
+        raise HTTPException(status_code=401, detail="OAuth sign-in failed")
+
+    response.set_cookie(
+        key="refresh_token",
+        value=result.tokens.refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        max_age=_settings.refresh_token_expire_days * 24 * 60 * 60,
+        path="/api/v1/auth",
+    )
+
+    logger.info(
+        "oauth_login_succeeded",
+        extra={"context": {"user_id": str(result.user.id), "is_new_user": result.is_new_user}},
+    )
+
+    return OAuthLoginResponse(
+        user_id=result.user.id,
+        email=str(result.user.email),
+        access_token=result.tokens.access_token,
+        expires_in=result.tokens.access_token_expires_in_seconds,
+        is_new_user=result.is_new_user,
+    )
+
+
+@router.post("/oauth/google", response_model=OAuthLoginResponse, status_code=status.HTTP_200_OK)
+async def oauth_login_google(
+    request: Request,
+    payload: OAuthLoginRequest,
+    response: Response,
+    handler: OAuthLoginUserHandler = Depends(get_oauth_login_user_handler),
+) -> OAuthLoginResponse:
+    return await _handle_oauth_login(request, payload, response, handler, expected_provider="google")
+
+
+@router.post("/oauth/apple", response_model=OAuthLoginResponse, status_code=status.HTTP_200_OK)
+async def oauth_login_apple(
+    request: Request,
+    payload: OAuthLoginRequest,
+    response: Response,
+    handler: OAuthLoginUserHandler = Depends(get_oauth_login_user_handler),
+) -> OAuthLoginResponse:
+    return await _handle_oauth_login(request, payload, response, handler, expected_provider="apple")

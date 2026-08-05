@@ -1,7 +1,7 @@
 """QA Lead integration suite for FINTRACK-21 (Weekly Recommendation
 Engine). Same approach as tests/integration/test_insights_api.py: hits
-the real FastAPI app over HTTP via TestClient, backed by a genuine
-SQLite DB and fakeredis (see tests/conftest.py).
+the real FastAPI app over HTTP via TestClient, backed by a genuine SQLite
+DB and fakeredis (see tests/conftest.py).
 
 Every scenario in
 tests/features/FINTRACK-21-weekly-recommendation-engine.feature maps to
@@ -21,6 +21,13 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 import pytest
+
+
+def _this_month(day: int) -> str:
+    """A date within the real current calendar month. See the identical
+    helper's docstring in tests/integration/test_budgets_api.py for why
+    this replaced hardcoded "2026-07-XX" literals (FINTRACK-38 Bug)."""
+    return date.today().replace(day=day).isoformat()
 
 
 def _register_and_login(client, email: str, password: str = "StrongPass1") -> str:
@@ -89,7 +96,7 @@ def test_budget_risk_recommendation_via_real_api(client) -> None:
     token = _register_and_login(client, "reco-budget-risk@example.com")
     assert _create_budget(client, token, "Dining", "100.00").status_code == 201
     assert (
-        _create_transaction(client, token, "85.00", "Dining", "2026-07-05").status_code == 201
+        _create_transaction(client, token, "85.00", "Dining", _this_month(5)).status_code == 201
     )
 
     resp = _recommendation(client, token)
@@ -136,7 +143,7 @@ def test_idor_recommendation_never_reflects_another_users_budget(client) -> None
     attacker_token = _register_and_login(client, "reco-idor-attacker@example.com")
     assert _create_budget(client, victim_token, "Private", "50.00").status_code == 201
     assert (
-        _create_transaction(client, victim_token, "49.00", "Private", "2026-07-05").status_code
+        _create_transaction(client, victim_token, "49.00", "Private", _this_month(5)).status_code
         == 201
     )
 

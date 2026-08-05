@@ -14,6 +14,20 @@ from datetime import date
 import pytest
 
 
+def _this_month(day: int) -> str:
+    """A date within the real current calendar month, day-of-month fixed
+    (not a rolling relative offset) so results stay deterministic across a
+    single test run. All call sites below use day <= 19 so this is safe
+    in every month, including February. See FINTRACK-38 Bug (hardcoded
+    "2026-07-XX" transaction dates silently fell out of the compute-on-read
+    current-month window, ADR-013, once wall-clock time crossed into
+    August 2026 -- ONLY the dedicated month-boundary test below should
+    ever hardcode an absolute date, and only because it explicitly freezes
+    the clock via dependency override).
+    """
+    return date.today().replace(day=day).isoformat()
+
+
 def _register_and_login(client, email: str, password: str = "StrongPass1") -> str:
     resp = client.post(
         "/api/v1/auth/register",
@@ -63,7 +77,7 @@ def test_track_spend_against_a_category_budget(client) -> None:
     create_resp = _create_budget(client, token, "Groceries", "500.00")
     assert create_resp.status_code == 201, create_resp.text
 
-    txn_resp = _create_transaction(client, token, "300.00", "Groceries", "2026-07-15")
+    txn_resp = _create_transaction(client, token, "300.00", "Groceries", _this_month(15))
     assert txn_resp.status_code == 201, txn_resp.text
 
     items = _overview_by_category(client, token)
@@ -101,7 +115,7 @@ def test_attempt_to_set_an_invalid_budget_limit_negative(client) -> None:
 def test_spending_exceeds_the_category_budget(client) -> None:
     token = _register_and_login(client, "budget-over-budget@example.com")
     _create_budget(client, token, "Entertainment", "200.00")
-    _create_transaction(client, token, "250.00", "Entertainment", "2026-07-10")
+    _create_transaction(client, token, "250.00", "Entertainment", _this_month(10))
 
     items = _overview_by_category(client, token)
     assert items["Entertainment"]["is_over_budget"] is True
@@ -147,6 +161,12 @@ async def test_budget_progress_resets_at_the_start_of_a_new_calendar_month(
     injected clock (ADR-013 decision F), same technique the client
     fixture already uses to override get_db_session -- everything else
     (routing, auth, real SQLite writes) stays on the real path.
+
+    This test's absolute dates are intentionally hardcoded (not
+    _this_month) -- it exists specifically to exercise the month-boundary
+    behaviour, and the frozen clock override below makes it self-
+    consistent regardless of real wall-clock time, unlike the rest of
+    this file (see the FINTRACK-38 Bug note on _this_month above).
     """
     from apps.api.main import app
     from apps.api.application.queries.get_budget_overview import GetBudgetOverviewHandler
@@ -207,7 +227,7 @@ def test_editing_a_budget_recalculates_percentage_against_the_new_limit(client) 
     token = _register_and_login(client, "budget-edit-recalc@example.com")
     create_resp = _create_budget(client, token, "Groceries", "500.00")
     budget_id = create_resp.json()["id"]
-    _create_transaction(client, token, "300.00", "Groceries", "2026-07-15")
+    _create_transaction(client, token, "300.00", "Groceries", _this_month(15))
 
     assert _overview_by_category(client, token)["Groceries"]["percent_used"] == "60.00"
 
@@ -235,7 +255,7 @@ def test_user_removes_an_existing_budget(client) -> None:
     token = _register_and_login(client, "budget-remove@example.com")
     create_resp = _create_budget(client, token, "Groceries", "500.00")
     budget_id = create_resp.json()["id"]
-    _create_transaction(client, token, "300.00", "Groceries", "2026-07-15")
+    _create_transaction(client, token, "300.00", "Groceries", _this_month(15))
 
     delete_resp = client.delete(f"/api/v1/budgets/{budget_id}", headers=_auth(token))
     assert delete_resp.status_code == 204
@@ -267,7 +287,7 @@ def test_deleting_a_budget_twice_returns_404_the_second_time(client) -> None:
 
 def test_category_with_no_budget_set_shows_spend_without_a_false_over_state(client) -> None:
     token = _register_and_login(client, "budget-no-budget-category@example.com")
-    _create_transaction(client, token, "120.00", "Entertainment", "2026-07-10")
+    _create_transaction(client, token, "120.00", "Entertainment", _this_month(10))
 
     items = _overview_by_category(client, token)
     assert items["Entertainment"]["spent"] == "120.00"
@@ -313,10 +333,10 @@ def test_overview_is_correct_across_a_large_number_of_categories(client) -> None
     token = _register_and_login(client, "budget-large-dataset@example.com")
     for i in range(30):
         _create_budget(client, token, f"Category{i}", "1000.00")
-        _create_transaction(client, token, f"{i + 1}.00", f"Category{i}", "2026-07-05")
+        _create_transaction(client, token, f"{i + 1}.00", f"Category{i}", _this_month(5))
     for i in range(30, 50):
         # No budget for these -- spend-only rows (AC5).
-        _create_transaction(client, token, f"{i + 1}.00", f"Category{i}", "2026-07-05")
+        _create_transaction(client, token, f"{i + 1}.00", f"Category{i}", _this_month(5))
 
     items = _overview_by_category(client, token)
     assert len(items) == 50

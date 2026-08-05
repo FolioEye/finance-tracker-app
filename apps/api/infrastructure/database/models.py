@@ -17,12 +17,25 @@ class Base(DeclarativeBase):
 
 class UserModel(Base):
     __tablename__ = "users"
+    __table_args__ = (
+        UniqueConstraint("oauth_provider", "oauth_subject", name="uq_users_oauth_identity"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False, index=True)
-    password_hash: Mapped[str] = mapped_column(String(60), nullable=False)  # bcrypt hash is fixed 60 chars
+    # Nullable as of FINTRACK-42/43 (ADR-016): an OAuth-only user has no
+    # password at all, rather than a dummy/placeholder hash.
+    password_hash: Mapped[str | None] = mapped_column(String(60), nullable=True)
     email_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # oauth_provider/oauth_subject: both nullable (password-only users have
+    # neither) but always set together (see SqlAlchemyUserRepository) --
+    # the composite unique constraint above only meaningfully binds when
+    # both are non-null, since Postgres treats NULL as distinct from NULL
+    # in a unique constraint (same pattern already used by AlertModel's
+    # two unique constraints, see that class's docstring).
+    oauth_provider: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    oauth_subject: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

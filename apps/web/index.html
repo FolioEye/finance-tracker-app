@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Baseline CSP via meta tag (defense in depth, per constraint matrix).
+         The authoritative CSP header should also be set by the hosting
+         layer (Hostinger, via FINTRACK-24's Release Pro pass) since a meta
+         tag can't express every directive (e.g. frame-ancestors, report-uri). -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com; frame-src https://accounts.google.com https://appleid.apple.com; connect-src 'self' https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;"
+    />
+    <title>FinTrack</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

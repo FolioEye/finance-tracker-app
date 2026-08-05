@@ -21,9 +21,17 @@ test_budgets_security.py verifies for Budget.category.
 from __future__ import annotations
 
 import uuid
+from datetime import date
 
 SQLI_PAYLOAD = "'; DROP TABLE alerts; --"
 XSS_PAYLOAD = "<script>alert('xss')</script>"
+
+
+def _this_month(day: int) -> str:
+    """A date within the real current calendar month. See the identical
+    helper's docstring in tests/integration/test_budgets_api.py for why
+    this replaced hardcoded "2026-07-XX" literals (FINTRACK-38 Bug)."""
+    return date.today().replace(day=day).isoformat()
 
 
 def _register_and_login(client, email: str, password: str = "StrongPass1") -> str:
@@ -97,11 +105,11 @@ def test_sql_injection_shaped_category_inherited_from_a_transaction_does_not_dis
     """
     victim_token = _register_and_login(client, "alert-sqli-bystander-victim@example.com")
     _create_budget(client, victim_token, "Groceries", "100.00")
-    _create_transaction(client, victim_token, "95.00", "Groceries", "2026-07-10")
+    _create_transaction(client, victim_token, "95.00", "Groceries", _this_month(10))
     victim_alert_id = _list_alerts(client, victim_token).json()["items"][0]["id"]
 
     attacker_token = _register_and_login(client, "alert-sqli-bystander-attacker@example.com")
-    injection_resp = _create_transaction(client, attacker_token, "50.00", SQLI_PAYLOAD, "2026-07-10")
+    injection_resp = _create_transaction(client, attacker_token, "50.00", SQLI_PAYLOAD, _this_month(10))
     assert injection_resp.status_code == 400  # rejected at Transaction.new(), no alert side effect
 
     dismiss_resp = client.post(f"/api/v1/alerts/{victim_alert_id}/dismiss", headers=_auth(victim_token))
@@ -122,7 +130,7 @@ def test_sql_injection_shaped_category_inherited_from_a_transaction_does_not_dis
 def test_xss_payload_in_category_is_inert_when_returned_in_an_alert(client) -> None:
     token = _register_and_login(client, "alert-xss-category@example.com")
     _create_budget(client, token, XSS_PAYLOAD, "100.00")
-    resp = _create_transaction(client, token, "95.00", XSS_PAYLOAD, "2026-07-10")
+    resp = _create_transaction(client, token, "95.00", XSS_PAYLOAD, _this_month(10))
     assert resp.status_code == 201, resp.text
 
     alerts_resp = _list_alerts(client, token)
@@ -194,7 +202,7 @@ def test_idor_cannot_dismiss_another_users_alert(client) -> None:
     victim_token = _register_and_login(client, "alert-idor-dismiss-victim@example.com")
     attacker_token = _register_and_login(client, "alert-idor-dismiss-attacker@example.com")
     _create_budget(client, victim_token, "Private", "100.00")
-    _create_transaction(client, victim_token, "95.00", "Private", "2026-07-10")
+    _create_transaction(client, victim_token, "95.00", "Private", _this_month(10))
     alert_id = _list_alerts(client, victim_token).json()["items"][0]["id"]
 
     resp = client.post(f"/api/v1/alerts/{alert_id}/dismiss", headers=_auth(attacker_token))
@@ -208,7 +216,7 @@ def test_idor_list_never_leaks_another_users_alerts(client) -> None:
     victim_token = _register_and_login(client, "alert-idor-list-victim@example.com")
     attacker_token = _register_and_login(client, "alert-idor-list-attacker@example.com")
     _create_budget(client, victim_token, "Private", "100.00")
-    _create_transaction(client, victim_token, "95.00", "Private", "2026-07-10")
+    _create_transaction(client, victim_token, "95.00", "Private", _this_month(10))
 
     attacker_items = _list_alerts(client, attacker_token).json()["items"]
     assert attacker_items == []
@@ -231,8 +239,8 @@ def test_idor_a_forged_alert_id_belonging_to_no_one_returns_404_not_500(client) 
 
 def _large_transaction_alert_id(client, token: str, category: str, seed_amounts, trigger_amount: str) -> str:
     for amount in seed_amounts:
-        _create_transaction(client, token, amount, category, "2026-07-10")
-    _create_transaction(client, token, trigger_amount, category, "2026-07-15")
+        _create_transaction(client, token, amount, category, _this_month(10))
+    _create_transaction(client, token, trigger_amount, category, _this_month(15))
     items = _list_alerts(client, token).json()["items"]
     large = [a for a in items if a["alert_type"] == "LARGE_TRANSACTION"]
     assert len(large) == 1

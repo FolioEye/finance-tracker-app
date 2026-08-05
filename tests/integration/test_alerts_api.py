@@ -15,6 +15,13 @@ from datetime import date
 import pytest
 
 
+def _this_month(day: int) -> str:
+    """A date within the real current calendar month. See the identical
+    helper's docstring in tests/integration/test_budgets_api.py for why
+    this replaced hardcoded "2026-07-XX" literals (FINTRACK-38 Bug)."""
+    return date.today().replace(day=day).isoformat()
+
+
 def _register_and_login(client, email: str, password: str = "StrongPass1") -> str:
     resp = client.post(
         "/api/v1/auth/register",
@@ -65,11 +72,11 @@ def _dismiss(client, token: str, alert_id: str):
 def test_category_spend_crosses_the_90_percent_threshold(client) -> None:
     token = _register_and_login(client, "alert-cross-threshold@example.com")
     _create_budget(client, token, "Groceries", "400.00")
-    _create_transaction(client, token, "350.00", "Groceries", "2026-07-10")  # 87.5% -- no alert yet
+    _create_transaction(client, token, "350.00", "Groceries", _this_month(10))  # 87.5% -- no alert yet
 
     assert _list_alerts(client, token).json()["items"] == []
 
-    _create_transaction(client, token, "15.00", "Groceries", "2026-07-11")  # 365/400 = 91.25%
+    _create_transaction(client, token, "15.00", "Groceries", _this_month(11))  # 365/400 = 91.25%
 
     items = _list_alerts(client, token).json()["items"]
     threshold_alerts = [a for a in items if a["alert_type"] == "THRESHOLD_CROSSING"]
@@ -86,8 +93,8 @@ def test_category_spend_crosses_the_90_percent_threshold(client) -> None:
 def test_spend_stays_well_under_threshold(client) -> None:
     token = _register_and_login(client, "alert-under-threshold@example.com")
     _create_budget(client, token, "Groceries", "400.00")
-    _create_transaction(client, token, "100.00", "Groceries", "2026-07-10")
-    _create_transaction(client, token, "20.00", "Groceries", "2026-07-11")  # 120/400 = 30%
+    _create_transaction(client, token, "100.00", "Groceries", _this_month(10))
+    _create_transaction(client, token, "20.00", "Groceries", _this_month(11))  # 120/400 = 30%
 
     items = _list_alerts(client, token).json()["items"]
     assert [a for a in items if a["alert_type"] == "THRESHOLD_CROSSING"] == []
@@ -101,12 +108,12 @@ def test_spend_stays_well_under_threshold(client) -> None:
 def test_threshold_crossed_multiple_times_via_rapid_transactions_fires_only_once(client) -> None:
     token = _register_and_login(client, "alert-rapid-crossings@example.com")
     _create_budget(client, token, "Groceries", "100.00")
-    _create_transaction(client, token, "91.00", "Groceries", "2026-07-10")  # crosses 90% -- 1st alert
+    _create_transaction(client, token, "91.00", "Groceries", _this_month(10))  # crosses 90% -- 1st alert
 
     assert len(_list_alerts(client, token).json()["items"]) == 1
 
     for amount in ("1.00", "1.00", "1.00"):
-        _create_transaction(client, token, amount, "Groceries", "2026-07-11")
+        _create_transaction(client, token, amount, "Groceries", _this_month(11))
 
     items = _list_alerts(client, token).json()["items"]
     threshold_alerts = [a for a in items if a["alert_type"] == "THRESHOLD_CROSSING"]
@@ -123,7 +130,7 @@ def test_alert_data_is_scoped_to_the_authenticated_user_only(client) -> None:
     user_b_token = _register_and_login(client, "alert-scope-b@example.com")
 
     _create_budget(client, user_a_token, "Groceries", "100.00")
-    _create_transaction(client, user_a_token, "95.00", "Groceries", "2026-07-10")
+    _create_transaction(client, user_a_token, "95.00", "Groceries", _this_month(10))
 
     a_items = _list_alerts(client, user_a_token).json()["items"]
     b_items = _list_alerts(client, user_b_token).json()["items"]
@@ -139,9 +146,9 @@ def test_alert_data_is_scoped_to_the_authenticated_user_only(client) -> None:
 def test_an_unusually_large_single_transaction_triggers_an_alert(client) -> None:
     token = _register_and_login(client, "alert-large-txn@example.com")
     for amount in ("20.00", "18.00", "22.00"):
-        _create_transaction(client, token, amount, "Dining", "2026-07-10")
+        _create_transaction(client, token, amount, "Dining", _this_month(10))
 
-    _create_transaction(client, token, "500.00", "Dining", "2026-07-15")
+    _create_transaction(client, token, "500.00", "Dining", _this_month(15))
 
     items = _list_alerts(client, token).json()["items"]
     large_alerts = [a for a in items if a["alert_type"] == "LARGE_TRANSACTION"]
@@ -158,9 +165,9 @@ def test_an_unusually_large_single_transaction_triggers_an_alert(client) -> None
 def test_a_transaction_within_normal_range_does_not_trigger_a_large_transaction_alert(client) -> None:
     token = _register_and_login(client, "alert-normal-txn@example.com")
     for amount in ("40.00", "38.00", "42.00"):
-        _create_transaction(client, token, amount, "Dining", "2026-07-10")
+        _create_transaction(client, token, amount, "Dining", _this_month(10))
 
-    _create_transaction(client, token, "45.00", "Dining", "2026-07-15")
+    _create_transaction(client, token, "45.00", "Dining", _this_month(15))
 
     items = _list_alerts(client, token).json()["items"]
     assert [a for a in items if a["alert_type"] == "LARGE_TRANSACTION"] == []
@@ -178,6 +185,11 @@ async def test_dismissing_an_alert_does_not_suppress_future_alerts(client, test_
     ADR-014 decision A) -- the evaluate-alerts handler's clock is pinned
     so July's crossing and August's crossing are genuinely different
     periods, not just two calls on the same day.
+
+    This test's absolute dates are intentionally hardcoded (not
+    _this_month) -- the frozen clock overrides below make it self-
+    consistent regardless of real wall-clock time, same reasoning as
+    test_budgets_api.py's monthly-reset test.
     """
     from fastapi import Depends
 
@@ -259,7 +271,7 @@ def test_attempt_to_dismiss_another_users_alert(client) -> None:
     user_b_token = _register_and_login(client, "alert-idor-dismiss-b@example.com")
 
     _create_budget(client, user_a_token, "Groceries", "100.00")
-    _create_transaction(client, user_a_token, "95.00", "Groceries", "2026-07-10")
+    _create_transaction(client, user_a_token, "95.00", "Groceries", _this_month(10))
     alert_id = _list_alerts(client, user_a_token).json()["items"][0]["id"]
 
     resp = _dismiss(client, user_b_token, alert_id)
@@ -294,7 +306,7 @@ def test_dismissing_a_nonexistent_alert_returns_404(client) -> None:
 def test_dismissing_the_same_alert_twice_is_idempotent(client) -> None:
     token = _register_and_login(client, "alert-dismiss-twice@example.com")
     _create_budget(client, token, "Groceries", "100.00")
-    _create_transaction(client, token, "95.00", "Groceries", "2026-07-10")
+    _create_transaction(client, token, "95.00", "Groceries", _this_month(10))
     alert_id = _list_alerts(client, token).json()["items"][0]["id"]
 
     assert _dismiss(client, token, alert_id).status_code == 204
@@ -314,18 +326,18 @@ def test_large_transaction_baseline_only_considers_the_last_10_transactions(clie
     # 5 old, large transactions -- must NOT count toward the average once
     # more than ROLLING_WINDOW (10) newer transactions exist.
     for _ in range(5):
-        _create_transaction(client, token, "100.00", "Dining", "2026-07-01")
+        _create_transaction(client, token, "100.00", "Dining", _this_month(1))
 
     # 10 recent, small transactions -- these are the only ones that should
     # feed the rolling average by the time the next transaction lands.
     for _ in range(10):
-        _create_transaction(client, token, "5.00", "Dining", "2026-07-10")
+        _create_transaction(client, token, "5.00", "Dining", _this_month(10))
 
     # If the window were NOT limited to 10, the average would be
     # (5*100 + 10*5)/15 = 36.67, and 3x that (110.0) would swallow a $20
     # transaction. With the window correctly limited to the last 10 ($5
     # each), the average is $5, so 3x = $15, and $20 must fire.
-    resp = _create_transaction(client, token, "20.00", "Dining", "2026-07-15")
+    resp = _create_transaction(client, token, "20.00", "Dining", _this_month(15))
     new_txn_id = resp.json()["id"]
 
     items = _list_alerts(client, token).json()["items"]
@@ -344,7 +356,7 @@ def test_alerts_list_is_correct_across_a_large_number_of_categories(client) -> N
     for i in range(20):
         category = f"Category{i}"
         _create_budget(client, token, category, "100.00")
-        _create_transaction(client, token, "95.00", category, "2026-07-05")  # 95% -- crosses threshold
+        _create_transaction(client, token, "95.00", category, _this_month(5))  # 95% -- crosses threshold
 
     items = _list_alerts(client, token).json()["items"]
     threshold_alerts = [a for a in items if a["alert_type"] == "THRESHOLD_CROSSING"]
@@ -369,8 +381,8 @@ def _large_transaction_alert_id(client, token: str, category: str, seed_amounts,
     rolling average, then posts one transaction big enough to fire a
     LARGE_TRANSACTION alert, and returns that alert's id."""
     for amount in seed_amounts:
-        _create_transaction(client, token, amount, category, "2026-07-10")
-    _create_transaction(client, token, trigger_amount, category, "2026-07-15")
+        _create_transaction(client, token, amount, category, _this_month(10))
+    _create_transaction(client, token, trigger_amount, category, _this_month(15))
     items = _list_alerts(client, token).json()["items"]
     large = [a for a in items if a["alert_type"] == "LARGE_TRANSACTION"]
     assert len(large) == 1, f"expected exactly one LARGE_TRANSACTION alert, got {large}"
@@ -392,7 +404,7 @@ def test_user_justifies_a_large_transaction_alert_and_a_similar_future_transacti
     assert justify_resp.status_code == 204
 
     # 850 is well over 3x the ~20 rolling average -- would otherwise fire.
-    resp = _create_transaction(client, token, "850.00", "Travel", "2026-07-16")
+    resp = _create_transaction(client, token, "850.00", "Travel", _this_month(16))
     new_txn_id = resp.json()["id"]
 
     items = _list_alerts(client, token).json()["items"]
@@ -412,7 +424,7 @@ def test_a_transaction_that_exceeds_every_previously_justified_amount_still_aler
     )
     assert _justify(client, token, alert_id).status_code == 204
 
-    resp = _create_transaction(client, token, "1500.00", "Travel", "2026-07-16")
+    resp = _create_transaction(client, token, "1500.00", "Travel", _this_month(16))
     new_txn_id = resp.json()["id"]
 
     items = _list_alerts(client, token).json()["items"]
@@ -434,7 +446,7 @@ def test_a_plain_dismiss_does_not_suppress_future_similar_alerts(client) -> None
     dismiss_resp = _dismiss(client, token, alert_id)
     assert dismiss_resp.status_code == 204  # dismissed, NOT justified
 
-    resp = _create_transaction(client, token, "650.00", "Electronics", "2026-07-16")
+    resp = _create_transaction(client, token, "650.00", "Electronics", _this_month(16))
     new_txn_id = resp.json()["id"]
 
     items = _list_alerts(client, token, include_dismissed=True).json()["items"]
@@ -450,7 +462,7 @@ def test_a_plain_dismiss_does_not_suppress_future_similar_alerts(client) -> None
 def test_attempt_to_justify_a_threshold_crossing_alert(client) -> None:
     token = _register_and_login(client, "justify-wrong-alert-type@example.com")
     _create_budget(client, token, "Groceries", "100.00")
-    _create_transaction(client, token, "95.00", "Groceries", "2026-07-10")
+    _create_transaction(client, token, "95.00", "Groceries", _this_month(10))
 
     items = _list_alerts(client, token).json()["items"]
     threshold_alert_id = [a for a in items if a["alert_type"] == "THRESHOLD_CROSSING"][0]["id"]
@@ -462,7 +474,7 @@ def test_attempt_to_justify_a_threshold_crossing_alert(client) -> None:
     # No justification recorded -- a later large-transaction alert in an
     # unrelated category must still fire normally, i.e. nothing silently
     # got created for this user.
-    resp2 = _create_transaction(client, token, "1000.00", "NewCategory", "2026-07-16")
+    resp2 = _create_transaction(client, token, "1000.00", "NewCategory", _this_month(16))
     later_items = _list_alerts(client, token).json()["items"]
     assert any(a["transaction_id"] == resp2.json()["id"] for a in later_items if a["alert_type"] == "LARGE_TRANSACTION")
 
@@ -485,7 +497,7 @@ def test_attempt_to_justify_another_users_alert(client) -> None:
 
     # Victim's alert must remain unjustified -- a similar future
     # transaction for the VICTIM must still fire normally.
-    victim_new_resp = _create_transaction(client, victim_token, "850.00", "Private", "2026-07-16")
+    victim_new_resp = _create_transaction(client, victim_token, "850.00", "Private", _this_month(16))
     victim_items = _list_alerts(client, victim_token).json()["items"]
     matching = [
         a for a in victim_items
@@ -535,9 +547,9 @@ def test_justify_calls_for_the_same_category_in_either_order_converge_on_the_hig
     # Two separate LARGE_TRANSACTION alerts in the same category, at
     # different amounts, each producing its own justify-able alert.
     for amount in ("20.00", "18.00", "22.00"):
-        _create_transaction(client, token, amount, "Travel", "2026-07-10")
-    lower_resp = _create_transaction(client, token, "900.00", "Travel", "2026-07-11")
-    higher_resp = _create_transaction(client, token, "1500.00", "Travel", "2026-07-12")
+        _create_transaction(client, token, amount, "Travel", _this_month(10))
+    lower_resp = _create_transaction(client, token, "900.00", "Travel", _this_month(11))
+    higher_resp = _create_transaction(client, token, "1500.00", "Travel", _this_month(12))
 
     items = _list_alerts(client, token).json()["items"]
     lower_alert_id = next(a["id"] for a in items if a["transaction_id"] == lower_resp.json()["id"])
@@ -549,7 +561,7 @@ def test_justify_calls_for_the_same_category_in_either_order_converge_on_the_hig
 
     # A transaction just above the lower-but-below-the-higher amount must
     # now be suppressed, proving the ceiling is 1500, not 900.
-    resp = _create_transaction(client, token, "1200.00", "Travel", "2026-07-16")
+    resp = _create_transaction(client, token, "1200.00", "Travel", _this_month(16))
     later_items = _list_alerts(client, token).json()["items"]
     matching = [
         a for a in later_items

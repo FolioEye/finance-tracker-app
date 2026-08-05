@@ -1,10 +1,16 @@
 """FastAPI dependency-injection wiring.
 
 No singletons or global mutable state -- a fresh repository/handler is
-constructed per request from a pooled session, per constraint matrix.
+constructed per request from a pooled session, per constraint matrix. The
+two `_get_*_verifier` functions below are the one deliberate exception,
+following the same `@lru_cache`-wrapped-factory idiom `config.get_settings()`
+already uses: they cache a long-lived infra client (Apple's JWKS fetch
+cache lives on the verifier instance), not business/domain state, exactly
+like the module-level `redis_client` imported below.
 """
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import AsyncIterator
 
 from fastapi import Depends
@@ -34,6 +40,7 @@ from apps.api.application.commands.evaluate_alerts_for_transaction import (
 from apps.api.application.commands.login_user import LoginUserHandler
 from apps.api.application.commands.logout_user import LogoutUserHandler
 from apps.api.application.commands.mark_not_subscription import MarkNotSubscriptionHandler
+from apps.api.application.commands.oauth_login_user import OAuthLoginUserHandler
 from apps.api.application.commands.record_recommendation_action import (
     RecordRecommendationActionHandler,
 )
@@ -95,6 +102,7 @@ from apps.api.infrastructure.repositories.sqlalchemy_transaction_repository impo
 from apps.api.infrastructure.repositories.sqlalchemy_user_repository import (
     SqlAlchemyUserRepository,
 )
+from apps.api.infrastructure.security.oauth_verifier import AppleIdTokenVerifier, GoogleIdTokenVerifier
 from apps.api.infrastructure.security.password_hasher import BcryptPasswordHasher
 from apps.api.infrastructure.security.rate_limiter import RedisRateLimiter
 from apps.api.infrastructure.security.token_revocation import RedisTokenRevocationStore
@@ -158,6 +166,44 @@ def get_logout_user_handler(settings: Settings = Depends(get_settings)) -> Logou
     )
     revocation_store = RedisTokenRevocationStore(redis_client)
     return LogoutUserHandler(token_service=tokens, revocation_store=revocation_store)
+
+
+@lru_cache(maxsize=1)
+def _get_google_verifier(client_id: str) -> GoogleIdTokenVerifier:
+    return GoogleIdTokenVerifier(client_id=client_id)
+
+
+@lru_cache(maxsize=1)
+def _get_apple_verifier(client_ids: tuple[str, ...]) -> AppleIdTokenVerifier:
+    return AppleIdTokenVerifier(client_ids=client_ids)
+
+
+def get_oauth_login_user_handler(
+    session: AsyncSession = Depends(get_db_session),
+    settings: Settings = Depends(get_settings),
+) -> OAuthLoginUserHandler:
+    repository = SqlAlchemyUserRepository(session)
+    tokens = TokenService(
+        secret_key=settings.jwt_secret_key,
+        algorithm=settings.jwt_algorithm,
+        access_token_expire_minutes=settings.access_token_expire_minutes,
+        refresh_token_expire_days=settings.refresh_token_expire_days,
+    )
+    rate_limiter = RedisRateLimiter(redis_client)
+    apple_client_ids = tuple(
+        c.strip() for c in settings.apple_oauth_client_ids.split(",") if c.strip()
+    )
+    google_verifier = _get_google_verifier(settings.google_oauth_client_id)
+    apple_verifier = _get_apple_verifier(apple_client_ids)
+    return OAuthLoginUserHandler(
+        user_repository=repository,
+        token_service=tokens,
+        rate_limiter=rate_limiter,
+        google_verifier=google_verifier,
+        apple_verifier=apple_verifier,
+        max_attempts=settings.login_rate_limit_attempts,
+        window_seconds=settings.login_rate_limit_window_minutes * 60,
+    )
 
 
 def get_create_transaction_handler(

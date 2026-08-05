@@ -30,6 +30,13 @@ import pytest
 from apps.api.config import get_settings
 
 
+def _this_month(day: int) -> str:
+    """A date within the real current calendar month. See the identical
+    helper's docstring in tests/integration/test_budgets_api.py for why
+    this replaced hardcoded "2026-07-XX" literals (FINTRACK-38 Bug)."""
+    return date.today().replace(day=day).isoformat()
+
+
 def _register_and_login(client, email: str, password: str = "StrongPass1") -> str:
     resp = client.post(
         "/api/v1/auth/register",
@@ -137,8 +144,8 @@ async def test_deprioritised_budget_category_passed_over_via_real_api(client, te
     # Groceries has been mostly ignored -- Dining should be shown instead.
     assert _create_budget(client, token, "Dining", "100.00").status_code == 201
     assert _create_budget(client, token, "Groceries", "100.00").status_code == 201
-    assert _create_transaction(client, token, "85.00", "Dining", "2026-07-05").status_code == 201
-    assert _create_transaction(client, token, "95.00", "Groceries", "2026-07-05").status_code == 201
+    assert _create_transaction(client, token, "85.00", "Dining", _this_month(5)).status_code == 201
+    assert _create_transaction(client, token, "95.00", "Groceries", _this_month(5)).status_code == 201
 
     # 2 done (long ago) + 8 ignored (most recent) -- 20% overall, and the
     # most-recent occurrence is NOT done, so no instant-recovery kicks in.
@@ -169,8 +176,8 @@ async def test_well_followed_budget_category_keeps_native_priority_via_real_api(
 
     assert _create_budget(client, token, "Dining", "100.00").status_code == 201
     assert _create_budget(client, token, "Groceries", "100.00").status_code == 201
-    assert _create_transaction(client, token, "85.00", "Dining", "2026-07-05").status_code == 201
-    assert _create_transaction(client, token, "95.00", "Groceries", "2026-07-05").status_code == 201
+    assert _create_transaction(client, token, "85.00", "Dining", _this_month(5)).status_code == 201
+    assert _create_transaction(client, token, "95.00", "Groceries", _this_month(5)).status_code == 201
 
     await _seed_history(
         test_session_factory, user_id, "BUDGET_RISK", "Groceries",
@@ -204,8 +211,8 @@ async def test_recovered_budget_category_wins_back_native_priority(client, test_
 
     assert _create_budget(client, token, "Dining", "100.00").status_code == 201
     assert _create_budget(client, token, "Groceries", "100.00").status_code == 201
-    assert _create_transaction(client, token, "90.00", "Dining", "2026-07-05").status_code == 201
-    assert _create_transaction(client, token, "85.00", "Groceries", "2026-07-05").status_code == 201
+    assert _create_transaction(client, token, "90.00", "Dining", _this_month(5)).status_code == 201
+    assert _create_transaction(client, token, "85.00", "Groceries", _this_month(5)).status_code == 201
 
     # 8 ignored, 1 done, then the MOST RECENT one done (2 of 10 overall --
     # would fail the 30% rate check on its own, but recovery overrides it).
@@ -237,7 +244,7 @@ async def test_deprioritised_budget_risk_still_outranks_normal_subscription_via_
     user_id = _decode_user_id(token)
 
     assert _create_budget(client, token, "Dining", "100.00").status_code == 201
-    assert _create_transaction(client, token, "90.00", "Dining", "2026-07-05").status_code == 201
+    assert _create_transaction(client, token, "90.00", "Dining", _this_month(5)).status_code == 201
     hulu_resp = _create_transaction(client, token, "9.99", "Entertainment", "2026-06-20")
     assert hulu_resp.status_code == 201
 
@@ -267,7 +274,7 @@ async def test_budget_category_with_too_few_occurrences_keeps_native_priority(
     user_id = _decode_user_id(token)
 
     assert _create_budget(client, token, "Dining", "100.00").status_code == 201
-    assert _create_transaction(client, token, "85.00", "Dining", "2026-07-05").status_code == 201
+    assert _create_transaction(client, token, "85.00", "Dining", _this_month(5)).status_code == 201
 
     # Only 2 occurrences, both ignored (0%) -- below MIN_SAMPLE=3, so must
     # NOT be deprioritised despite the rate looking terrible.
@@ -291,7 +298,7 @@ def test_brand_new_budget_category_with_no_history_is_not_deprioritised(client) 
     token = _register_and_login(client, "reco-prior-brand-new@example.com")
 
     assert _create_budget(client, token, "Dining", "100.00").status_code == 201
-    assert _create_transaction(client, token, "85.00", "Dining", "2026-07-05").status_code == 201
+    assert _create_transaction(client, token, "85.00", "Dining", _this_month(5)).status_code == 201
 
     resp = _recommendation(client, token)
     body = resp.json()

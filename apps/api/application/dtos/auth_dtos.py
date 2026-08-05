@@ -68,3 +68,30 @@ class LoginResponse(BaseModel):
 
 class LogoutResponse(BaseModel):
     detail: str = "Logged out successfully"
+
+
+class OAuthLoginRequest(BaseModel):
+    """FINTRACK-42/43. `provider` is also implied by the URL path
+    (/oauth/google vs /oauth/apple) -- kept in the body too, and checked
+    for agreement at the route layer, since which verifier runs is a
+    security-relevant decision, not just a routing convenience.
+    """
+
+    provider: str = Field(..., pattern="^(google|apple)$")
+    id_token: str = Field(..., min_length=1, max_length=4096)
+
+    # NOTE for maintainers: `id_token` must never be passed to a logger,
+    # error message, or anywhere else outside this request/handler
+    # boundary -- it is a bearer credential for the OAuth provider itself.
+
+
+class OAuthLoginResponse(BaseModel):
+    # Same no-refresh-token-in-body policy as LoginResponse/RegisterResponse.
+    user_id: uuid.UUID
+    email: str
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    is_new_user: bool
+
+    model_config = {"from_attributes": True}
