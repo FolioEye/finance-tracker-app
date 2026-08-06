@@ -29,6 +29,6 @@ wrapt==2.3.0
 # GHSA-537c-gmf6-5ccf, a vulnerable bundled OpenSSL fixed in 48.0.1).
 # 48.0.1 clears both -- keep this at or above 48.0.1 on any future bump.
 google-auth==2.35.0
-cryptography==48.0.1
+cryptography==50.0.0
 httpx==0.27.2
 requests==2.34.2
