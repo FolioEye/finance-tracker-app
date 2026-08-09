@@ -11,14 +11,18 @@ const REQUIRED_BUILD_ENV_VARS = ["VITE_API_BASE_URL"] as const;
 
 export default defineConfig(({ command, mode }) => {
   if (command === "build") {
-    // loadEnv reads both .env* files and already-exported process.env
+    // loadEnv reads both .env* files and already-exported environment
     // vars (the latter is how CI / Release Pro's deploy pipeline actually
-    // supplies this) for the current mode, with process.env taking
-    // precedence -- the same source of truth the app's real config
-    // loading already uses. Scoped to command === "build" only, so
-    // `npm run dev` and vitest test runs aren't forced to have
-    // production config present just to start.
-    const env = loadEnv(mode, process.cwd(), "");
+    // supplies this) for the current mode, with already-exported vars
+    // taking precedence -- the same source of truth the app's real config
+    // loading already uses. envDir is "." rather than a Node process.cwd()
+    // call: `npm run build` always runs with cwd already set to apps/web,
+    // so "." resolves to the same directory without depending on Node's
+    // global types being available to this client-adjacent TS project.
+    // Scoped to command === "build" only, so `npm run dev` and vitest
+    // test runs aren't forced to have production config present just to
+    // start.
+    const env = loadEnv(mode, ".", "");
     const missing = REQUIRED_BUILD_ENV_VARS.filter((key) => !env[key]);
     if (missing.length > 0) {
       throw new Error(
