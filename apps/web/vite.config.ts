@@ -7,7 +7,16 @@ import { defineConfig, loadEnv } from "vite";
 // bundle as the literal string "undefined" with a clean exit 0 -- every
 // request from the shipped app would then fail against that literal
 // string as a base URL, with no build-time signal anything was wrong.
-const REQUIRED_BUILD_ENV_VARS = ["VITE_API_BASE_URL"] as const;
+//
+// VITE_GOOGLE_CLIENT_ID added here after a related incident (2026-08-09):
+// it was never gated at all, so a missing value shipped as `undefined`
+// straight into Google's SDK. VITE_APPLE_CLIENT_ID/VITE_APPLE_REDIRECT_URI
+// are deliberately NOT required here -- Apple sign-in requires a paid
+// Apple Developer Program enrollment ($99/yr) that may not exist yet, so
+// LoginPage.tsx is written to gracefully hide the Apple button instead of
+// crashing when those are absent. Google has no such paywall, so it stays
+// a hard build-time requirement like the API base URL.
+const REQUIRED_BUILD_ENV_VARS = ["VITE_API_BASE_URL", "VITE_GOOGLE_CLIENT_ID"] as const;
 
 export default defineConfig(({ command, mode }) => {
   if (command === "build") {
