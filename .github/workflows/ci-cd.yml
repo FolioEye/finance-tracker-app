@@ -237,14 +237,15 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with: { name: frontend-dist, path: dist }
-      - name: FTP deploy to Hostinger staging
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: SFTP deploy to Hostinger staging
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
-          server: ${{ secrets.HOSTINGER_FTP_HOST }}
-          username: ${{ secrets.HOSTINGER_FTP_USER }}
-          password: ${{ secrets.HOSTINGER_FTP_PASS }}
-          local-dir: dist/
-          server-dir: /public_html/staging/ # staging subdomain folder
+          username: ${{ secrets.HOSTINGER_SFTP_USER }}
+          server: ${{ secrets.HOSTINGER_SFTP_HOST }}
+          port: ${{ secrets.HOSTINGER_SFTP_PORT }}
+          ssh_private_key: ${{ secrets.HOSTINGER_SFTP_SSH_KEY }}
+          local_path: './dist/*'
+          remote_path: '/public_html/staging/' # staging subdomain folder
 
   # ─── STAGE 4b: Deploy to PRODUCTION ──────────────────────────────
   # environment: production -> GitHub pauses here and emails required reviewers.
@@ -257,17 +258,20 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && needs.build-frontend.result == 'success'
     environment: production # <- HUMAN GATE: pauses, emails reviewer, waits for approval
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
         with: { name: frontend-dist, path: dist }
-      - name: FTP deploy to Hostinger production
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: SFTP deploy to Hostinger production
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
-          server: ${{ secrets.HOSTINGER_FTP_HOST }}
-          username: ${{ secrets.HOSTINGER_FTP_USER }}
-          password: ${{ secrets.HOSTINGER_FTP_PASS }}
-          local-dir: dist/
-          server-dir: /public_html/
+          username: ${{ secrets.HOSTINGER_SFTP_USER }}
+          server: ${{ secrets.HOSTINGER_SFTP_HOST }}
+          port: ${{ secrets.HOSTINGER_SFTP_PORT }}
+          ssh_private_key: ${{ secrets.HOSTINGER_SFTP_SSH_KEY }}
+          local_path: './dist/*'
+          remote_path: '/public_html/'
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
