@@ -80,9 +80,9 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - uses: actions/setup-node@v4
-        with: { node-version: "20", cache: "npm", cache-dependency-path: apps/web/package-lock.json }
+        with: { node-version: "20"}
       - name: Install frontend dependencies
-        run: cd apps/web && npm ci
+        run: cd apps/web && npm install
       - name: Verify requirements.lock.txt is current (F-12)
         # Regenerates a throwaway copy the same way generate-lock-file does and
         # diffs it against the committed lock file. Catches anyone editing
