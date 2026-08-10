@@ -36,7 +36,17 @@ pytestmark = pytest.mark.skipif(
 
 class BuildContext:
     def __init__(self) -> None:
-        self.env: dict[str, str] = {"VITE_API_BASE_URL": "https://api.fintrack.example.com"}
+        # Both required-at-build-time vars (vite.config.ts's
+        # REQUIRED_BUILD_ENV_VARS) need a value here so the happy-path
+        # scenarios below exercise a real, would-actually-ship build --
+        # VITE_GOOGLE_CLIENT_ID added alongside VITE_API_BASE_URL after
+        # FINTRACK-49 (2026-08-09): the production incident that added
+        # Google to the required list also broke this suite's own build
+        # until it supplied a value here too.
+        self.env: dict[str, str] = {
+            "VITE_API_BASE_URL": "https://api.fintrack.example.com",
+            "VITE_GOOGLE_CLIENT_ID": "test-client-id.apps.googleusercontent.com",
+        }
         self.injected_type_error_file: Path | None = None
         self.injected_secret_file: Path | None = None
         self.result: subprocess.CompletedProcess | None = None
