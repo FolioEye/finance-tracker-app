@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -34,6 +35,38 @@ settings = get_settings()
 app = FastAPI(title=settings.app_name, debug=settings.debug)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# CORS -- see config.py's cors_allowed_origins docstring for the incident
+# this closes (FINTRACK-38, 2026-08-09: middleware was entirely absent,
+# so every browser call from apps/web, including OAuth login, was always
+# going to be blocked regardless of frontend domain). Only registered
+# when at least one origin is configured -- an empty allow_origins list
+# on CORSMiddleware would still add CORS headers with no origins ever
+# matching, which is a more confusing failure mode than just not adding
+# the middleware at all when nothing's configured (e.g. local dev).
+_cors_origins = [origin.strip() for origin in settings.cors_allowed_origins.split(",") if origin.strip()]
+if _cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
+elif settings.environment == "production":
+    # Not a hard crash -- health endpoints and non-browser callers (e.g.
+    # server-to-server) still need to work -- but this must be loud
+    # somewhere, since a silently-empty value here means the frontend
+    # simply can't log anyone in and looks like a frontend bug instead.
+    logging.getLogger("fintrack.api").warning(
+        "cors_not_configured",
+        extra={
+            "context": {
+                "reason": "CORS_ALLOWED_ORIGINS is unset in production -- "
+                "browser requests from apps/web will be blocked by CORS",
+            }
+        },
+    )
 
 app.include_router(auth_router)
 app.include_router(transactions_router)

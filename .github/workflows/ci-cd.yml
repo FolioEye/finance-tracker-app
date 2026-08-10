@@ -245,7 +245,7 @@ jobs:
           password: ${{ secrets.HOSTINGER_FTP_PASS }}
           protocol: ftps
           local-dir: ./dist/
-          server-dir: /domains/myfintrack.gtechcode.com/public_html/staging/
+          server-dir: /domains/gtech45.com/public_html/staging/
 
   # ─── STAGE 4b: Deploy to PRODUCTION ──────────────────────────────
   # environment: production -> GitHub pauses here and emails required reviewers.
@@ -271,7 +271,7 @@ jobs:
           password: ${{ secrets.HOSTINGER_FTP_PASS }}
           protocol: ftps
           local-dir: ./dist/
-          server-dir: /domains/myfintrack.gtechcode.com/public_html/
+          server-dir: /domains/gtech45.com/public_html/myfintrack/
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
