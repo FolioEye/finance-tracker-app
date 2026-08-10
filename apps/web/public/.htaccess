@@ -17,3 +17,14 @@
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
 </IfModule>
+
+# Fallback for hosts where mod_rewrite isn't enabled or AllowOverride
+# doesn't permit the block above to take effect (confirmed needed on
+# Hostinger shared hosting, 2026-08-10 -- the mod_rewrite-only version
+# deployed fine but never actually fired for /login). ErrorDocument is a
+# core Apache directive, not a module, so this works regardless of
+# mod_rewrite support. The response's HTTP status stays 404 instead of
+# 200, but the body served is index.html, so the browser renders the
+# real app and React Router takes over routing from there -- an
+# acceptable trade-off for actually working on this host.
+ErrorDocument 404 /index.html
