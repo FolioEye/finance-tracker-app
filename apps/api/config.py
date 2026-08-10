@@ -51,6 +51,18 @@ class Settings(BaseSettings):
     google_oauth_client_id: str = ""
     apple_oauth_client_ids: str = ""
 
+    # CORS. Comma-separated list of exact origins (scheme + host, no
+    # trailing slash) allowed to call this API from a browser -- e.g.
+    # "https://myfintrack.gtech45.com,https://staging.gtech45.com". Found
+    # missing entirely during FINTRACK-38's Release Pro pass (2026-08-09):
+    # apps/web's OAuth login POSTs the provider id_token to this API from
+    # the browser, a cross-origin request (frontend on Hostinger, API on
+    # Railway) -- with no CORSMiddleware configured at all, every such
+    # request was always going to be silently blocked by the browser no
+    # matter how correct the frontend/OAuth config was. Empty by default
+    # so local dev/tests aren't forced to set it.
+    cors_allowed_origins: str = ""
+
 
 @lru_cache
 def get_settings() -> Settings:
