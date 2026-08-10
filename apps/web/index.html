@@ -3,6 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- SPA fallback restore, paired with the redirect script placed in
+         Hostinger hPanel's Website -> Error Pages -> 404 HTML editor (that
+         page is served by Hostinger's platform for any 404, ahead of this
+         app's own server config -- .htaccess-level fixes can't reach it).
+         That page sends the browser to "/?redirect=<original path>"; this
+         script must run and call replaceState BEFORE the deferred module
+         script below boots React Router, or React Router will read the
+         wrong path from window.location on its first render. Kept as a
+         plain synchronous (non-module) inline script for exactly that
+         ordering guarantee -- module scripts are deferred by default. -->
+    <script>
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var redirect = params.get("redirect");
+        if (redirect) {
+          params.delete("redirect");
+          var rest = params.toString();
+          history.replaceState(null, "", redirect + (rest ? "?" + rest : ""));
+        }
+      })();
+    </script>
     <!-- Baseline CSP via meta tag (defense in depth, per constraint matrix).
          The authoritative CSP header should also be set by the hosting
          layer (Hostinger, via FINTRACK-24's Release Pro pass) since a meta
