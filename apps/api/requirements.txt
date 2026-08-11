@@ -21,13 +21,21 @@ wrapt==2.3.0
 # mako, starlette, cffi: same non-determinism class as wrapt above --
 # unpinned, so separate pip-compile invocations on the identical inputs
 # picked different versions minutes apart (FINTRACK-48, confirmed via two
-# CI jobs in the same workflow run disagreeing, 2026-08-09). mako comes in
+# CI jobs in the same workflow run disagreeing). mako comes in
 # via alembic, starlette via fastapi, cffi via cryptography -- none listed
 # directly before this. Pinned to whatever the most recent resolve picked
 # so the committed lock file and any fresh compile agree going forward.
 mako==1.4.1
 starlette==1.6.0
 cffi==2.1.1
+
+# greenlet, typing-inspection: same non-determinism class as wrapt/mako/starlette/cffi
+# above -- unpinned, so separate pip-compile invocations on the identical inputs
+# picked different versions minutes apart (PR #58, 2026-08-11). greenlet comes in
+# via sqlalchemy[asyncio], typing-inspection via pydantic/pydantic-settings --
+# neither listed directly before this.
+greenlet==3.5.5
+typing-inspection==0.4.3
 
 # OAuth (FINTRACK-42/43, ADR-016). google-auth verifies Google's ID
 # tokens; cryptography backs PyJWT's RS256 support, needed to verify
