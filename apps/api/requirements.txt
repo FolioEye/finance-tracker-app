@@ -1,1 +1,53 @@
-ZmFzdGFwaT09MC4xMzkuMAp1dmljb3JuW3N0YW5kYXJkXT09MC4zMi4wCnB5ZGFudGljPT0yLjEzLjQKcHlkYW50aWMtc2V0dGluZ3M9PTIuMTQuMgpzcWxhbGNoZW15W2FzeW5jaW9dPT0yLjAuMzYKYXN5bmNwZz09MC4zMC4wCmFsZW1iaWM9PTEuMTMuMwpQeUpXVD09Mi4xMy4wCmJjcnlwdD09NC4yLjAKcmVkaXM9PTUuMi4wCnNsb3dhcGk9PTAuMS45CnB5dGhvbi1kb3RlbnY9PTEuMi4yCnB5dGhvbi1tdWx0aXBhcnQ9PTAuMC4zMgoKIyB3cmFwdDogdW5waW5uZWQgdHJhbnNpdGl2ZSBkZXBlbmRlbmN5IHdhcyBjYXVzaW5nIHBpcC1jb21waWxlJ3MgcmVzb2x2ZXIgdG8KIyBub24tZGV0ZXJtaW5pc3RpY2FsbHkgcGljayBiZXR3ZWVuIDIuMi4yIGFuZCAyLjMuMCBvbiBzZXBhcmF0ZSBjb21waWxlIHJ1bnMKIyBvZiB0aGUgZXhhY3Qgc2FtZSBpbnB1dHMgKGNvbmZpcm1lZCB2aWEgdHdvIHBhcmFsbGVsIENJIGpvYnMgb24gdGhlIHNhbWUKIyBjb21taXQgZGlzYWdyZWVpbmcsIDIwMjYtMDctMjgpLiBQaW5uZWQgZGlyZWN0bHkgc28gcmVzb2x1dGlvbiBpcyBzdGFibGUuCndyYXB0PT0yLjMuMAoKIyBtYWtvLCBzdGFybGV0dGUsIGNmZmk6IHNhbWUgbm9uLWRldGVybWluaXNtIGNsYXNzIGFzIHdyYXB0IGFib3ZlIC0tCiMgdW5waW5uZWQsIHNvIHNlcGFyYXRlIHBpcC1jb21waWxlIGludm9jYXRpb25zIG9uIHRoZSBpZGVudGljYWwgaW5wdXRzCiMgcGlja2VkIGRpZmZlcmVudCB2ZXJzaW9ucyBtaW51dGVzIGFwYXJ0IChGSU5UUkFDSy00OCwgY29uZmlybWVkIHZpYSB0d28KIyBDSSBqb2JzIGluIHRoZSBzYW1lIHdvcmtmbG93IHJ1biBkaXNhZ3JlZWluZykuIG1ha28gY29tZXMgaW4KIyB2aWEgYWxlbWJpYywgc3RhcmxldHRlIHZpYSBmYXN0YXBpLCBjZmZpIHZpYSBjcnlwdG9ncmFwaHkgLS0gbm9uZSBsaXN0ZWQKIyBkaXJlY3RseSBiZWZvcmUgdGhpcy4gUGlubmVkIHRvIHdoYXRldmVyIHRoZSBtb3N0IHJlY2VudCByZXNvbHZlIHBpY2tlZAojIHNvIHRoZSBjb21taXR0ZWQgbG9jayBmaWxlIGFuZCBhbnkgZnJlc2ggY29tcGlsZSBhZ3JlZSBnb2luZyBmb3J3YXJkLgptYWtvPT0xLjQuMQpzdGFybGV0dGU9PTEuNi4wCmNmZmk9PTIuMS4xCgojIGdyZWVubGV0LCB0eXBpbmctaW5zcGVjdGlvbjogc2FtZSBub24tZGV0ZXJtaW5pc20gY2xhc3MgYXMgd3JhcHQvbWFrby9zdGFybGV0dGUvY2ZmaQojIGFib3ZlIC0tIHVucGlubmVkLCBzbyBzZXBhcmF0ZSBwaXAtY29tcGlsZSBpbnZvY2F0aW9ucyBvbiB0aGUgaWRlbnRpY2FsIGlucHV0cwojIHBpY2tlZCBkaWZmZXJlbnQgdmVyc2lvbnMgbWludXRlcyBhcGFydCAoUFIgIzU4LCAyMDI2LTA4LTExKS4gZ3JlZW5sZXQgY29tZXMgaW4KIyB2aWEgc3FsYWxjaGVteVthc3luY2lvXSwgdHlwaW5nLWluc3BlY3Rpb24gdmlhIHB5ZGFudGljL3B5ZGFudGljLXNldHRpbmdzIC0tCiMgbmVpdGhlciBsaXN0ZWQgZGlyZWN0bHkgYmVmb3JlIHRoaXMuCmdyZWVubGV0PT0zLjUuNQp0eXBpbmctaW5zcGVjdGlvbj09MC40LjMKCiMgT0F1dGggKEZJTlRSQUNLLTQyLzQzLCBBRFItMDE2KS4gZ29vZ2xlLWF1dGggdmVyaWZpZXMgR29vZ2xlJ3MgSUQKIyB0b2tlbnM7IGNyeXB0b2dyYXBoeSBiYWNrcyBQeUpXVCdzIFJTMjU2IHN1cHBvcnQsIG5lZWRlZCB0byB2ZXJpZnkKIyBBcHBsZSdzIFJTMjU2LXNpZ25lZCBJRCB0b2tlbnM7IGh0dHB4IGZldGNoZXMgQXBwbGUncyBKV0tTCiMgKG9hdXRoX3ZlcmlmaWVyLkFwcGxlSWRUb2tlblZlcmlmaWVyKSBhc3luY2hyb25vdXNseS4KIwojIGNyeXB0b2dyYXBoeSBwaW5uZWQgdG8gNTAuMC4wIChidW1wZWQgZnJvbSA0OC4wLjEgZHVyaW5nIFFBIExlYWQncwojIEZJTlRSQUNLLTM4IHBhc3MpIC0tIENJJ3MgVHJpdnkgc2VjdXJpdHkgc2NhbiBmbGFnZ2VkIHR3byBtb3JlIEhJR0ggQ1ZFcwojIGRpc2Nsb3NlZCBhZ2FpbnN0IDQ4LjAuMSBhZnRlciBpdCB3YXMgcGlubmVkOiBDVkUtMjAyNi02OTI0NyAoZml4ZWQKIyA1MC4wLjApIGFuZCBDVkUtMjAyNi02OTI0OSAoZml4ZWQgNDkuMC4wKS4gNTAuMC4wIGNsZWFycyBib3RoIC0tIGtlZXAKIyB0aGlzIGF0IG9yIGFib3ZlIDUwLjAuMCBvbiBhbnkgZnV0dXJlIGJ1bXAuIFNlZSBGSU5UUkFDSy00OC4KZ29vZ2xlLWF1dGg9PTIuMzUuMApjcnlwdG9ncmFwaHk9PTUwLjAuMApodHRweD09MC4yNy4yCnJlcXVlc3RzPT0yLjM0LjIK
+fastapi==0.139.0
+uvicorn[standard]==0.32.0
+pydantic==2.13.4
+pydantic-settings==2.14.2
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.13.3
+PyJWT==2.13.0
+bcrypt==4.2.0
+redis==5.2.0
+slowapi==0.1.9
+python-dotenv==1.2.2
+python-multipart==0.0.32
+
+# wrapt: unpinned transitive dependency was causing pip-compile's resolver to
+# non-deterministically pick between 2.2.2 and 2.3.0 on separate compile runs
+# of the exact same inputs (confirmed via two parallel CI jobs on the same
+# commit disagreeing, 2026-07-28). Pinned directly so resolution is stable.
+wrapt==2.3.0
+
+# mako, starlette, cffi: same non-determinism class as wrapt above --
+# unpinned, so separate pip-compile invocations on the identical inputs
+# picked different versions minutes apart (FINTRACK-48, confirmed via two
+# CI jobs in the same workflow run disagreeing). mako comes in
+# via alembic, starlette via fastapi, cffi via cryptography -- none listed
+# directly before this. Pinned to whatever the most recent resolve picked
+# so the committed lock file and any fresh compile agree going forward.
+mako==1.4.1
+starlette==1.6.0
+cffi==2.1.1
+
+# greenlet, typing-inspection: same non-determinism class as wrapt/mako/starlette/cffi
+# above -- unpinned, so separate pip-compile invocations on the identical inputs
+# picked different versions minutes apart (PR #58, 2026-08-11). greenlet comes in
+# via sqlalchemy[asyncio], typing-inspection via pydantic/pydantic-settings --
+# neither listed directly before this.
+greenlet==3.5.5
+typing-inspection==0.4.3
+
+# OAuth (FINTRACK-42/43, ADR-016). google-auth verifies Google's ID
+# tokens; cryptography backs PyJWT's RS256 support, needed to verify
+# Apple's RS256-signed ID tokens; httpx fetches Apple's JWKS
+# (oauth_verifier.AppleIdTokenVerifier) asynchronously.
+#
+# cryptography pinned to 50.0.0 (bumped from 48.0.1 during QA Lead's
+# FINTRACK-38 pass) -- CI's Trivy security scan flagged two more HIGH CVEs
+# disclosed against 48.0.1 after it was pinned: CVE-2026-69247 (fixed
+# 50.0.0) and CVE-2026-69249 (fixed 49.0.0). 50.0.0 clears both -- keep
+# this at or above 50.0.0 on any future bump. See FINTRACK-48.
+google-auth==2.35.0
+cryptography==50.0.0
+httpx==0.27.2
+requests==2.34.2
