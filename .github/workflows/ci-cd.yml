@@ -79,6 +79,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20"}
+      - name: Install frontend dependencies
+        run: cd apps/web && npm install
       - name: Verify requirements.lock.txt is current (F-12)
         # Regenerates a throwaway copy the same way generate-lock-file does and
         # diffs it against the committed lock file. Catches anyone editing
@@ -211,11 +215,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "20", cache: "npm", cache-dependency-path: apps/web/package-lock.json }
+        with: { node-version: "20" }
       - name: Install and build
-        run: cd apps/web && npm ci && npm run build
+        run: cd apps/web && npm install && npm run build
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }} # e.g. https://api.fintrack.yourdomain.com
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_URL }} # e.g. https://api.fintrack.yourdomain.com
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
       - name: Upload dist artifact
         uses: actions/upload-artifact@v4
         with: { name: frontend-dist, path: apps/web/dist }
@@ -239,8 +244,9 @@ jobs:
           server: ${{ secrets.HOSTINGER_FTP_HOST }}
           username: ${{ secrets.HOSTINGER_FTP_USER }}
           password: ${{ secrets.HOSTINGER_FTP_PASS }}
-          local-dir: dist/
-          server-dir: /public_html/staging/ # staging subdomain folder
+          protocol: ftps
+          local-dir: ./dist/
+          server-dir: /staging/
 
   # ─── STAGE 4b: Deploy to PRODUCTION ──────────────────────────────
   # environment: production -> GitHub pauses here and emails required reviewers.
@@ -253,6 +259,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && needs.build-frontend.result == 'success'
     environment: production # <- HUMAN GATE: pauses, emails reviewer, waits for approval
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
         with: { name: frontend-dist, path: dist }
@@ -262,8 +270,9 @@ jobs:
           server: ${{ secrets.HOSTINGER_FTP_HOST }}
           username: ${{ secrets.HOSTINGER_FTP_USER }}
           password: ${{ secrets.HOSTINGER_FTP_PASS }}
-          local-dir: dist/
-          server-dir: /public_html/
+          protocol: ftps
+          local-dir: ./dist/
+          server-dir: /myfintrack/
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:

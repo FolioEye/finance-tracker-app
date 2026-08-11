@@ -1,0 +1,30 @@
+# SPA fallback for client-side routing (react-router-dom BrowserRouter).
+# Without this, a direct request or refresh on any route other than "/"
+# (e.g. /login) 404s -- Apache looks for a literal file/directory at that
+# path, finds nothing, and never gets a chance to hand it to index.html
+# for React Router to handle client-side. This file is copied into
+# dist/ unmodified by Vite's public/ convention, so it ships with every
+# deploy automatically.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Real files and directories (index.html itself, /assets/*.js, etc.)
+  # are served as-is -- only fall through to index.html for paths that
+  # don't exist on disk.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# Fallback for hosts where mod_rewrite isn't enabled or AllowOverride
+# doesn't permit the block above to take effect (confirmed needed on
+# Hostinger shared hosting, 2026-08-10 -- the mod_rewrite-only version
+# deployed fine but never actually fired for /login). ErrorDocument is a
+# core Apache directive, not a module, so this works regardless of
+# mod_rewrite support. The response's HTTP status stays 404 instead of
+# 200, but the body served is index.html, so the browser renders the
+# real app and React Router takes over routing from there -- an
+# acceptable trade-off for actually working on this host.
+ErrorDocument 404 /index.html

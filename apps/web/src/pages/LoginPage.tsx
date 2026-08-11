@@ -36,10 +36,13 @@ declare global {
   }
 }
 
-function useExternalScript(src: string): boolean {
+function useExternalScript(src: string, enabled = true): boolean {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     const existing = document.querySelector(`script[src="${src}"]`);
     if (existing) {
       setLoaded(true);
@@ -54,7 +57,7 @@ function useExternalScript(src: string): boolean {
     // loaded once for the page's lifetime, and re-injecting them on every
     // LoginPage mount/unmount cycle would re-run each SDK's own global
     // init side effects unnecessarily.
-  }, [src]);
+  }, [src, enabled]);
 
   return loaded;
 }
@@ -65,9 +68,22 @@ export function LoginPage() {
   const googleButtonRef = useRef<HTMLDivElement>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Apple sign-in requires a paid Apple Developer Program enrollment to
+  // get a real clientId -- that may not exist yet for a given deploy.
+  // FINTRACK-38 incident (2026-08-09): AppleID.auth.init() throws
+  // synchronously when clientId isn't a string, which an unset env var
+  // produces as `undefined` -- and that throw happened inside a React
+  // effect with no error boundary, taking down the ENTIRE page (blank
+  // white screen, including the Google button) rather than just Apple's.
+  // Treating Apple as optional-and-gracefully-hidden, rather than
+  // required, means a missing Apple config can never do that again.
+  const appleClientId = import.meta.env.VITE_APPLE_CLIENT_ID as string | undefined;
+  const appleConfigured = Boolean(appleClientId);
+
   const googleScriptLoaded = useExternalScript("https://accounts.google.com/gsi/client");
   const appleScriptLoaded = useExternalScript(
     "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js",
+    appleConfigured,
   );
 
   const googleLogin = useOAuthLoginMutation("google");
@@ -102,17 +118,17 @@ export function LoginPage() {
   }, [googleScriptLoaded]);
 
   useEffect(() => {
-    if (!appleScriptLoaded || !window.AppleID) {
+    if (!appleConfigured || !appleScriptLoaded || !window.AppleID) {
       return;
     }
     window.AppleID.auth.init({
-      clientId: import.meta.env.VITE_APPLE_CLIENT_ID,
+      clientId: appleClientId as string,
       scope: "email",
       redirectURI: import.meta.env.VITE_APPLE_REDIRECT_URI,
       usePopup: true,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appleScriptLoaded]);
+  }, [appleScriptLoaded, appleConfigured]);
 
   async function handleAppleSignIn() {
     setErrorMessage(null);
@@ -151,14 +167,16 @@ export function LoginPage() {
 
         <div className="mt-6 flex flex-col gap-3">
           <div ref={googleButtonRef} data-testid="google-signin-button" />
-          <button
-            type="button"
-            onClick={handleAppleSignIn}
-            data-testid="apple-signin-button"
-            className="flex w-full items-center justify-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-          >
-            Continue with Apple
-          </button>
+          {appleConfigured ? (
+            <button
+              type="button"
+              onClick={handleAppleSignIn}
+              data-testid="apple-signin-button"
+              className="flex w-full items-center justify-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+            >
+              Continue with Apple
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
