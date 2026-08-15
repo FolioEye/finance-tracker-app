@@ -11,7 +11,7 @@ export class ApiError extends Error {
 }
 
 interface RequestOptions {
-  method?: "GET" | "POST" | "DELETE" | "PUT";
+  method?: "GET" | "POST" | "DELETE" | "PUT" | "PATCH";
   body?: unknown;
   accessToken?: string | null;
 }
@@ -22,13 +22,22 @@ interface RequestOptions {
 // call goes through this one function rather than a raw fetch() per call
 // site, so this behaviour (and the Authorization header shape) can't
 // silently drift between call sites.
+//
+// FINTRACK-51/54: `body` may now be a FormData instance (statement file
+// upload, imports.ts). When it is, we deliberately skip JSON.stringify
+// and skip setting Content-Type ourselves -- the browser sets
+// `multipart/form-data; boundary=...` automatically, and setting it
+// manually here would omit the boundary and break the upload.
 export async function apiRequest<TResponse>(
   path: string,
   { method = "GET", body, accessToken }: RequestOptions = {},
 ): Promise<TResponse> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+
+  const headers: Record<string, string> = {};
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
   if (accessToken) {
     headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -37,7 +46,7 @@ export async function apiRequest<TResponse>(
     method,
     headers,
     credentials: "include",
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body === undefined ? undefined : isFormData ? (body as FormData) : JSON.stringify(body),
   });
 
   if (!response.ok) {
