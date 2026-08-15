@@ -37,6 +37,15 @@ cffi==2.1.1
 greenlet==3.5.5
 typing-inspection==0.4.3
 
+# charset-normalizer: same non-determinism class as wrapt/mako/starlette/cffi/
+# greenlet/typing-inspection above -- unpinned, so two pip-compile invocations
+# on the identical branch/commit two minutes apart (PR #60, 2026-08-15) picked
+# different versions: 3.4.9 (manual Regenerate job) vs 3.5.0 (Test Suite's own
+# verify step). Comes in via cryptography/requests -- neither listed directly
+# before this. Pinned to 3.5.0, the newer resolve, so the committed lock file
+# and any fresh compile agree going forward.
+charset-normalizer==3.5.0
+
 # OAuth (FINTRACK-42/43, ADR-016). google-auth verifies Google's ID
 # tokens; cryptography backs PyJWT's RS256 support, needed to verify
 # Apple's RS256-signed ID tokens; httpx fetches Apple's JWKS
