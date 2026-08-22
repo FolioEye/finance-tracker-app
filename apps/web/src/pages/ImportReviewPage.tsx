@@ -120,6 +120,7 @@ export function ImportReviewPage() {
               </Button>
               <input
                 ref={fileInputRef}
+                data-testid="import-file-input"
                 type="file"
                 accept=".csv"
                 className="hidden"
@@ -131,7 +132,7 @@ export function ImportReviewPage() {
               />
             </div>
             {uploadError && (
-              <p role="alert" className="mt-3 text-sm text-rose-600">
+              <p role="alert" data-testid="import-upload-error" className="mt-3 text-sm text-rose-600">
                 {uploadError}
               </p>
             )}
@@ -139,7 +140,7 @@ export function ImportReviewPage() {
         )}
 
         {commitResult && (
-          <Card className="border-emerald-200 bg-emerald-50">
+          <Card data-testid="import-commit-result" className="border-emerald-200 bg-emerald-50">
             <p className="text-sm font-medium text-emerald-800">
               Imported {commitResult.committed} transaction{commitResult.committed === 1 ? "" : "s"}.
               {commitResult.skipped > 0 && ` ${commitResult.skipped} row(s) were skipped.`}
@@ -162,7 +163,12 @@ export function ImportReviewPage() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" onClick={handleDiscard} isLoading={discardImport.isPending}>
+                  <Button
+                    variant="ghost"
+                    data-testid="import-discard-button"
+                    onClick={handleDiscard}
+                    isLoading={discardImport.isPending}
+                  >
                     Discard
                   </Button>
                   {Object.keys(edits).length > 0 && (
@@ -175,6 +181,7 @@ export function ImportReviewPage() {
                     </Button>
                   )}
                   <Button
+                    data-testid="import-commit-button"
                     onClick={handleCommit}
                     isLoading={commitImport.isPending}
                     disabled={stagedImport.found_count === 0}
@@ -186,11 +193,11 @@ export function ImportReviewPage() {
             </Card>
 
             {stagedImport.found_count === 0 ? (
-              <Card>
+              <Card data-testid="import-zero-rows">
                 <p className="text-sm text-slate-500">This file had a header row but no data rows.</p>
               </Card>
             ) : (
-              <Card className="overflow-x-auto !p-0">
+              <Card data-testid="import-rows-table" className="overflow-x-auto !p-0">
                 <table className="min-w-full divide-y divide-slate-100 text-sm">
                   <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
                     <tr>
