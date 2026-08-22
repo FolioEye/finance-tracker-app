@@ -24,7 +24,10 @@ function AlertRow({ alert }: { alert: Alert }) {
   const isDismissed = Boolean(alert.dismissed_at);
 
   return (
-    <li className="flex flex-wrap items-start justify-between gap-3 px-4 py-4 sm:px-6">
+    <li
+      data-testid={`alert-row-${alert.id}`}
+      className="flex flex-wrap items-start justify-between gap-3 px-4 py-4 sm:px-6"
+    >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           {!isDismissed && (
@@ -38,6 +41,7 @@ function AlertRow({ alert }: { alert: Alert }) {
       {!isDismissed && (
         <div className="flex flex-col items-end gap-1">
           <Button
+            data-testid={`dismiss-alert-${alert.id}`}
             variant="secondary"
             isLoading={dismissAlert.isPending}
             onClick={() => dismissAlert.mutate(alert.id)}
@@ -47,6 +51,7 @@ function AlertRow({ alert }: { alert: Alert }) {
           {dismissAlert.isError && (
             <button
               type="button"
+              data-testid={`retry-dismiss-${alert.id}`}
               onClick={() => dismissAlert.mutate(alert.id)}
               className="text-xs font-medium text-rose-600 hover:underline"
             >
@@ -67,10 +72,14 @@ export function AlertsPage() {
       {isLoading ? (
         <Spinner label="Loading alerts" />
       ) : (data?.items.length ?? 0) === 0 ? (
-        <EmptyState title="No alerts right now" description="You'll see budget and spending alerts here as they come up." />
+        <EmptyState
+          data-testid="alerts-empty-state"
+          title="No alerts right now"
+          description="You'll see budget and spending alerts here as they come up."
+        />
       ) : (
         <Card className="overflow-hidden !p-0">
-          <ul className="divide-y divide-slate-100">
+          <ul data-testid="alerts-list" className="divide-y divide-slate-100">
             {data?.items.map((alert) => <AlertRow key={alert.id} alert={alert} />)}
           </ul>
         </Card>
