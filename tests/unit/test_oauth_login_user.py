@@ -215,6 +215,40 @@ async def test_provider_unavailable_propagates_distinctly_for_503_mapping(repo, 
 
 
 @pytest.mark.asyncio
+async def test_google_login_succeeds_when_apple_verifier_is_unconfigured(repo, tokens) -> None:
+    """Regression test for the 2026-08-30 production incident: Apple's
+    verifier used to be built unconditionally in dependencies.py for
+    every OAuth call, and its constructor raised ValueError when Apple
+    wasn't configured -- crashing Google sign-in too, with a 500 that
+    lost its CORS headers on the way out and looked like a frontend/CORS
+    bug from the browser. apple_verifier=None must be a fully supported,
+    ordinary state, and a Google login must never touch it at all."""
+    identity = OAuthIdentity(provider="google", subject="g-sub-1", email="new@example.com", email_verified=True)
+    handler = _handler(repo, tokens, FakeGoogleVerifier(identity), apple_verifier=None)
+
+    result = await handler.handle(
+        OAuthLoginCommand(provider="google", id_token="whatever", client_ip="1.2.3.4")
+    )
+
+    assert result.is_new_user is True
+    assert str(result.user.email) == "new@example.com"
+
+
+@pytest.mark.asyncio
+async def test_apple_login_without_config_raises_provider_unavailable_not_crash(repo, tokens) -> None:
+    """The other half of the same regression: an actual Apple sign-in
+    attempt against an unconfigured environment must fail cleanly as
+    OAuthProviderUnavailableError (-> 503 at the API layer, see auth.py),
+    not raise an unhandled ValueError out of the dependency wiring."""
+    handler = _handler(repo, tokens, FakeGoogleVerifier(), apple_verifier=None)
+
+    with pytest.raises(OAuthProviderUnavailableError):
+        await handler.handle(
+            OAuthLoginCommand(provider="apple", id_token="whatever", client_ip="1.2.3.4")
+        )
+
+
+@pytest.mark.asyncio
 async def test_rate_limit_checked_before_token_verification(repo, tokens) -> None:
     """Rate limit must short-circuit before the (expensive, external)
     verifier is ever called -- same principle as LoginUserHandler checking

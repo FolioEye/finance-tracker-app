@@ -174,7 +174,24 @@ def _get_google_verifier(client_id: str) -> GoogleIdTokenVerifier:
 
 
 @lru_cache(maxsize=1)
-def _get_apple_verifier(client_ids: tuple[str, ...]) -> AppleIdTokenVerifier:
+def _get_apple_verifier(client_ids: tuple[str, ...]) -> AppleIdTokenVerifier | None:
+    # Incident 2026-08-30: this used to be built unconditionally on every
+    # OAuth login call (Google included), and AppleIdTokenVerifier.__init__
+    # raises ValueError when no Apple client id is configured -- which is
+    # the normal state for an environment that hasn't set up Sign in with
+    # Apple yet (e.g. this Railway production service has no
+    # APPLE_OAUTH_CLIENT_IDS var at all). That crashed the dependency
+    # before the route body ever ran, taking down Google sign-in too, and
+    # the resulting 500 lost its CORS headers on the way out -- so it
+    # surfaced in the browser as an opaque "Failed to fetch" with zero
+    # indication the real cause was Apple-specific config. Mirrors the
+    # frontend's own graceful-degrade for this (LoginPage.tsx,
+    # FINTRACK-38): Apple is optional, not required, so returning None
+    # here when unconfigured is correct -- only an actual Apple login
+    # attempt should ever fail because of it (see
+    # OAuthLoginUserHandler._verify).
+    if not client_ids:
+        return None
     return AppleIdTokenVerifier(client_ids=client_ids)
 
 

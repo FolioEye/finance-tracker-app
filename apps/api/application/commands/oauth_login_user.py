@@ -61,7 +61,7 @@ class OAuthLoginUserHandler:
         token_service: TokenService,
         rate_limiter: RateLimiter,
         google_verifier: GoogleIdTokenVerifier,
-        apple_verifier: AppleIdTokenVerifier,
+        apple_verifier: AppleIdTokenVerifier | None,
         max_attempts: int = 5,
         window_seconds: int = 900,
     ) -> None:
@@ -154,6 +154,15 @@ class OAuthLoginUserHandler:
         if provider == "google":
             verify_call = self._google_verifier.verify
         elif provider == "apple":
+            if self._apple_verifier is None:
+                # Config gap, not a bad token -- Apple sign-in was never
+                # set up in this environment. Distinct from
+                # OAuthLoginError (which implies the caller did something
+                # wrong) so the API layer can return a 503 here instead of
+                # a 401 that wrongly blames the client. See
+                # dependencies.py._get_apple_verifier for the incident
+                # this closes.
+                raise OAuthProviderUnavailableError("Apple sign-in is not configured")
             verify_call = self._apple_verifier.verify
         else:
             raise OAuthLoginError(f"Unsupported OAuth provider: {provider}")
