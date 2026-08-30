@@ -57,6 +57,16 @@ charset-normalizer==3.5.0
 # agree going forward.
 idna==3.18
 
+# click, websockets: same non-determinism class as the pins above -- unpinned
+# transitive deps that surfaced drift on PR #62's own Test Suite run
+# (2026-08-30): click==8.4.2 (committed lock) vs 8.5.0 (fresh compile),
+# websockets==17.0.1 (committed lock) vs 17.1 (fresh compile). Both come in
+# via uvicorn[standard] -- neither listed directly before this. Pinned to
+# the newer resolve (matching what a fresh compile actually produces today)
+# so the committed lock file and any fresh compile agree going forward.
+click==8.5.0
+websockets==17.1
+
 # OAuth (FINTRACK-42/43, ADR-016). google-auth verifies Google's ID
 # tokens; cryptography backs PyJWT's RS256 support, needed to verify
 # Apple's RS256-signed ID tokens; httpx fetches Apple's JWKS
