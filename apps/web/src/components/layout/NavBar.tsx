@@ -42,6 +42,7 @@ export function NavBar() {
                 {link.label}
                 {link.to === "/alerts" && unreadCount > 0 && (
                   <span
+                    data-testid="alerts-nav-badge"
                     className="ml-2 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-rose-600 px-1.5 py-0.5 text-xs font-semibold text-white"
                     aria-label={`${unreadCount} unread alerts`}
                   >

@@ -61,11 +61,12 @@ export function CategorisationRulesPage() {
             Create a rule to automatically categorise future imports and transactions whose
             description matches a merchant pattern.
           </p>
-          <form onSubmit={handleSubmit} className="mt-4 flex flex-wrap items-end gap-3">
+          <form onSubmit={handleSubmit} data-testid="create-rule-form" className="mt-4 flex flex-wrap items-end gap-3">
             <div className="w-56">
               <FormField label="Merchant pattern" htmlFor="merchant-pattern">
                 <input
                   id="merchant-pattern"
+                  data-testid="merchant-pattern-input"
                   type="text"
                   className={INPUT_CLASSES}
                   value={merchantPattern}
@@ -78,6 +79,7 @@ export function CategorisationRulesPage() {
               <FormField label="Category" htmlFor="rule-category">
                 <input
                   id="rule-category"
+                  data-testid="rule-category-input"
                   type="text"
                   className={INPUT_CLASSES}
                   value={category}
@@ -86,19 +88,19 @@ export function CategorisationRulesPage() {
                 />
               </FormField>
             </div>
-            <Button type="submit" isLoading={createRule.isPending}>
+            <Button type="submit" data-testid="create-rule-submit" isLoading={createRule.isPending}>
               Create rule
             </Button>
           </form>
           {error && (
-            <p role="alert" className="mt-3 text-sm text-rose-600">
+            <p role="alert" data-testid="create-rule-error" className="mt-3 text-sm text-rose-600">
               {error}
             </p>
           )}
         </Card>
 
         {justCreated && (
-          <Card className="border-emerald-200 bg-emerald-50">
+          <Card data-testid="rule-created-banner" className="border-emerald-200 bg-emerald-50">
             <p className="text-sm font-medium text-emerald-800">
               Future transactions matching "{justCreated.merchant}" will be categorised as{" "}
               {justCreated.category}.

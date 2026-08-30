@@ -36,7 +36,7 @@ function RecommendationCard() {
   // never take the rest of the dashboard down with it.
   if (isError || !data) {
     return (
-      <Card>
+      <Card data-testid="recommendation-error">
         <p className="text-sm text-slate-500">Couldn't load this week's recommendation.</p>
       </Card>
     );
@@ -45,7 +45,7 @@ function RecommendationCard() {
   const isActionable = data.type !== "NEUTRAL";
 
   return (
-    <Card>
+    <Card data-testid="recommendation-card">
       <div className="flex items-start justify-between gap-3">
         <div>
           <Badge tone={RECOMMENDATION_TONE[data.type] ?? "neutral"}>
@@ -63,6 +63,7 @@ function RecommendationCard() {
         <div className="mt-4 flex gap-2">
           <Button
             variant="secondary"
+            data-testid="recommendation-mark-done"
             isLoading={recordAction.isPending}
             onClick={() =>
               recordAction.mutate({ recordId: data.follow_through_record_id, action: "done" })
@@ -72,6 +73,7 @@ function RecommendationCard() {
           </Button>
           <Button
             variant="ghost"
+            data-testid="recommendation-ignore"
             isLoading={recordAction.isPending}
             onClick={() =>
               recordAction.mutate({ recordId: data.follow_through_record_id, action: "ignore" })
@@ -190,6 +192,7 @@ export function DashboardPage() {
     <AppShell title="Dashboard">
       {isBrandNewUser ? (
         <EmptyState
+          data-testid="dashboard-empty-state"
           title="Welcome to FinTrack"
           description="You don't have any transactions yet. Add your first one to see your spending summary and budget health here."
           action={

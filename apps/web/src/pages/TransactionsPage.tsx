@@ -108,7 +108,7 @@ function TransactionForm({
   }
 
   return (
-    <Card>
+    <Card data-testid="transaction-form">
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Amount" htmlFor="amount">
@@ -158,7 +158,7 @@ function TransactionForm({
           </p>
         )}
         <div className="flex gap-2">
-          <Button type="submit" isLoading={isSaving}>
+          <Button type="submit" data-testid="submit-transaction-form" isLoading={isSaving}>
             {initial ? "Save changes" : "Add transaction"}
           </Button>
           <Button type="button" variant="ghost" onClick={onCancel} disabled={isSaving}>
@@ -191,7 +191,11 @@ export function TransactionsPage() {
       title="Transactions"
       actions={
         !isAdding &&
-        !editingId && <Button onClick={() => setIsAdding(true)}>Add transaction</Button>
+        !editingId && (
+          <Button data-testid="add-transaction-button" onClick={() => setIsAdding(true)}>
+            Add transaction
+          </Button>
+        )
       }
     >
       <div className="space-y-4">
@@ -231,16 +235,18 @@ export function TransactionsPage() {
           <Spinner label="Loading transactions" />
         ) : (data?.items.length ?? 0) === 0 ? (
           <EmptyState
+            data-testid="transactions-empty-state"
             title="No transactions yet"
             description="Add your first transaction to start tracking your spending."
             action={!isAdding ? <Button onClick={() => setIsAdding(true)}>Add transaction</Button> : undefined}
           />
         ) : (
           <Card className="overflow-hidden !p-0">
-            <ul className="divide-y divide-slate-100">
+            <ul data-testid="transactions-list" className="divide-y divide-slate-100">
               {data?.items.map((transaction) => (
                 <li
                   key={transaction.id}
+                  data-testid={`transaction-row-${transaction.id}`}
                   className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6"
                 >
                   <div className="min-w-0">
@@ -261,11 +267,16 @@ export function TransactionsPage() {
                     <span className="font-semibold text-slate-900">
                       {formatCurrency(transaction.amount)}
                     </span>
-                    <Button variant="ghost" onClick={() => setEditingId(transaction.id)}>
+                    <Button
+                      variant="ghost"
+                      data-testid={`edit-transaction-${transaction.id}`}
+                      onClick={() => setEditingId(transaction.id)}
+                    >
                       Edit
                     </Button>
                     <Button
                       variant="ghost"
+                      data-testid={`delete-transaction-${transaction.id}`}
                       className="text-rose-600 hover:bg-rose-50"
                       onClick={() => {
                         if (window.confirm("Delete this transaction?")) {

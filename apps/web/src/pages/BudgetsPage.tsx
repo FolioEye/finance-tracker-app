@@ -74,7 +74,7 @@ function SetBudgetForm({
           />
         </FormField>
       </div>
-      <Button type="submit" isLoading={createBudget.isPending}>
+      <Button type="submit" data-testid={`save-new-budget-${category}`} isLoading={createBudget.isPending}>
         Save
       </Button>
       <Button type="button" variant="ghost" onClick={onCancel}>
@@ -126,7 +126,7 @@ function EditLimitForm({
           />
         </FormField>
       </div>
-      <Button type="submit" isLoading={updateBudget.isPending}>
+      <Button type="submit" data-testid={`save-edit-budget-${item.category}`} isLoading={updateBudget.isPending}>
         Save
       </Button>
       <Button type="button" variant="ghost" onClick={onCancel}>
@@ -143,7 +143,7 @@ function BudgetRow({ item }: { item: BudgetOverviewItem }) {
   const hasBudget = item.monthly_limit !== null;
 
   return (
-    <Card>
+    <Card data-testid={`budget-row-${item.category}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="font-medium text-slate-900">{item.category}</p>
@@ -167,7 +167,11 @@ function BudgetRow({ item }: { item: BudgetOverviewItem }) {
             </Button>
           </div>
         ) : (
-          <Button variant="secondary" onClick={() => setIsSettingBudget((v) => !v)}>
+          <Button
+            variant="secondary"
+            data-testid={`set-budget-${item.category}`}
+            onClick={() => setIsSettingBudget((v) => !v)}
+          >
             Set budget
           </Button>
         )}
@@ -237,6 +241,7 @@ function NewBudgetForm({ onDone }: { onDone: () => void }) {
           <FormField label="Category" htmlFor="new-budget-category">
             <input
               id="new-budget-category"
+              data-testid="new-budget-category-input"
               type="text"
               className={INPUT_CLASSES}
               value={category}
@@ -249,6 +254,7 @@ function NewBudgetForm({ onDone }: { onDone: () => void }) {
           <FormField label="Monthly limit" htmlFor="new-budget-limit">
             <input
               id="new-budget-limit"
+              data-testid="new-budget-limit-input"
               type="text"
               inputMode="decimal"
               className={INPUT_CLASSES}
@@ -258,7 +264,7 @@ function NewBudgetForm({ onDone }: { onDone: () => void }) {
             />
           </FormField>
         </div>
-        <Button type="submit" isLoading={createBudget.isPending}>
+        <Button type="submit" data-testid="submit-new-budget" isLoading={createBudget.isPending}>
           Add budget
         </Button>
         <Button type="button" variant="ghost" onClick={onDone}>
@@ -281,7 +287,13 @@ export function BudgetsPage() {
   return (
     <AppShell
       title="Budgets"
-      actions={!isAddingNew && <Button onClick={() => setIsAddingNew(true)}>Add budget</Button>}
+      actions={
+        !isAddingNew && (
+          <Button data-testid="add-budget-button" onClick={() => setIsAddingNew(true)}>
+            Add budget
+          </Button>
+        )
+      }
     >
       <div className="space-y-4">
         {isAddingNew && <NewBudgetForm onDone={() => setIsAddingNew(false)} />}
@@ -290,12 +302,13 @@ export function BudgetsPage() {
           <Spinner label="Loading budgets" />
         ) : (data?.items.length ?? 0) === 0 ? (
           <EmptyState
+            data-testid="budgets-empty-state"
             title="No budgets set yet"
             description="Set a monthly limit for a category to start tracking your budget health."
             action={!isAddingNew ? <Button onClick={() => setIsAddingNew(true)}>Add budget</Button> : undefined}
           />
         ) : (
-          <div className="space-y-3">
+          <div data-testid="budgets-list" className="space-y-3">
             {data?.items.map((item) => <BudgetRow key={item.category} item={item} />)}
           </div>
         )}
