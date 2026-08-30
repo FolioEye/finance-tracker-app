@@ -124,4 +124,30 @@ describe("BudgetsPage (FINTRACK-55)", () => {
 
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "125");
   });
+
+  it("security: a SQL-injection-style payload in the new-budget category field is submitted verbatim as data, never interpolated", async () => {
+    const user = userEvent.setup();
+    const createBudgetMutate = vi.fn().mockResolvedValue(undefined);
+    vi.spyOn(budgetsApi, "useCreateBudget").mockReturnValue(
+      mockMutation({ mutateAsync: createBudgetMutate }) as ReturnType<typeof budgetsApi.useCreateBudget>,
+    );
+    vi.spyOn(budgetsApi, "useBudgetOverview").mockReturnValue({
+      data: { items: [] },
+      isLoading: false,
+    } as unknown as ReturnType<typeof budgetsApi.useBudgetOverview>);
+
+    renderBudgetsPage();
+
+    const payload = "'; DROP TABLE budgets; --";
+    await user.click(screen.getByTestId("add-budget-button"));
+    await user.type(screen.getByTestId("new-budget-category-input"), payload);
+    await user.type(screen.getByTestId("new-budget-limit-input"), "200.00");
+    await user.click(screen.getByTestId("submit-new-budget"));
+
+    // The frontend's only job is to pass this through as an opaque string
+    // field in a JSON body (apiRequest always JSON.stringifies and never
+    // builds a raw query) -- parameterisation is enforced server-side
+    // (apps/api's repository layer), which is out of this test's scope.
+    expect(createBudgetMutate).toHaveBeenCalledWith({ category: payload, monthly_limit: "200.00" });
+  });
 });
