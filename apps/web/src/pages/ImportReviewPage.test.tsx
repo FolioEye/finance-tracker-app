@@ -204,4 +204,54 @@ describe("ImportReviewPage (FINTRACK-54)", () => {
 
     expect(discardMutate).toHaveBeenCalledWith("import-3");
   });
+
+  it("security: a CSV formula-injection payload in the note field renders as inert text, never evaluated", async () => {
+    const user = userEvent.setup();
+    // FINTRACK-54's BA Gherkin security scenario: a spreadsheet-formula
+    // trigger character (=, +, -, @) leading a cell value must never be
+    // interpreted -- only ever displayed as the literal string it is.
+    const maliciousNote = "=cmd|' /C calc'!A1";
+    const staged: importsApi.StagedImport = {
+      import_id: "import-4",
+      found_count: 1,
+      flagged_count: 0,
+      invalid_count: 0,
+      auto_categorised_count: 0,
+      needs_review_count: 1,
+      rows: [
+        {
+          row_index: 0,
+          raw_date: "2026-08-01",
+          raw_amount: "10.00",
+          category: "Groceries",
+          note: maliciousNote,
+          status: "ok",
+          warning: null,
+          matched_rule_id: null,
+        },
+      ],
+    };
+    const stageImportMutate = vi.fn().mockResolvedValue(staged);
+    vi.spyOn(importsApi, "useStageImport").mockReturnValue(
+      mockMutation({ mutateAsync: stageImportMutate }) as ReturnType<typeof importsApi.useStageImport>,
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ImportReviewPage />
+        </BrowserRouter>
+      </QueryClientProvider>,
+    );
+
+    await user.upload(screen.getByTestId("import-file-input"), makeCsvFile());
+    await screen.findByTestId("import-rows-table");
+
+    // The payload renders as the literal, unmodified value of a plain
+    // controlled <input> -- never interpreted, evaluated, or stripped of
+    // its leading formula-trigger character.
+    const noteInput = screen.getByDisplayValue(maliciousNote) as HTMLInputElement;
+    expect(noteInput).toBeInTheDocument();
+    expect(noteInput.value).toBe(maliciousNote);
+  });
 });
