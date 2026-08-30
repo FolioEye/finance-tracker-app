@@ -16,6 +16,18 @@ import { defineConfig, loadEnv } from "vite";
 // LoginPage.tsx is written to gracefully hide the Apple button instead of
 // crashing when those are absent. Google has no such paywall, so it stays
 // a hard build-time requirement like the API base URL.
+//
+// Known gap (found 2026-08-30, live production incident): this guard only
+// checks that a required var is *present*, not that its value is real.
+// VITE_API_URL was set in GitHub Secrets to the literal placeholder
+// "https://placeholder.railway.app" -- present, so this check passed, but
+// every request the shipped app made (including OAuth login) silently
+// went to a domain that doesn't exist. No build-time signal caught it
+// because "present but wrong" and "present and correct" look identical to
+// a plain existence check. Corrected in secrets, not fixed here -- a
+// stronger guard (e.g. rejecting obviously-placeholder-looking values, or
+// a smoke-test step that actually calls the configured API URL post-build)
+// is a real follow-up, not yet built.
 const REQUIRED_BUILD_ENV_VARS = ["VITE_API_BASE_URL", "VITE_GOOGLE_CLIENT_ID"] as const;
 
 export default defineConfig(({ command, mode }) => {
