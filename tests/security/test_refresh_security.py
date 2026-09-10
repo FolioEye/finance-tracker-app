@@ -17,7 +17,10 @@ from __future__ import annotations
 
 import uuid
 
-from jose import jwt as jose_jwt
+# PyJWT, under the legacy alias this repo already uses in
+# tests/integration/test_login_logout_api.py -- python-jose was replaced by
+# PyJWT under ADR-006, so there is no `jose` package to import.
+import jwt as jose_jwt
 
 from apps.api.infrastructure.security.token_service import TokenService
 
