@@ -1,5 +1,6 @@
 """Auth API endpoints. Story: FINTRACK-13 (User Registration); FINTRACK-42/43
-(Google + Apple OAuth login) added the /oauth/* routes below.
+(Google + Apple OAuth login) added the /oauth/* routes below; FINTRACK-60
+added /refresh (session persistence via silent token refresh, ADR-017).
 
 Note: deliberately NOT using `from __future__ import annotations` here.
 Combined with this project's pinned fastapi==0.115.0 + pydantic==2.9.2,
@@ -27,6 +28,12 @@ from apps.api.application.commands.oauth_login_user import (
     OAuthLoginError,
     OAuthLoginUserHandler,
 )
+from apps.api.application.commands.refresh_session import (
+    InvalidRefreshTokenError,
+    RefreshSessionCommand,
+    RefreshSessionHandler,
+    RefreshTokenReplayError,
+)
 from apps.api.application.commands.register_user import (
     PasswordMismatchError,
     RegisterUserCommand,
@@ -38,6 +45,7 @@ from apps.api.application.dtos.auth_dtos import (
     LogoutResponse,
     OAuthLoginRequest,
     OAuthLoginResponse,
+    RefreshResponse,
     RegisterRequest,
     RegisterResponse,
 )
@@ -50,6 +58,7 @@ from apps.api.presentation.api.v1.dependencies import (
     get_login_user_handler,
     get_logout_user_handler,
     get_oauth_login_user_handler,
+    get_refresh_session_handler,
     get_register_user_handler,
 )
 
@@ -209,6 +218,73 @@ async def logout(
     )
     logger.info("logout_succeeded", extra={"context": {}})
     return LogoutResponse()
+
+
+@router.post("/refresh", response_model=RefreshResponse, status_code=status.HTTP_200_OK)
+@limiter.limit(
+    f"{_settings.login_rate_limit_attempts}/{_settings.login_rate_limit_window_minutes}minute"
+)
+async def refresh(
+    request: Request,
+    response: Response,
+    handler: RefreshSessionHandler = Depends(get_refresh_session_handler),
+) -> RefreshResponse:
+    """FINTRACK-60. Silent token refresh -- reads the httpOnly refresh
+    cookie, rotates it, and issues a new access token.
+
+    No request body and no Authorization header by design: the cookie IS
+    the credential. Rate limited on the same budget as /login, since this
+    is unauthenticated and performs a Redis write plus a JWT sign per call.
+
+    See docs/adr/ADR-017-session-persistence-silent-refresh.md -- note in
+    particular that this endpoint only works at all because the API is
+    served from api.gtech45.com, same-site with the frontend. On the old
+    cross-site Railway domain a SameSite=Strict cookie would never reach
+    this handler.
+    """
+    logger.info("refresh_attempt", extra={"context": {}})
+
+    refresh_token = request.cookies.get("refresh_token", "")
+
+    try:
+        result = await handler.handle(RefreshSessionCommand(refresh_token=refresh_token))
+    except RefreshTokenReplayError:
+        # Distinguished from an ordinary rejection at the LOGGING layer
+        # only -- the HTTP response below is identical. A replayed token
+        # means someone presented a token that was already rotated away:
+        # either a stolen token, or the cross-tab race ADR-017 accepts.
+        # Worth a WARNING and an alert (FINTRACK-64); not worth telling
+        # the caller which of the two it was.
+        logger.warning("refresh_replay_detected", extra={"context": {}})
+        raise HTTPException(status_code=401, detail="Session expired, please sign in again")
+    except InvalidRefreshTokenError:
+        # One log event and one response for every rejection reason --
+        # missing cookie, malformed token, expired token, or an access
+        # token presented in the refresh token's place. Same
+        # no-enumeration discipline as /login.
+        logger.info("refresh_failed", extra={"context": {}})
+        raise HTTPException(status_code=401, detail="Session expired, please sign in again")
+
+    # Rotated refresh token, attributes identical to /register, /login and
+    # /oauth/* -- if these ever drift apart, the cookie silently stops
+    # being replaced and starts being duplicated.
+    response.set_cookie(
+        key="refresh_token",
+        value=result.tokens.refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        max_age=_settings.refresh_token_expire_days * 24 * 60 * 60,
+        path="/api/v1/auth",
+    )
+
+    logger.info("refresh_succeeded", extra={"context": {"user_id": str(result.user_id)}})
+
+    return RefreshResponse(
+        user_id=result.user_id,
+        access_token=result.tokens.access_token,
+        expires_in=result.tokens.access_token_expires_in_seconds,
+    )
 
 
 async def _handle_oauth_login(
