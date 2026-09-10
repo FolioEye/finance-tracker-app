@@ -44,6 +44,7 @@ from apps.api.application.commands.oauth_login_user import OAuthLoginUserHandler
 from apps.api.application.commands.record_recommendation_action import (
     RecordRecommendationActionHandler,
 )
+from apps.api.application.commands.refresh_session import RefreshSessionHandler
 from apps.api.application.commands.register_user import RegisterUserHandler
 from apps.api.application.commands.stage_import import StageImportHandler
 from apps.api.application.commands.update_budget import UpdateBudgetHandler
@@ -166,6 +167,30 @@ def get_logout_user_handler(settings: Settings = Depends(get_settings)) -> Logou
     )
     revocation_store = RedisTokenRevocationStore(redis_client)
     return LogoutUserHandler(token_service=tokens, revocation_store=revocation_store)
+
+
+def get_refresh_session_handler(
+    settings: Settings = Depends(get_settings),
+) -> RefreshSessionHandler:
+    # FINTRACK-60. No DB session, deliberately: a refresh token's validity
+    # is derived from its own signature plus the Redis denylist, never from
+    # user state -- so this path stays off Postgres entirely. Same shape as
+    # get_logout_user_handler above for exactly that reason, and the two
+    # deliberately share the same TokenService/RedisTokenRevocationStore
+    # pair, since logout writes the denylist entries that refresh reads.
+    #
+    # The trade-off this implies (a deactivated user keeps refreshing until
+    # their 7-day token expires, because nothing here re-checks the user
+    # row) is recorded as accepted risk T8 in
+    # docs/threat-models/FINTRACK-60-session-persistence-threat-model.md.
+    tokens = TokenService(
+        secret_key=settings.jwt_secret_key,
+        algorithm=settings.jwt_algorithm,
+        access_token_expire_minutes=settings.access_token_expire_minutes,
+        refresh_token_expire_days=settings.refresh_token_expire_days,
+    )
+    revocation_store = RedisTokenRevocationStore(redis_client)
+    return RefreshSessionHandler(token_service=tokens, revocation_store=revocation_store)
 
 
 @lru_cache(maxsize=1)
