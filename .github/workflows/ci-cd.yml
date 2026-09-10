@@ -23,6 +23,11 @@ on:
   pull_request:
     branches: [develop, staging, main]
   workflow_dispatch: # manual trigger only used by generate-lock-file below (F-12)
+    inputs:
+      upgrade:
+        description: "Upgrade all pins to the latest compatible versions (otherwise the lock only changes when requirements.txt does)"
+        type: boolean
+        default: false
 
 jobs:
   # ─── STAGE 0: Detect whether a frontend exists yet ───────────────
@@ -101,6 +106,28 @@ jobs:
         # the line entirely so the diff reflects real drift only.
         run: |
           pip install pip-tools
+          # Seed the check file from the committed lock BEFORE compiling.
+          #
+          # pip-compile honours pins already present in its --output-file and
+          # only moves them when --upgrade is passed (it minimises churn by
+          # design). generate-lock-file compiles into the EXISTING
+          # requirements.lock.txt, so it stays anchored to the committed pins.
+          # This step used to compile into requirements.lock.txt.check, which
+          # does not exist on a fresh runner -- so it resolved UNANCHORED and
+          # picked up whatever newest transitive PyPI had. The check was
+          # therefore comparing an anchored lock against an unanchored
+          # recompile: guaranteed to differ the moment anything upstream
+          # released, with no real drift in this repo at all.
+          #
+          # Confirmed 2026-09-10 (runs 93382921168 / 93387089748): this step
+          # failed on anyio 4.14.2 -> 4.15.1 while the manual regen job
+          # reported "Everything up-to-date" for the same commit -- so
+          # regenerating could never clear it, and every PR was blocked.
+          #
+          # Seeding makes both compiles start from the same pins, restoring
+          # this check's intended meaning: fail only when someone edits
+          # requirements.txt without regenerating the lock.
+          cp requirements.lock.txt requirements.lock.txt.check
           pip-compile --generate-hashes --allow-unsafe --no-header \
             --output-file=requirements.lock.txt.check \
             apps/api/requirements.txt requirements-test.txt
@@ -177,6 +204,12 @@ jobs:
   # pip wheels instead of a base image). Opens no PR by itself; commits
   # requirements.lock.txt straight to whichever branch triggered it --
   # review the diff before merging that branch.
+  #
+  # Tick the `upgrade` input to move pins to the latest compatible versions.
+  # Without it pip-compile keeps every pin already in the lock, so a plain run
+  # only reacts to a real change in requirements.txt -- meaning this job could
+  # never actually refresh anything. Upgrading is now a deliberate act, not a
+  # side effect of pressing "Run workflow".
   generate-lock-file:
     name: Regenerate requirements.lock.txt (F-12, manual)
     if: github.event_name == 'workflow_dispatch'
@@ -196,6 +229,7 @@ jobs:
         # side of the drift-check ever disagrees over anything but real content.
         run: |
           pip-compile --generate-hashes --allow-unsafe --no-header \
+            ${{ inputs.upgrade && '--upgrade' || '' }} \
             --output-file=requirements.lock.txt \
             apps/api/requirements.txt requirements-test.txt
       - name: Commit lock file
