@@ -32,7 +32,11 @@ from __future__ import annotations
 import uuid
 
 import pytest
-from jose import jwt as jose_jwt
+
+# PyJWT, under the legacy alias this repo already uses in
+# tests/integration/test_login_logout_api.py -- python-jose was replaced by
+# PyJWT under ADR-006, so there is no `jose` package to import.
+import jwt as jose_jwt
 from pytest_bdd import given, parsers, scenarios, then, when
 
 from apps.api.infrastructure.security.token_service import TokenService
