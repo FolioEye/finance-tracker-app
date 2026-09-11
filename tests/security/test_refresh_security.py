@@ -151,13 +151,29 @@ def test_every_rejection_reason_returns_an_identical_response(client) -> None:
     )
     access_token = reg.json()["access_token"]
 
-    responses = [
-        _refresh(client, None),
-        _refresh(client, "not-a-jwt"),
-        _refresh(client, expired.issue_pair(uuid.uuid4()).refresh_token),
-        _refresh(client, access_token),
-        _refresh(client, cookie),
+    # Five probes plus the rotating call above exceed the 5-per-15-minutes
+    # budget /refresh shares with /login, so the last probe used to come
+    # back 429 and this assertion read `{401, 429} == {401}`. The limit is
+    # correct and is asserted deliberately by
+    # test_refresh_is_rate_limited_on_the_same_budget_as_login -- it just
+    # must not bleed into a test about response UNIFORMITY. Reset between
+    # probes using the same mechanism conftest.py's autouse
+    # _reset_rate_limiter fixture uses, so each probe is measured on its
+    # own.
+    from apps.api.presentation.api.v1.auth import limiter
+
+    probes = [
+        None,
+        "not-a-jwt",
+        expired.issue_pair(uuid.uuid4()).refresh_token,
+        access_token,
+        cookie,
     ]
+
+    responses = []
+    for probe in probes:
+        limiter.reset()
+        responses.append(_refresh(client, probe))
 
     assert {r.status_code for r in responses} == {401}
     assert {r.json()["detail"] for r in responses} == {"Session expired, please sign in again"}

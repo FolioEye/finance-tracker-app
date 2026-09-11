@@ -99,13 +99,15 @@ def _refresh(client, cookie):
 
 @given("the API exposes POST /api/v1/auth/refresh")
 def api_exposes_refresh(client) -> None:
-    # Assert the route is actually registered rather than assuming it. A
-    # missing route would otherwise surface as a 404 mid-scenario and read
-    # like a logic failure instead of a wiring one.
-    from apps.api.main import app
-
-    paths = {r.path for r in app.routes if hasattr(r, "methods") and "POST" in r.methods}
-    assert "/api/v1/auth/refresh" in paths
+    # Behavioural check rather than introspecting app.routes. The earlier
+    # version built a set comprehension over app.routes filtered on a
+    # `methods` attribute and got an EMPTY set, which failed every scenario
+    # in this module at Background -- the route is registered, the
+    # introspection was wrong. A test that depends on framework internals is
+    # the wrong tool for asserting "this route exists" anyway: a registered
+    # route cannot answer 404, and that is the property the scenarios
+    # actually rely on.
+    assert client.post("/api/v1/auth/refresh").status_code != 404
 
 
 @given("the access token is held in memory only with a 15 minute lifetime")
