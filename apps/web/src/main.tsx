@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
 import { App } from "./App";
+import { bootstrapSession } from "./api/auth";
 import { queryClient } from "./lib/queryClient";
 import { useAuthStore } from "./store/authStore";
 import "./styles/index.css";
@@ -23,6 +24,22 @@ const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Root element #root not found -- check index.html");
 }
+
+// FINTRACK-60-AC2: fire the silent refresh before React mounts. We do NOT
+// await it here -- awaiting would delay first paint on every load,
+// including for signed-out visitors. ProtectedRoute holds the redirect
+// decision via bootstrapState instead, so the app renders immediately and
+// only the protected content waits.
+//
+// Called outside the component tree deliberately: React 18 StrictMode
+// double-invokes effects in development, and refreshSessionOnce()'s shared
+// promise would collapse a double call anyway.
+//
+// Ordering note: this runs AFTER the E2E seam above, so a Playwright spec
+// that seeds the store directly still wins -- bootstrapSession()'s own
+// refresh will 401 with no cookie and only call markBootstrapped(), which
+// does not clear a session the spec already set.
+void bootstrapSession();
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
