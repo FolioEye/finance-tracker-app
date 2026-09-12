@@ -9,9 +9,9 @@ import { defineConfig, devices } from "@playwright/test";
 // specs existed in the tree and ran nowhere -- @playwright/test was installed
 // on every CI run and never invoked, so the suite read as coverage while
 // contributing none. The `e2e` job in .github/workflows/ci-cd.yml stands up
-// Postgres, Redis, the API (uvicorn) and a served frontend, then runs this
-// config against them.
+// Postgres, Redis and the API (uvicorn); this config starts the frontend.
 const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:5173";
+const API_URL = process.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 // Allure results feed the report published to GitHub Pages for audit and
 // trend tracking (FINTRACK-65). Written OUTSIDE apps/web so the API suite's
@@ -37,15 +37,37 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "retain-on-failure",
   },
-  // Serves the production build the same way Hostinger will. Skipped when
-  // E2E_SKIP_WEBSERVER is set, so CI can point at a stack it started itself.
+  // `npm run dev`, NOT `npm run build` + `vite preview`.
+  //
+  // This is load-bearing and was got wrong once (run 93985092334: 3 of 5 specs
+  // timed out for 30s each on fixtures.ts:10). main.tsx gates the E2E auth
+  // seam on `!import.meta.env.PROD && VITE_E2E_TEST_MODE === "true"` -- the
+  // PROD half being a deliberate second guard so the seam can never ship in a
+  // production bundle. A `vite build` output therefore NEVER exposes
+  // __E2E_AUTH_STORE__, and every spec that seeds auth through it hangs.
+  //
+  // The guard is right and stays. The server is what has to change: dev mode
+  // has PROD false, so the seam attaches. This is the arrangement main.tsx
+  // describes -- "Playwright's own webServer env, not a normal dev/build run".
+  //
+  // Consequence: this tier exercises the dev bundle, not the production
+  // artifact. Production build integrity is covered by
+  // tests/integration/test_frontend_build.py and the build-frontend job.
+  //
+  // env is set here rather than in the workflow so `npx playwright test`
+  // stands up a correct server on its own, locally too, instead of depending
+  // on a particular sequence of CI steps having run first.
   webServer: process.env.E2E_SKIP_WEBSERVER
     ? undefined
     : {
-        command: "npm run preview -- --port 5173 --strictPort",
+        command: "npm run dev -- --port 5173 --strictPort",
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
+        env: {
+          VITE_E2E_TEST_MODE: "true",
+          VITE_API_BASE_URL: API_URL,
+        },
       },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 });
