@@ -335,6 +335,26 @@ jobs:
         env:
           VITE_API_BASE_URL: http://localhost:8000
           VITE_E2E_TEST_MODE: "true"
+          # REQUIRED, and deliberately fake. vite.config.ts hard-fails a
+          # production build when VITE_GOOGLE_CLIENT_ID is absent (added after
+          # the 2026-08-09 incident where a missing value shipped as the
+          # literal `undefined` into Google's SDK). Omitting it is what failed
+          # run 93981925792.
+          #
+          # A dummy rather than ${{ secrets.VITE_GOOGLE_CLIENT_ID }} on purpose:
+          # no spec drives Google sign-in -- apps/web/e2e/fixtures.ts seeds auth
+          # through the __E2E_AUTH_STORE__ seam precisely because an OAuth popup
+          # is not automatable -- so the real value would never be exercised,
+          # and baking a live OAuth client id into a throwaway CI build buys
+          # nothing. Kept obviously-fake so it can never be mistaken for real
+          # config; vite.config.ts's own comment notes that this guard checks
+          # presence, not validity, and that a plausible-looking placeholder in
+          # secrets once caused a live production incident.
+          #
+          # CONSEQUENCE, stated rather than left implicit: the Google sign-in
+          # path is NOT exercised by the E2E tier. That belongs to FINTRACK-38
+          # and is not covered here.
+          VITE_GOOGLE_CLIENT_ID: e2e-placeholder-not-a-real-client-id.apps.googleusercontent.com
 
       - name: Run Playwright
         # playwright.config.ts's webServer starts `vite preview` on 5173 and
