@@ -29,6 +29,17 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: read
+
+concurrency:
+  # Two runs finishing out of order would race on the gh-pages push and leave
+  # the OLDER report published last. cancel-in-progress stays false on
+  # purpose: cancelling a half-finished publish is how a site ends up serving
+  # a partial report.
+  group: allure-pages-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   # ─── STAGE 0: Detect whether a frontend exists yet ───────────────
   detect-frontend:
@@ -170,6 +181,7 @@ jobs:
             --cov-report=xml:coverage.xml \
             --cov-report=html:htmlcov \
             --junitxml=test-results.xml \
+            --alluredir=allure-results/api \
             -v
       - name: Upload test & coverage artifacts (F-10)
         # if: always() -- a failing/red run's evidence matters more, not less;
@@ -182,6 +194,7 @@ jobs:
             test-results.xml
             coverage.xml
             htmlcov/
+            allure-results/
           retention-days: 30
       - name: Generate SBOM (F-12)
         # CycloneDX SBOM of everything checked out (repo deps, not just apps/api) --
@@ -193,6 +206,278 @@ jobs:
           path: .
           format: cyclonedx-json
           output-file: sbom.cdx.json
+
+      - name: Upload Allure results (API suites)
+        # Separate from the F-10 upload above: the publish job downloads these
+        # on their own. always() keeps a red run's evidence, which is the run
+        # whose report matters most.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-api-${{ github.run_id }}
+          path: allure-results/api
+          retention-days: 30
+          if-no-files-found: warn
+
+  # ─── STAGE 2b: E2E browser tier (FINTRACK-65) ────────────────────
+  # REPORT-ONLY, not gating -- Mr M's decision, recorded in ADR-018. A browser
+  # suite wired up for the first time is flaky for reasons unrelated to the
+  # code, and gating on day one blocks every PR on infrastructure teething,
+  # which is how a new E2E tier gets disabled in week two and never comes back.
+  # Flipping continue-on-error to false is what makes it block, once a week of
+  # runs looks stable.
+  #
+  # Unlike `test`, this needs a REAL stack: tests/conftest.py's in-memory
+  # SQLite and fakeredis are in-process fixtures a browser cannot reach.
+  e2e:
+    name: E2E (Playwright)
+    needs: test
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: test_password, POSTGRES_DB: fintrack_e2e }
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7
+        options: --health-cmd "redis-cli ping" --health-interval 10s
+        ports:
+          - 6379:6379
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:test_password@localhost:5432/fintrack_e2e
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}
+      PYTHONPATH: ${{ github.workspace }}
+      # REQUIRED. apps/api/main.py only registers CORSMiddleware when this is
+      # non-empty -- unset, every browser call is CORS-blocked and the whole
+      # suite goes red with nothing wrong in the code.
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
+      # localhost everywhere, NEVER 127.0.0.1. They are different hosts and
+      # therefore cross-site; the refresh cookie is SameSite=Strict, so a
+      # frontend on localhost:5173 talking to an API on 127.0.0.1:8000 would
+      # never store or send it and every session spec would fail invisibly.
+      # Differing ports are same-site; differing hosts are not.
+      E2E_BASE_URL: http://localhost:5173
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+
+      - name: Install API dependencies (hash-pinned, F-12)
+        run: pip install --require-hashes -r requirements.lock.txt
+
+      - name: Create database schema
+        # There is no Alembic in this repo, and Base.metadata.create_all lives
+        # in a pytest fixture that a uvicorn server never runs -- against a
+        # fresh Postgres service the tables would simply not exist. Mirrors
+        # tests/conftest.py's test_engine fixture.
+        run: |
+          python - <<'PY'
+          import asyncio, os
+          from sqlalchemy.ext.asyncio import create_async_engine
+          from apps.api.infrastructure.database.models import Base
+
+          async def main():
+              engine = create_async_engine(os.environ["DATABASE_URL"])
+              async with engine.begin() as conn:
+                  await conn.run_sync(Base.metadata.create_all)
+              await engine.dispose()
+
+          asyncio.run(main())
+          print("schema created")
+          PY
+
+      - name: Start the API
+        # Backgrounded with the log to a file, not the console: a failing E2E
+        # run needs the server's side of the story, and the log is uploaded
+        # below. Polls /health (apps/api/main.py) rather than sleeping blind.
+        run: |
+          nohup uvicorn apps.api.main:app --host localhost --port 8000 \
+            > "${{ github.workspace }}/uvicorn.log" 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+              echo "API up after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API failed to start within 60s -- log follows:"
+          cat "${{ github.workspace }}/uvicorn.log"
+          exit 1
+
+      - name: Install frontend dependencies
+        run: cd apps/web && npm install
+
+      - name: Install Playwright browsers
+        # --with-deps pulls the system libraries Chromium needs on a bare
+        # runner. WITHOUT this the npm package is present and the browser is
+        # not -- exactly the state this repo was in before FINTRACK-65:
+        # installed on every run, never usable.
+        run: cd apps/web && npx playwright install --with-deps chromium
+
+      - name: Build frontend for E2E
+        # The production build, not `vite dev` -- the specs should exercise
+        # what actually ships. VITE_E2E_TEST_MODE enables the
+        # __E2E_AUTH_STORE__ seam in main.tsx that apps/web/e2e/fixtures.ts
+        # seeds auth through. That seam was silently deleted during
+        # FINTRACK-60 and restored in fd7e50b; this job is what would have
+        # caught it.
+        run: cd apps/web && npm run build
+        env:
+          VITE_API_BASE_URL: http://localhost:8000
+          VITE_E2E_TEST_MODE: "true"
+          # REQUIRED, and deliberately fake. vite.config.ts hard-fails a
+          # production build when VITE_GOOGLE_CLIENT_ID is absent (added after
+          # the 2026-08-09 incident where a missing value shipped as the
+          # literal `undefined` into Google's SDK). Omitting it is what failed
+          # run 93981925792.
+          #
+          # A dummy rather than ${{ secrets.VITE_GOOGLE_CLIENT_ID }} on purpose:
+          # no spec drives Google sign-in -- apps/web/e2e/fixtures.ts seeds auth
+          # through the __E2E_AUTH_STORE__ seam precisely because an OAuth popup
+          # is not automatable -- so the real value would never be exercised,
+          # and baking a live OAuth client id into a throwaway CI build buys
+          # nothing. Kept obviously-fake so it can never be mistaken for real
+          # config; vite.config.ts's own comment notes that this guard checks
+          # presence, not validity, and that a plausible-looking placeholder in
+          # secrets once caused a live production incident.
+          #
+          # CONSEQUENCE, stated rather than left implicit: the Google sign-in
+          # path is NOT exercised by the E2E tier. That belongs to FINTRACK-38
+          # and is not covered here.
+          VITE_GOOGLE_CLIENT_ID: e2e-placeholder-not-a-real-client-id.apps.googleusercontent.com
+
+      - name: Run Playwright
+        # playwright.config.ts's webServer starts `vite preview` on 5173 and
+        # waits for it, so there is no separate serve step.
+        run: cd apps/web && npx playwright test
+
+      - name: Upload Allure results (E2E)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-e2e-${{ github.run_id }}
+          path: allure-results/e2e
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload raw E2E artifacts (traces, videos, server log)
+        # The full-fidelity copy. Everything the redaction step strips before
+        # publication lives here instead -- access-controlled, 30-day retention.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts-${{ github.run_id }}
+          path: |
+            apps/web/test-results/
+            e2e-results.xml
+            uvicorn.log
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # ─── STAGE 2c: publish the Allure report (FINTRACK-65) ───────────
+  # main only: Pages serves ONE site per repository, so publishing from every
+  # branch would have each PR overwrite the last and destroy the trend history
+  # that justifies this job. PR runs still upload results as artifacts.
+  #
+  # always(): a report that only appears when everything passed is useless for
+  # tracking, which is the entire point of the job.
+  allure-report:
+    name: Publish Allure Report (GitHub Pages)
+    needs: [test, e2e]
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      # peaceiris/actions-gh-pages pushes the gh-pages branch. This job does
+      # NOT use actions/deploy-pages, so it needs neither pages: write nor
+      # id-token: write nor a github-pages environment.
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download API Allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-api-${{ github.run_id }}
+          path: allure-results/api
+        continue-on-error: true
+
+      - name: Download E2E Allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-e2e-${{ github.run_id }}
+          path: allure-results/e2e
+        continue-on-error: true
+
+      - name: REDACT results before publication (public repo)
+        # THIS STEP IS LOAD-BEARING FOR SECURITY -- see ADR-018.
+        #
+        # This repository is public, so its Pages site is world-readable with
+        # no authentication available. Playwright traces and videos capture
+        # real Set-Cookie headers and bearer tokens from the run; assertion
+        # messages routinely print the token they compared. The script strips
+        # attachments, traces and messages at every nesting depth, keeping
+        # names, status, timing and history.
+        #
+        # DO NOT MOVE THIS BELOW REPORT GENERATION. The generated report
+        # inlines attachment content, so redacting afterwards is too late, and
+        # nothing published to Pages can be unpublished.
+        run: python scripts/trim_allure_results.py allure-results/api allure-results/e2e
+
+      - name: Restore Allure history
+        # Carries the previous publish's history/ forward so trend, retry and
+        # flakiness charts accumulate instead of resetting to a single data
+        # point every run. Without this the "tracking" half of FINTRACK-65
+        # does not exist. No gh-pages branch on the very first run, hence
+        # continue-on-error.
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages-history
+        continue-on-error: true
+
+      - name: Merge history into results
+        run: |
+          if [ -d gh-pages-history/history ]; then
+            cp -r gh-pages-history/history allure-results/api/history || true
+            cp -r gh-pages-history/history allure-results/e2e/history || true
+            echo "history restored"
+          else
+            echo "no prior history -- first published run"
+          fi
+
+      - name: Generate Allure report
+        uses: simple-elf/allure-report-action@v1.15
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+          keep_reports: 30
+
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
+      - name: Report URL
+        run: |
+          {
+            echo "### Allure report"
+            echo "https://folioeye.github.io/finance-tracker-app/"
+            echo ""
+            echo "Redacted for publication (public repo, ADR-018)."
+            echo "Full results: this run's \`allure-results-*\` artifacts."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # ─── MANUAL: regenerate hash-pinned dependency lock file (F-12) ──
   # Run manually from the Actions tab (workflow_dispatch) whenever
@@ -239,6 +524,31 @@ jobs:
           git add requirements.lock.txt
           git diff --cached --quiet || git commit -m "chore(F-12): regenerate requirements.lock.txt"
           git push
+      - name: Say plainly what just happened
+        # The Test Suite job in THIS run checked out the pre-regeneration
+        # commit and will have failed F-12 against the old lock. That red is
+        # stale. Nothing re-runs automatically because pushes made with
+        # GITHUB_TOKEN do not trigger workflows, and "Re-run failed jobs"
+        # re-runs the ORIGINAL commit, not the branch head -- so it fails
+        # identically every time. Confirmed on runs 93979064135 and the
+        # re-run after it. Without this note the run reads as "the fix
+        # failed", which is the opposite of the truth.
+        if: always()
+        run: |
+          {
+            echo "### Lock file regenerated"
+            echo ""
+            echo "Branch: \`${{ github.ref_name }}\`"
+            echo "Commit: \`$(git rev-parse --short HEAD)\`"
+            echo ""
+            echo "**The Test Suite result in THIS run is stale.** It checked out the"
+            echo "commit from before the regeneration, so its F-12 lock check was"
+            echo "reading the old file."
+            echo ""
+            echo "Start a NEW run against the branch head to validate the new lock:"
+            echo "push to the branch, or use Run workflow. Do NOT use \"Re-run failed"
+            echo "jobs\" -- that re-runs the original commit and will fail identically."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # ─── STAGE 3: Build frontend (staging + main only) ───────────────
   build-frontend:
