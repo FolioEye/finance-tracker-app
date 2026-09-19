@@ -220,12 +220,19 @@ jobs:
           if-no-files-found: warn
 
   # ─── STAGE 2b: E2E browser tier (FINTRACK-65) ────────────────────
-  # REPORT-ONLY, not gating -- Mr M's decision, recorded in ADR-018. A browser
-  # suite wired up for the first time is flaky for reasons unrelated to the
-  # code, and gating on day one blocks every PR on infrastructure teething,
-  # which is how a new E2E tier gets disabled in week two and never comes back.
-  # Flipping continue-on-error to false is what makes it block, once a week of
-  # runs looks stable.
+  # GATING -- Mr M's decision, 2026-09-19, superseding the report-only phase
+  # recorded in ADR-018. A failing browser spec now fails the build.
+  #
+  # The report-only phase did its job: it carried the tier through the period
+  # where every red was the harness rather than the app (a PROD-gated auth seam
+  # served from a production bundle, a missing CORS origin, a schema that no
+  # migration created, and specs whose seeded session was destroyed by their own
+  # next navigation -- FINTRACK-66). Run 95913827332 was the first clean pass,
+  # 5/5 in 5.9s against a real Postgres, Redis, uvicorn and served frontend.
+  #
+  # What changes with this flip: a red E2E blocks merges rather than being a
+  # warning next to a green button. That is the point -- it is also why the
+  # previous value existed, so read the E2E log before assuming flake.
   #
   # Unlike `test`, this needs a REAL stack: tests/conftest.py's in-memory
   # SQLite and fakeredis are in-process fixtures a browser cannot reach.
@@ -233,7 +240,7 @@ jobs:
     name: E2E (Playwright)
     needs: test
     runs-on: ubuntu-latest
-    continue-on-error: true
+    continue-on-error: false
     services:
       postgres:
         image: postgres:16
