@@ -95,3 +95,25 @@ class OAuthLoginResponse(BaseModel):
     is_new_user: bool
 
     model_config = {"from_attributes": True}
+
+
+class RefreshResponse(BaseModel):
+    """FINTRACK-60. Response for POST /api/v1/auth/refresh."""
+
+    # Same no-refresh-token-in-body policy as every other response in this
+    # module (F-02). The ROTATED refresh token is issued only as the
+    # httpOnly cookie -- putting it here too would let an XSS exfiltrate it
+    # from the response without ever reading the cookie, which is the exact
+    # hole httpOnly exists to close.
+    #
+    # No `email` field either, deliberately: this endpoint restores a
+    # session, and it has no need to handle PII to do that. Pages that
+    # display the user's email fetch it from their own authenticated
+    # endpoints. See the data-classification table in
+    # docs/threat-models/FINTRACK-60-session-persistence-threat-model.md.
+    user_id: uuid.UUID
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+    model_config = {"from_attributes": True}
