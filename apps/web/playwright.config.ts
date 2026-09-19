@@ -17,6 +17,16 @@ const API_URL = process.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 // trend tracking (FINTRACK-65). Written OUTSIDE apps/web so the API suite's
 // results and this one land side by side under the repo-root allure-results/
 // and merge into a single report per run.
+//
+// FINTRACK-68: the option below is `outputFolder`, NOT `resultsDir`.
+// `resultsDir` is the allure-playwright 3.x name; this repo pins the 2.x line
+// (2.15.1) to match the Allure 2 format allure-commandline generates. 2.x
+// takes { detail, outputFolder, suiteTitle, categories, environmentInfo } and
+// SILENTLY IGNORES anything else, then falls back to
+// path.resolve(process.cwd(), "allure-results") -- so the misspelled key sent
+// every result to apps/web/allure-results/, the upload step matched nothing,
+// and the published report contained zero tests on a green pipeline. There is
+// no error for getting this name wrong; only an empty report.
 const ALLURE_RESULTS_DIR =
   process.env.ALLURE_RESULTS_DIR ?? "../../allure-results/e2e";
 
@@ -29,7 +39,7 @@ export default defineConfig({
     // and blocks a CI runner forever. Allure is the durable report now.
     ["line"],
     ["junit", { outputFile: "../../e2e-results.xml" }],
-    ["allure-playwright", { resultsDir: ALLURE_RESULTS_DIR }],
+    ["allure-playwright", { outputFolder: ALLURE_RESULTS_DIR }],
   ],
   use: {
     baseURL: BASE_URL,
