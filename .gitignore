@@ -16,6 +16,18 @@ htmlcov/
 coverage.xml
 *.cover
 
+# Allure results and generated reports (FINTRACK-65). Build output, not
+# source: CI regenerates these every run and publishes the report to Pages.
+# Committing them would also defeat the redaction step in
+# scripts/trim_allure_results.py, since the raw results contain tokens and
+# traces and this is a public repository.
+allure-results/
+allure-report/
+allure-history/
+e2e-results.xml
+apps/web/test-results/
+apps/web/playwright-report/
+
 # Packaging
 *.egg-info/
 build/
@@ -40,3 +52,22 @@ cookies.txt
 docs/security-performance-parameters.md
 graphify-out/
 vault/
+
+# ─────────────────────────────────────────────────────────────────────────
+# SDLC pipeline internals -- this repository is PUBLIC (see ADR-005, which
+# depends on that for free-plan environment reviewers).
+#
+# The agent definitions, the workflow's stage machine and tool allowlist, and
+# the signed audit envelopes are the pipeline's own material, not this
+# application's source. The live copies belong in the private `gforce` repo.
+# Nothing here reads any of them: pytest.ini collects only
+# tests/unit tests/security tests/integration, ci-cd.yml never mentions them,
+# and apps/api/Dockerfile's build context is apps/api/ alone -- so the copies
+# that were committed here were inert duplicates, published for no benefit.
+#
+# Same intent as the docs/security-performance-parameters.md line above.
+# Raised under FINTRACK-65.
+# ─────────────────────────────────────────────────────────────────────────
+*_agent.json
+finance-app_workflow.json
+Fintrack/audit/
