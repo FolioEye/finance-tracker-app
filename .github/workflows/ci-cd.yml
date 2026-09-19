@@ -440,6 +440,42 @@ jobs:
         # nothing published to Pages can be unpublished.
         run: python scripts/trim_allure_results.py allure-results/api allure-results/e2e
 
+      - name: Flatten results into one directory for generation
+        # `allure generate` reads result files DIRECTLY out of each directory
+        # it is given -- it does not walk subdirectories. Pointing it at
+        # `allure-results/` while the files live in `allure-results/api/` and
+        # `allure-results/e2e/` therefore produced a structurally valid report
+        # containing ZERO tests, published green, on run 35430357202. The job
+        # succeeded; the evidence it exists to publish was empty.
+        #
+        # Flattening after redaction, never before: only redacted files are
+        # copied, so the published set can only ever be the sanitised one.
+        # Result files are UUID-named, so the two suites cannot collide.
+        run: |
+          mkdir -p allure-results/combined
+          cp -a allure-results/api/. allure-results/combined/ 2>/dev/null || true
+          cp -a allure-results/e2e/. allure-results/combined/ 2>/dev/null || true
+          ls -1 allure-results/combined | wc -l
+
+      - name: Fail if there are no results to publish
+        # The guard that would have caught the above on day one, and the one
+        # that catches the next variant of it: a reporter writing somewhere
+        # unexpected, an artifact that never uploaded, a suite that collected
+        # nothing. An empty report is worse than no report -- it reads as
+        # "everything is fine" on a page whose whole purpose is evidence.
+        #
+        # Deliberately NOT continue-on-error: this failing means the published
+        # report would have been a lie.
+        run: |
+          count=$(find allure-results/combined -maxdepth 1 -name '*-result.json' | wc -l)
+          echo "result files: $count"
+          if [ "$count" -eq 0 ]; then
+            echo "::error::No Allure result files found. Nothing would be published but an empty report."
+            echo "Downloaded artifacts:"
+            ls -R allure-results || true
+            exit 1
+          fi
+
       - name: Restore Allure history
         # Carries the previous publish's history/ forward so trend, retry and
         # flakiness charts accumulate instead of resetting to a single data
@@ -453,10 +489,10 @@ jobs:
         continue-on-error: true
 
       - name: Merge history into results
+        # Into the flattened directory -- the one generation actually reads.
         run: |
           if [ -d gh-pages-history/history ]; then
-            cp -r gh-pages-history/history allure-results/api/history || true
-            cp -r gh-pages-history/history allure-results/e2e/history || true
+            cp -r gh-pages-history/history allure-results/combined/history || true
             echo "history restored"
           else
             echo "no prior history -- first published run"
@@ -465,7 +501,7 @@ jobs:
       - name: Generate Allure report
         uses: simple-elf/allure-report-action@v1.15
         with:
-          allure_results: allure-results
+          allure_results: allure-results/combined
           allure_history: allure-history
           keep_reports: 30
 
