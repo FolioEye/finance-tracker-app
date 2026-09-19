@@ -1,0 +1,1317 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"An overdue-but-still-PENDING record must be counted as IGNORED in
+    the rate, not silently excluded as if it never existed.","0","test_rate_reconciles_an_overdue_pending_record_before_counting","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"is_active=False must fail exactly like a wrong password -- not a
+    distinct 'account disabled' message, which would itself be a form of
+    enumeration (confirms the account exists, just disabled).
+    ","1","test_deactivated_account_rejected_like_any_other_failure","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-16-statement-import.feature: Upload a corrupted or unparseable file","595","test_upload_a_corrupted_or_unparseable_file","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","0","test_large_transaction_fallback_still_fires_above_the_flat_threshold","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"Matches the BA's Gherkin scenario 2 exactly.","1","test_find_matching_rule_returns_none_when_nothing_matches","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","1","test_update_transaction_handler_raises_not_found_for_unknown_id","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","273","test_xss_payload_in_login_email_rejected_generically","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-15-add-manual-transaction.feature: Attempt to add transaction with negative amount","604","test_attempt_to_add_transaction_with_negative_amount","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","1","test_valid_refresh_token_issues_a_new_pair","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"Gap-fill: a subscription detected 8 days ago is outside the
+    7-day rolling window and must not be treated as 'new this week'.","1","test_subscription_detected_outside_rolling_window_does_not_trigger","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-13-user-registration.feature: Attempt to register with an already-registered email","317","test_attempt_to_register_with_an_alreadyregistered_email","tests.integration","2026-09-19","passed","2026-09-19","","test_register_api","",""
+"","1","test_normalise_merchant_upper_cases_and_strips","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","1","test_sanitise_if_formula_leaves_empty_string_untouched","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","4","test_auth_bypass_empty_bearer_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","5","test_is_valid_date_accepts_dashed_us_format","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","1","test_apple_verifier_rejects_expired_token","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_verifier","",""
+"","0","test_update_budget_rejects_invalid_amount","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-frontend-scaffold.feature: Production build succeeds and serves a working root page","5004","test_production_build_succeeds_and_serves_a_working_root_page","tests.integration","2026-09-19","passed","2026-09-19","","test_frontend_build","",""
+"","1831","visiting a protected route while logged out redirects to /login","chromium","2026-09-19","passed","2026-09-19","Unauthenticated access (security)","auth.spec.ts","",""
+"","284","test_no_token_value_is_ever_written_to_the_logs","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"Byte-for-byte the same attribute set as /register, /login and
+    /oauth/* -- drift here means the cookie stops being replaced and starts
+    being duplicated.","284","test_the_refresh_cookie_carries_every_required_attribute","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"AC5/IDOR: same one-error-for-both-cases shape as
+    DismissAlertHandler -- the attacker gets AlertNotFoundError, never a
+    distinct 'forbidden' signal, and no justification is recorded.","0","test_justify_raises_not_found_for_another_users_alert","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","1","test_threshold_crossing_fires_at_exactly_90_percent","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","3","test_auth_bypass_empty_bearer_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_insights_security","",""
+"","3","test_auth_bypass_token_signed_with_wrong_secret_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"","0","test_create_categorisation_rule_creates_a_new_rule","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_handlers","",""
+"","1","test_new_rejects_zero_limit","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"AC6: re-runs when new transactions are added -- a 4th occurrence
+    updates the existing row's stats (and last_transaction_id) rather than
+    creating a duplicate.","1","test_refreshes_existing_subscription_stats_on_re_detection","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"","624","test_electric_co_amount_variance_within_tolerance_is_flagged","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"Documents, rather than silently skipping, two scenario categories
+    from the QA Lead checklist that don't meaningfully apply to this
+    specific story:
+
+    - Large dataset (1000+ records): login is a single indexed lookup by
+      email (the same query path FINTRACK-13's uniqueness check already
+      exercises against a populated table) -- there's no new query shape
+      introduced by login/logout worth re-proving at scale here.
+    - Accessibility (keyboard nav, ARIA labels): N/A -- FINTRACK-14 is a
+      backend-only story this sprint; no login/logout UI exists yet.
+      Applicable once the frontend login form ships.
+    ","1","test_large_dataset_and_accessibility_not_applicable_documented","tests.integration","2026-09-19","passed","2026-09-19","","test_login_logout_api","",""
+"","3","test_auth_bypass_token_signed_with_wrong_secret_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"","1","test_new_sets_created_at_and_updated_at_to_now_and_equal","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_justification_domain","",""
+"","0","test_sanitise_if_formula_leaves_normal_text_untouched","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","1","test_apply_update_rejects_more_than_two_decimal_places","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"Matches the BA's Gherkin scenario 1 exactly: $300 spent against a
+    $500 budget shows 60% used. Also the exact case the Tech Lead's own
+    smoke test caught unquantized (""60.0"" instead of ""60.00"") -- asserted
+    here as a string to lock the fix in.","1","test_overview_computes_percent_used_for_a_budgeted_category","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-15-add-manual-transaction.feature: Attempt SQL injection in transaction description","867","test_attempt_sql_injection_in_transaction_description","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","1","test_is_valid_amount_rejects_negative","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"Crafts a token with the same secret/algorithm the app uses but an
+    exp already in the past -- proves expiry is actually enforced, not
+    just signature validity.","4","test_expired_access_token_is_rejected","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","0","test_is_valid_date_rejects_empty_string","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","0","test_apply_auto_categorisation_skips_invalid_rows","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","0","test_delete_budget_raises_not_found_for_another_users_budget","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","1","test_creates_a_new_subscription_when_pattern_first_detected","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"Matches Gherkin: 'Successfully register a new account'.","1","test_successful_registration","tests.unit","2026-09-19","passed","2026-09-19","","test_register_user","",""
+"","601","test_two_irregular_amazon_charges_are_not_flagged","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"","1","test_new_rejects_more_than_two_decimal_places","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","283","test_large_dataset_of_1000_transactions_paginates_completely_without_duplicates_or_loss","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","0","test_apply_auto_categorisation_handles_row_with_no_note","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"AC3/AC4/AC5 end-to-end: stage -> bulk-edit an invalid row -> commit
+    -> the committed transactions appear in the normal transaction list
+    tagged entry_source=csv_import.","587","test_full_lifecycle_stage_edit_commit_and_verify_transaction_list","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","1","test_apply_update_changes_the_limit","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"Revocation is server-side, so it holds regardless of which client
+    presents the old token -- a thief on another machine is not a
+    different case.","291","test_rotation_invalidates_the_old_token_even_for_a_different_client","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"AC7: 'No bank credentials ever requested.' The stage endpoint only
+    accepts a multipart file upload -- there is no username/password/
+    account-number field in its request shape for a credential to even
+    be placed into.","565","test_no_bank_credential_fields_accepted_by_stage_endpoint","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","274","test_sql_injection_payload_never_reflected_in_response","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"","592","test_bulk_import_of_200_transactions_shows_categorisation_summary","tests.integration","2026-09-19","passed","2026-09-19","","test_categorisation_rules_api","",""
+"Boundary: exactly 7 days elapsed is NOT yet overdue -- the Gherkin
+    scenario specifically uses ""8 days ago"" for the ignored case, so day 7
+    itself must still read as within the window.","0","test_is_overdue_false_at_exactly_seven_days","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"","4","test_delete_transaction_without_auth_token_returns_401","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"Simulates a user hitting refresh twice in quick succession -- both
+    calls must resolve to the same follow_through_record_id, never a
+    second row for the same day.","590","test_concurrent_refresh_same_day_reuses_the_same_record_idempotently","tests.integration","2026-09-19","passed","2026-09-19","","test_follow_through_api","",""
+"Matches the BA's Gherkin scenario 4 exactly.","1","test_new_rejects_sqli_shaped_merchant_pattern","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","5","test_auth_bypass_missing_token_rejected_on_stage","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","563","test_transaction_from_unknown_merchant_is_flagged_uncategorised_not_guessed","tests.integration","2026-09-19","passed","2026-09-19","","test_categorisation_rules_api","",""
+"","4","test_auth_bypass_missing_token_rejected_on_rate","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"","0","test_apply_correction_updates_category_in_place","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"Auth-bypass-adjacent check for logout: calling it with no prior
+    login (no cookie at all) must succeed identically to calling it after
+    a real login, so the response can't be used to probe session state.
+    ","3","test_logout_does_not_require_or_leak_whether_a_session_existed","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"","0","test_user_at_80_pct_of_budget_gets_a_budget_risk_recommendation","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"AC4: a transaction exceeding every previously-justified amount for
+    the category still fires normally -- the ceiling suppresses, it never
+    blocks alerts outright.","1","test_large_transaction_still_fires_when_above_the_justified_ceiling","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","1","test_dismiss_alert_raises_not_found_for_a_nonexistent_id","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","626","test_idor_a_forged_alert_id_belonging_to_no_one_returns_404_not_500_on_justify","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","0","test_current_month_bounds_mid_month","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"","606","test_user_removes_an_existing_budget","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"","1","test_justifying_the_same_alert_twice_at_the_same_amount_is_a_harmless_no_op","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","0","test_not_subscription_marked_row_is_never_resurfaced_either","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"","0","test_rate_excludes_records_outside_the_rolling_window","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","0","test_committable_rows_includes_ok_and_flagged_excludes_invalid","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","4","test_dashboard_requires_auth","tests.integration","2026-09-19","passed","2026-09-19","","test_insights_api","",""
+"","582","test_category_with_no_budget_set_shows_spend_without_a_false_over_state","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"","0","test_new_accepts_limit_just_below_the_ceiling","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","4","test_session_edge_case_expired_token_rejected_on_history","tests.integration","2026-09-19","passed","2026-09-19","","test_follow_through_api","",""
+"","1","test_money_parse_accepts_whole_number_amount","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"Matches Gherkin scenario 2: a corrupted file must raise a clear
+    error, not silently import a partial/garbage result.","2","test_parse_csv_statement_rejects_undecodable_bytes","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"Weekly charges (7-day gaps) are not a monthly subscription pattern
+    under this v1 rules engine -- explicitly out of scope per the story's
+    'Out of scope' note (only monthly cadence is detected).","1","test_interval_much_shorter_than_target_is_not_flagged","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","0","test_money_parse_rejects_more_than_two_decimal_places","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","6","test_stage_import_without_auth_token_returns_401","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","620","test_a_transaction_within_normal_range_does_not_trigger_a_large_transaction_alert","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","12","test_all_budget_endpoints_require_auth","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"Defensive path: alert.transaction_id points at a transaction that
+    no longer resolves for this user (data-corruption edge case, not a
+    normal user flow) -- must fail closed with a clear error, never a
+    raw AttributeError from a None transaction.","0","test_justify_raises_transaction_not_found_if_the_triggering_transaction_is_missing","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"Gap-fill: routine week-to-week variance (below the 1.5x bar) must
+    not be flagged -- avoids a false-positive spike.","1","test_spend_below_spike_multiplier_does_not_trigger","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","0","test_money_parse_accepts_exactly_two_decimal_places","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","3","test_auth_bypass_missing_token_rejected_on_create","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"","0","test_20_pct_follow_through_rate_is_deprioritised","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"","0","test_current_month_total_excludes_prior_month_spend","tests.unit","2026-09-19","passed","2026-09-19","","test_spending_insights_handler","",""
+"","3","test_auth_bypass_empty_bearer_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","1","test_create_transaction_handler_persists_and_returns_the_transaction","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"Matches Gherkin: 'Attempt SQL injection in email field during registration'.
+
+    The Email value object's format regex rejects this outright before any
+    query is built -- and even if it somehow reached the repository, the
+    SQLAlchemy layer only ever uses parameterised queries (see
+    sqlalchemy_user_repository.py), so no string-concatenation path exists
+    for this input to reach the database at all.
+    ","1","test_sql_injection_in_email_is_rejected_not_executed","tests.security","2026-09-19","passed","2026-09-19","","test_register_security","",""
+"Session edge case beyond the Gherkin: if a client mistakenly (or
+    maliciously) sends an access token in place of the refresh cookie,
+    logout must not treat it as a valid session to revoke -- access
+    tokens were never meant to be revocable via this path (see ADR-009).
+    ","0","test_logout_rejects_an_access_token_used_as_refresh_token","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"","1","test_raise_ceiling_if_higher_updates_updated_at_only_when_it_actually_changes","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_justification_domain","",""
+"","0","test_80_pct_follow_through_rate_is_not_deprioritised","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"Concurrent modification scenario the Gherkin doesn't cover.
+
+    Exercises the exact race the repository docstring calls out: two
+    requests for the same email arriving close enough together that both
+    pass get_by_email() before either has committed. The DB's unique
+    constraint (via IntegrityError -> EmailAlreadyExistsError in
+    sqlalchemy_user_repository.add()) must ensure exactly one wins.
+    ","11","test_concurrent_registration_same_email_only_one_succeeds","tests.integration","2026-09-19","passed","2026-09-19","","test_register_api","",""
+"","0","test_create_categorisation_rule_upserts_rather_than_duplicates_for_the_same_pattern","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_handlers","",""
+"","586","test_delete_transaction_twice_returns_404_the_second_time","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","564","test_sql_injection_payload_never_reflected_in_response","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-16-statement-import.feature: Attempt CSV formula injection via a transaction description","592","test_attempt_csv_formula_injection_via_a_transaction_description","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"Unauthenticated, and each call does a Redis write plus a JWT sign --
+    worth bounding. 5 per 15 minutes, matching /login.","22","test_refresh_is_rate_limited_on_the_same_budget_as_login","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"The other half of the same regression: an actual Apple sign-in
+    attempt against an unconfigured environment must fail cleanly as
+    OAuthProviderUnavailableError (-> 503 at the API layer, see auth.py),
+    not raise an unhandled ValueError out of the dependency wiring.","0","test_apple_login_without_config_raises_provider_unavailable_not_crash","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_login_user","",""
+"","3","test_auth_bypass_empty_bearer_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","574","test_discard_staged_import_removes_it","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"AC2: below MIN_OCCURRENCES (only 2 seen so far) -- no row created.","0","test_returns_none_and_creates_nothing_when_pattern_not_yet_present","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"","1","test_stage_import_handler_persists_and_returns_staged_import","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","0","test_dismiss_sets_dismissed_at","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_domain","",""
+"","0","test_apply_update_does_not_change_id_or_category","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"IDOR prevention: owner_b cannot delete owner_a's transaction.","0","test_delete_transaction_handler_raises_not_found_for_another_users_transaction","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","1","test_commit_import_handler_raises_not_found_for_unknown_import","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","1","test_list_history_reconciles_an_overdue_pending_record_to_ignored","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","569","test_creating_a_second_budget_for_the_same_category_returns_409","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"","0","test_list_alerts_returns_only_active_alerts_by_default","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"Matches the BA's Gherkin scenario 3 exactly: $250 spent against a
+    $200 budget is over budget, and the overage is visible (125%), not
+    silently capped at 100%.","0","test_overview_flags_over_budget_with_uncapped_percentage","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","4","test_auth_bypass_empty_id_token_rejected_by_schema","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-16-statement-import.feature: Successfully import a CSV statement","655","test_successfully_import_a_csv_statement","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","4","test_auth_bypass_missing_token_rejected_on_create","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"","1","test_update_staged_rows_handler_ignores_an_unknown_row_index","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","3","test_auth_bypass_malformed_authorization_header_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_recommendations_security","",""
+"","4","test_auth_bypass_malformed_authorization_header_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"Edge case for _current_month_bounds: ""today"" in December must not
+    leak January-of-next-year spend, and a January transaction from the
+    same day last year must not leak in either.","1","test_overview_handles_the_december_to_january_year_rollover","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","1","test_new_detected_sets_status_detected","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","647","test_confirm_endpoint_sets_status_confirmed","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"Absent-means-zero convention, matching
+    sum_by_category_for_user_in_range -- callers wanting a gap-free series
+    (GetSpendingInsightsHandler) fill zeros in themselves.","7","test_sum_by_month_only_returns_months_with_at_least_one_transaction","tests.integration","2026-09-19","passed","2026-09-19","","test_transaction_repository_month_aggregation","",""
+"","659","test_well_followed_budget_category_keeps_native_priority_via_real_api","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation_api","",""
+"","619","test_pagination_walks_to_the_last_page_with_a_null_cursor","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"29% (2.9/10, rounds to below 3 done out of 10 isn't representable
+    with whole occurrences, so use a 20-occurrence window truncated to
+    the service's own ROLLING_WINDOW cap to land exactly on 29%).","1","test_just_under_30_pct_is_deprioritised","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"IDOR at the handler layer -- the attacker gets the same
+    AlertNotFoundError as a truly nonexistent id, never a distinct
+    'forbidden' signal.","1","test_dismiss_alert_raises_not_found_for_another_users_alert","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"FINTRACK-17 rewrite (was test_sql_injection_in_csv_category_is_skipped_at_commit_not_committed,
+    which asserted a commit-time skip -- no skip happens now, because the
+    category column this payload lives in is never read as data at all).
+    Both rows commit; the auto-categorisation engine assigns
+    ""Uncategorised"" to the second row (no rule matches ""Normal purchase""),
+    so the injection payload is discarded during staging, well before
+    Transaction.new() would even see it.","582","test_sql_injection_in_csv_category_column_never_becomes_transaction_data","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","596","test_spending_exceeds_the_category_budget","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"Defence-in-depth: a rule's own category shouldn't be able to carry
+    a spreadsheet-formula-injection payload through to the review screen
+    unflagged, even though CategorisationRule.new() doesn't itself check
+    for this (only for SQLi-shaped input).","0","test_apply_auto_categorisation_flags_a_formula_injection_payload_in_rule_category","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","1","test_threshold_crossing_does_not_fire_below_90_percent","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"If the payload had reached a query unparameterised, a DROP TABLE
+    would take out every rule, not just fail to create one. A real,
+    unrelated user's rule surviving right after -- and still doing its job
+    -- is the strongest evidence the table is intact.","1143","test_sql_injection_does_not_disturb_other_users_data","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"AC2: fewer than MIN_OCCURRENCES is an automatic None regardless of
+    amount/interval shape -- matches the Gherkin's own two-transaction
+    negative example.","0","test_two_irregular_charges_are_not_flagged_below_min_occurrences","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","0","test_confirm_raises_not_found_for_nonexistent_id","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"","1184","test_subscriptions_are_scoped_to_the_authenticated_user_only","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"","0","test_invalid_token_raises_generic_oauth_login_error","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_login_user","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-frontend-scaffold.feature: A TypeScript type error fails the build","2488","test_a_typescript_type_error_fails_the_build","tests.integration","2026-09-19","passed","2026-09-19","","test_frontend_build","",""
+"","1","test_create_transaction_handler_propagates_suspicious_input_error","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","0","test_mark_not_subscription_raises_not_found_for_another_users_subscription","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"Registration creates a brand-new resource scoped to the caller --
+    there is no existing per-user resource for another party to access
+    out of scope. IDOR becomes directly testable starting with
+    FINTRACK-14 (Login) and any endpoint that reads/writes a specific
+    user's data. Documented as N/A here rather than fabricating a test
+    against an endpoint that has nothing to be an IDOR victim of.
+    ","0","test_idor_not_applicable","tests.security","2026-09-19","passed","2026-09-19","","test_register_api_security","",""
+"Matches Gherkin scenario 1 exactly: 50 well-formed transactions.","3","test_parse_csv_statement_50_well_formed_rows_all_ok","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"Matches Gherkin: amount ""-15.00"" -> 'Amount must be a positive number'.","2","test_money_parse_rejects_negative_amount","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","1","test_normalise_merchant_treats_differently_padded_same_merchant_as_equal","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"Idempotent get-or-create: a user refreshing the page twice in one
+    day must not get two rows, and must not have their existing action
+    state clobbered.","0","test_ensure_returns_the_existing_record_on_a_second_call_same_period","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","0","test_trailing_months_bounds_one_month_is_just_the_current_month","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-13-user-registration.feature: Attempt to register with a weak password","31","test_attempt_to_register_with_a_weak_password","tests.integration","2026-09-19","passed","2026-09-19","","test_register_api","",""
+"","0","test_new_large_transaction_sets_all_fields","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_domain","",""
+"","1","test_update_transaction_handler_does_not_create_a_rule_when_category_stays_uncategorised","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"This story only exposes stage/edit/commit/discard by id -- no
+    GET /api/v1/imports (list) endpoint, so there is nothing for an
+    attacker to enumerate even with a valid token. Recorded here so a
+    future list endpoint inherits user_id-scoping from the start rather
+    than reinventing this expectation.","555","test_idor_no_list_staged_imports_endpoint_exists_documented","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","0","test_mark_not_subscription_sets_status","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"","589","test_max_upload_size_is_enforced","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","582","test_update_transaction_rejects_invalid_amount","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","1","test_is_valid_amount_rejects_non_numeric_returns_none_not_raise","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","0","test_new_rejects_overlong_merchant_pattern","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"Regression test for the bug found during this QA pass:
+    AmountExceedsMaximumError must be caught per-row (skipped), not
+    propagate as an unhandled exception and abort the whole commit.
+    is_valid_amount() doesn't enforce MAX_TRANSACTION_AMOUNT, so a row at
+    the exact rejected boundary (999999999.99, per ADR-010) stages as OK
+    and only fails at commit time.","0","test_commit_import_handler_skips_a_row_whose_amount_exceeds_the_maximum","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","1514","test_overview_is_correct_across_a_large_number_of_categories","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"","0","test_monthly_trend_respects_custom_trend_months","tests.unit","2026-09-19","passed","2026-09-19","","test_spending_insights_handler","",""
+"","4","test_auth_bypass_garbage_bearer_token_rejected_on_discard","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"Only one at-risk budget exists and it's deprioritised -- BUDGET_RISK
+    must still fire (never fall through to NEUTRAL or a lower tier) with
+    no reorder reason, since nothing was actually reordered.","0","test_qualifying_tier_never_suppressed_even_if_every_candidate_is_deprioritised","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_prioritisation","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-oauth-apple.feature: New user completes Apple Sign-In and reaches the dashboard","38","test_new_user_completes_apple_signin_and_reaches_the_dashboard","tests.integration","2026-09-19","passed","2026-09-19","","test_oauth_api","",""
+"","560","test_security_event_is_logged_on_sql_injection_attempt","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","562","test_dismissing_a_nonexistent_alert_returns_404","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","641","test_mark_not_subscription_endpoint_sets_status_and_hides_it","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"","0","test_is_valid_amount_strips_thousands_separator","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","3","test_auth_bypass_malformed_authorization_header_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","1132","test_idor_cannot_edit_another_users_budget","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","1","test_parse_csv_statement_rejects_missing_required_columns","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","0","test_new_pending_generates_a_fresh_uuid_each_call","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"","0","test_new_rejects_empty_category","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","663","test_dismissing_a_subscription_prevents_it_reappearing_on_re_detection","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"IDOR discipline: belongs-to-someone-else and doesn't-exist must be
+    indistinguishable to the caller.","1","test_record_action_another_users_record_id_raises_not_found_not_forbidden","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","4","test_sql_injection_payload_as_id_token_rejected_generically","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"Session edge case the Gherkin doesn't spell out: verifies the actual
+    tokens/cookie issued on success, not just that *some* 201 came back.
+    ","280","test_successful_registration_issues_valid_access_token_and_secure_refresh_cookie","tests.integration","2026-09-19","passed","2026-09-19","","test_register_api","",""
+"Documents, rather than silently skipping, the accessibility item
+    from the QA Lead checklist: N/A for the same reason FINTRACK-14's
+    equivalent test gives -- this is a backend-only story this sprint, no
+    transaction-entry UI exists yet. Applicable once the frontend form
+    ships.","0","test_accessibility_not_applicable_documented","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","1","test_dismiss_sets_status_dismissed","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-oauth-apple.feature: User cancels or Apple returns an error","30","test_user_cancels_or_apple_returns_an_error","tests.integration","2026-09-19","passed","2026-09-19","","test_oauth_api","",""
+"","4","test_commit_import_without_auth_token_returns_401","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","1064","test_alerts_list_is_correct_across_a_large_number_of_categories","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","567","test_xss_payload_in_category_is_stored_as_inert_text_not_executed","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","0","test_list_returns_only_active_subscriptions_by_default","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"HULU is the native top pick (detected most recently), but the user
+    has consistently ignored HULU recommendations -- DISNEY+ (detected
+    earlier, but not ignored) should be shown instead.","0","test_deprioritised_subscription_merchant_is_passed_over_for_a_normal_one","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_prioritisation","",""
+"","1","test_create_categorisation_rule_rejects_empty_merchant_pattern","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_handlers","",""
+"AC4: rate limit is per account+IP, not IP alone and not email alone --
+    a different IP attempting the same email should not inherit the first
+    IP's exhausted counter.
+    ","0","test_rate_limit_is_keyed_on_email_and_ip_together","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"","627","test_attempt_to_justify_a_threshold_crossing_alert","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","4","test_idor_not_applicable_no_resource_identifier_on_oauth_endpoints","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"","1144","test_attempt_to_access_another_users_dashboard_data","tests.integration","2026-09-19","passed","2026-09-19","","test_insights_api","",""
+"FINTRACK-17 behaviour change (ADR-012, decision D): the CSV's own
+    category/type column is no longer used as transaction category data
+    at all -- apply_auto_categorisation() always assigns either a rule
+    match or ""Uncategorised"" during staging, regardless of what that
+    column held. So SQLi-shaped content placed in the category column
+    (as FINTRACK-16's equivalent test exercised) never reaches
+    Transaction.new() as a category value in the first place, and the
+    row commits cleanly. This is a stronger guarantee than ""rejected and
+    skipped at commit"" -- the vector is closed structurally, not just
+    caught defensively. See
+    test_commit_import_handler_skips_a_row_whose_note_is_sqli_shaped
+    below for the vector that's still live (the description/note
+    column, which does still flow into Transaction.new()).","1","test_commit_import_handler_category_column_sqli_no_longer_reaches_transaction","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","5","test_sql_injection_in_email_field_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_register_api_security","",""
+"","1160","test_idor_cannot_dismiss_another_users_alert","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","573","test_imported_transaction_auto_categorised_from_known_merchant_pattern","tests.integration","2026-09-19","passed","2026-09-19","","test_categorisation_rules_api","",""
+"","283","test_the_rotated_token_belongs_to_the_same_user","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"","560","test_non_integer_trend_months_is_rejected_by_validation_not_passed_to_a_query","tests.security","2026-09-19","passed","2026-09-19","","test_insights_security","",""
+"","0","test_is_overdue_false_once_already_dismissed_even_if_old","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"","4","test_auth_bypass_malformed_authorization_header_rejected_on_justify","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","0","test_sanitise_if_formula_prefixes_at_sign","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"A refresh-typed token presented as a bearer access token must be
+    rejected -- same convention as get_current_user_id's existing
+    handling for every other authenticated endpoint.","4","test_auth_bypass_refresh_token_rejected_as_access_token","tests.security","2026-09-19","passed","2026-09-19","","test_insights_security","",""
+"","7","test_sum_by_month_handles_a_year_boundary_range","tests.integration","2026-09-19","passed","2026-09-19","","test_transaction_repository_month_aggregation","",""
+"","0","test_two_threshold_crossing_alerts_get_different_ids","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_domain","",""
+"","0","test_missing_token_is_rejected","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"","3","test_auth_bypass_token_signed_with_wrong_secret_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","1","test_fewer_than_minimum_sample_size_is_never_deprioritised","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"Dining has a low overall rate (2 of 10 done, 20%) but its single
+    MOST RECENT occurrence was DONE -- BA's recovery rule says this must
+    already be back to normal, so as the native top pick (90% used) it
+    should win over Groceries (85% used, never deprioritised).
+    ","661","test_recovered_budget_category_wins_back_native_priority","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation_api","",""
+"","624","test_an_unusually_large_single_transaction_triggers_an_alert","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","0","test_sanitise_if_formula_prefixes_leading_tab","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","1130","test_idor_history_never_leaks_another_users_records","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"","1","test_insights_are_scoped_per_user","tests.unit","2026-09-19","passed","2026-09-19","","test_spending_insights_handler","",""
+"","1","test_google_verifier_requires_client_id","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_verifier","",""
+"","4","test_a_foreign_signed_token_is_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"","0","test_mark_not_subscription_sets_status_not_subscription","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"AlertType is a str Enum specifically so .value round-trips exactly
+    with what's stored in AlertModel.alert_type (a plain String column) --
+    a mismatch here would silently break find_active_threshold_crossing's
+    equality filter.","0","test_alert_type_enum_values_match_db_storage_strings","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_domain","",""
+"","1","test_is_valid_amount_rejects_more_than_two_decimal_places","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","1134","test_idor_cannot_delete_another_users_budget","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"Dining-out spikes harder (native top pick by spend amount), but the
+    user has consistently ignored dining-out spike alerts -- Entertainment
+    (a smaller but still-qualifying spike) should be shown instead.","1","test_deprioritised_spike_category_is_passed_over_for_a_normal_one","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_prioritisation","",""
+"Average gap of exactly 37 days (30 + 7) must still pass -- the
+    domain's check is `> INTERVAL_TOLERANCE_DAYS` from target.","0","test_interval_exactly_at_tolerance_boundary_is_flagged","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","1130","test_idor_second_user_cannot_commit_first_users_staged_import","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","2","test_apple_verifier_rejects_wrong_audience","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_verifier","",""
+"","583","test_custom_trend_months_is_honoured","tests.integration","2026-09-19","passed","2026-09-19","","test_insights_api","",""
+"Matches the BA's Gherkin scenario 1: a matched rule's category is
+    assigned, and the row records which rule produced the match.","0","test_apply_auto_categorisation_assigns_category_from_matching_rule","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"Backend-only repo -- there is no HTML-rendering surface here, so
+    the ""should be escaped/rendered as inert text, no script executes""
+    requirement is satisfied by construction: the API returns the
+    merchant as a JSON string field, never embedded in an HTML response.
+    This test proves the payload survives detection unmodified as *data*
+    and is never interpreted -- whichever future story renders this in a
+    browser must still escape on render (DOMPurify, per the constraint
+    matrix), same documented boundary as test_alerts_security.py's XSS
+    coverage for Alert.category.","620","test_malicious_merchant_string_is_returned_as_inert_json_text","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"","3","test_sql_injection_payload_never_reflected_in_response","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"","7","test_sum_by_month_scopes_strictly_by_user_id","tests.integration","2026-09-19","passed","2026-09-19","","test_transaction_repository_month_aggregation","",""
+"The provider is checked for agreement between the URL path and the
+    request body (auth.py's _handle_oauth_login) -- since which verifier
+    runs is a security-relevant decision, a mismatched pair must be
+    rejected rather than silently trusting either one.","3","test_auth_bypass_provider_mismatch_between_url_and_body_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"","657","test_rapid_back_to_back_transactions_for_the_same_merchant_converge_on_one_row","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"No-user-enumeration requirement (AC2): the error for an unknown
+    email must be textually identical to the wrong-password error above,
+    not a distinguishable 'no such user' message.
+    ","268","test_unknown_email_rejected_with_same_generic_error","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"A THRESHOLD_CROSSING alert isn't tied to one specific transaction --
+    transaction_id must stay None so the (user, category, alert_type,
+    period_start, threshold_pct) unique constraint is the only thing that
+    can dedupe it, per ADR-014 decision B.","0","test_new_threshold_crossing_leaves_transaction_id_none","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_domain","",""
+"","1","test_list_transactions_handler_returns_only_the_requesting_users_transactions","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","580","test_endpoint_is_wired_and_returns_a_neutral_recommendation_for_a_fresh_user","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendations_api","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-60-session-persistence-silent-refresh.feature: Expired refresh cookie sends the user to login exactly once","317","test_expired_refresh_cookie_sends_the_user_to_login_exactly_once","tests.integration","2026-09-19","passed","2026-09-19","","test_refresh_api","",""
+"","569","test_attempt_to_set_an_invalid_budget_limit_negative","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"","0","test_is_valid_date_strips_whitespace","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","0","test_new_strips_and_keeps_category_case_as_given","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-15-add-manual-transaction.feature: Add transaction at maximum amount boundary","587","test_add_transaction_at_maximum_amount_boundary","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","1998","dismissing an alert removes it from the list and clears the nav badge","chromium","2026-09-19","passed","2026-09-19","","alerts.spec.ts","",""
+"","0","test_dismissing_an_already_dismissed_alert_is_a_harmless_no_op","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","1","test_ensure_creates_a_new_pending_record_when_none_exists","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","0","test_amount_deviation_well_within_tolerance_is_flagged","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"Concurrent modification scenario the Gherkin doesn't cover: several
+    simultaneous transaction creations for the same user must all persist
+    independently with unique ids -- no lost writes or interleaved
+    corruption. Exercises the real SqlAlchemyTransactionRepository
+    directly, since TestClient's requests are sequential and wouldn't
+    actually race (same pattern as FINTRACK-14's concurrent-login test).
+    ","17","test_concurrent_transaction_creation_for_same_user_all_persist_correctly","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"A ceiling justified for one category must not suppress an alert in
+    a different category for the same user.","0","test_justification_ceiling_is_scoped_per_category_not_global","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","0","test_apply_update_rejects_empty_category_on_update","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"Gherkin: invalid action value -> validation error, no follow-through
+    status recorded or changed. Asserting update_calls stays 0 (and that
+    no lookup happened at all) proves nothing was touched.","1","test_record_action_invalid_value_raises_without_any_repository_lookup","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"A LARGE_TRANSACTION alert has no threshold percentage -- it's
+    keyed by transaction_id alone, per ADR-014 decision B.","0","test_new_large_transaction_leaves_threshold_pct_none","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_domain","",""
+"AC6 ('session persists across page reloads until token expiry or
+    explicit logout') is a client/cookie-persistence property -- verified
+    here as: the Set-Cookie header carries a Max-Age matching the
+    configured refresh-token lifetime, so a real browser would keep
+    resending it across reloads without any server-side session record.
+    ","555","test_session_persists_across_reload_via_cookie_max_age","tests.integration","2026-09-19","passed","2026-09-19","","test_login_logout_api","",""
+"","1","test_google_verifier_wraps_bad_signature_as_invalid_token","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_verifier","",""
+"","3","test_auth_bypass_empty_bearer_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"","1134","test_idor_dashboard_never_includes_another_users_categories","tests.security","2026-09-19","passed","2026-09-19","","test_insights_security","",""
+"","610","test_dismissing_the_same_alert_twice_is_idempotent","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"30-minute TTL per ADR-011 -- a staged import a user never reviews
+    must not linger in Redis indefinitely.","1","test_staged_import_is_stored_with_the_expected_ttl","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","1","test_shift_month_forward_across_year_boundary","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"","562","test_editing_a_nonexistent_budget_returns_404","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"","0","test_delete_transaction_handler_deletes_an_owned_transaction","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"Idempotency guard: if evaluation were ever retried for the same
+    transaction_id, find_by_transaction_id must prevent a duplicate row.","0","test_large_transaction_alert_never_fires_twice_for_the_same_transaction","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","0","test_brand_new_type_with_no_history_is_not_deprioritised","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"","1","test_shift_month_backward_across_year_boundary","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"","4","test_auth_bypass_missing_token_rejected_on_confirm","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","579","test_xss_payload_in_csv_note_is_stored_as_inert_text_not_executed","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","0","test_month_sequence_empty_range_returns_empty_list","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"If the payload had reached a query unparameterised, a DROP TABLE
+    would take out every budget, not just fail to create one. A real,
+    unrelated user's budget surviving right after -- and still working --
+    is the strongest evidence the table is intact.","1134","test_sql_injection_does_not_disturb_other_users_data","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","2","test_money_parse_rejects_non_numeric_string","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","1","test_delete_budget_twice_raises_not_found_the_second_time","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","0","test_repository_queried_with_documented_rolling_window_limit","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"","1","test_apply_correction_rejects_sqli_shaped_category","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","0","test_shift_month_zero_delta_returns_first_of_same_month","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"","0","test_apply_correction_does_not_change_merchant_pattern_or_id","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"A transaction can simultaneously push a budgeted category over 90%
+    AND be unusually large relative to its own category history -- both
+    checks are independent and both may fire.","0","test_a_single_transaction_can_fire_both_alert_types_at_once","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","1","test_token_signed_with_a_different_secret_is_rejected","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"Registration is intentionally an unauthenticated endpoint -- there
+    is no auth check to bypass. Documented explicitly (with a passing
+    assertion that it works with zero Authorization header, by design)
+    rather than silently omitted from the checklist.
+    ","279","test_auth_bypass_not_applicable","tests.security","2026-09-19","passed","2026-09-19","","test_register_api_security","",""
+"","1137","test_idor_second_user_cannot_update_first_users_transaction","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"Mirrors test_alerts_security.py's equivalent test: FastAPI's UUID
+    path-type validation rejects this before it ever reaches application
+    code or a query -- a clean 422, never a 500 or a raw traceback.","561","test_sql_injection_shaped_record_id_path_param_rejected_as_malformed_uuid","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"","1177","test_idor_recommendation_response_never_contains_a_foreign_category_name","tests.security","2026-09-19","passed","2026-09-19","","test_recommendations_security","",""
+"","3","test_auth_bypass_empty_bearer_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_recommendations_security","",""
+"","562","test_sql_injection_in_category_field_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"","561","test_attempt_injection_via_custom_categorisation_rule_category","tests.integration","2026-09-19","passed","2026-09-19","","test_categorisation_rules_api","",""
+"","4","test_auth_bypass_expired_token_rejected_on_justify","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","3","test_auth_bypass_expired_token_rejected_on_dismiss","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","0","test_apply_auto_categorisation_handles_empty_rows_list","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","1","test_stage_import_handler_propagates_corrupted_file_error_and_saves_nothing","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","1","test_three_monthly_charges_same_amount_are_flagged","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"AC5's 'dismissed pattern not re-suggested' guarantee is enforced by
+    the handler checking membership in this set -- this pins down exactly
+    which statuses count as terminal so that contract can't silently
+    drift (e.g. someone adding CONFIRMED here by mistake would stop
+    re-detection from ever refining a confirmed subscription's stats).","0","test_terminal_statuses_contains_exactly_dismissed_and_not_subscription","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","0","test_parse_csv_statement_row_index_is_zero_based_position","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","0","test_current_month_bounds_december_rolls_into_next_january","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"","1","test_list_history_scoped_to_the_requesting_user_only","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","576","test_xss_payload_in_action_is_rejected_as_an_invalid_action_never_stored_or_reflected","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"Matches Gherkin: 'Successfully log in with correct credentials'.","1","test_successful_login","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"","577","test_xss_payload_in_note_is_stored_as_inert_text_not_executed","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"","581","test_idor_no_get_or_list_endpoint_exists_yet_documented","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"Distinct from the header-only case above: rows are present but
+    every one fails date/amount validation. Also not a CorruptedFileError
+    -- surfaced as RowStatus.INVALID on the review screen instead.","0","test_parse_csv_statement_all_rows_invalid_is_not_an_error_either","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"Matches Gherkin: 'Attempt to register with an already-registered email'.","1","test_duplicate_email_rejected","tests.unit","2026-09-19","passed","2026-09-19","","test_register_user","",""
+"Matches Gherkin scenario 4 exactly: a description cell containing
+    ""=cmd|'/c calc'!A1"" must be treated as inert text (never evaluated as
+    a formula) and the row flagged with a warning.","0","test_parse_csv_statement_flags_and_sanitises_formula_injection_in_description","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"IDOR requires a request that references *someone else's* resource
+    by ID/identifier while authenticated as a different user. Login takes
+    only the caller's own claimed credentials (rejected or accepted, never
+    substituted for another account), and logout acts only on whatever
+    session the caller's own cookie identifies -- there is no
+    attacker-supplied identifier pointing at another user's data in
+    either endpoint. This becomes directly testable once an endpoint
+    accepts a resource identifier in the path/body (e.g. a future
+    GET /accounts/{id}). Documented as N/A here rather than fabricating a
+    test against a parameter that doesn't exist on this pair of endpoints.
+    ","1","test_idor_not_directly_applicable_login_logout_have_no_target_resource_id","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"A second login with the same (provider, subject) must hit the
+    existing-user path, not create a duplicate.","0","test_returning_oauth_user_looked_up_by_identity_not_email","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_login_user","",""
+"","590","test_track_spend_against_a_category_budget","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"Even though the request is rejected, confirm the raw payload isn't
+    echoed back unescaped anywhere in the error response (defence in
+    depth -- relevant if this error message is ever rendered as HTML).
+    ","4","test_xss_payload_in_email_never_reflected_in_response_body","tests.security","2026-09-19","passed","2026-09-19","","test_register_api_security","",""
+"Matches Gherkin scenario 3's second assertion: ""I should not be
+    able to commit an empty import"".","0","test_commit_import_handler_raises_nothing_to_commit_for_a_header_only_import","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","666","test_user_justifies_a_large_transaction_alert_and_a_similar_future_transaction_does_not_realert","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","576","test_xss_payload_in_category_is_inert_when_returned_in_the_overview","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","0","test_apply_update_can_clear_a_note_by_passing_empty_string","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","0","test_update_budget_changes_the_limit","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","0","test_new_user_with_no_data_gets_neutral_encouraging_message","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","565","test_security_event_is_logged_on_sql_injection_attempt","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"","0","test_password_never_appears_in_log_output","tests.security","2026-09-19","passed","2026-09-19","","test_register_security","",""
+"","3","test_auth_bypass_missing_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_insights_security","",""
+"","1","test_dismiss_alert_sets_dismissed_at","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","1","test_instant_recovery_when_most_recent_occurrence_is_done","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"","565","test_xss_payload_in_merchant_pattern_is_stored_as_inert_text_not_executed","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"","3","test_auth_bypass_empty_bearer_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"With fewer than MIN_SAMPLE_SIZE prior transactions, the $300
+    fallback baseline applies -- a $250 transaction must NOT fire even
+    though it's huge relative to the one $10 prior transaction, because a
+    1-sample average isn't trusted (ADR-014 decision C).","0","test_large_transaction_uses_flat_fallback_below_min_sample_size","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"The single most important security check in this flow: an
+    unverified provider email must NOT be allowed to take over an
+    existing account just by claiming the same address.","0","test_unverified_email_does_not_link_to_existing_account","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_login_user","",""
+"","640","test_pagination_returns_a_next_cursor_when_more_rows_exist","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","1","test_threshold_crossing_does_not_fire_for_an_unbudgeted_category","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"A CONFIRMED subscription must stay CONFIRMED as its estimate
+    sharpens on re-detection; a DETECTED one stays DETECTED. Status is
+    exclusively the caller's (handler's) concern -- this documents that
+    refresh_stats itself has no opinion on status at all.","0","test_refresh_stats_updates_fields_but_never_touches_status","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","584","test_invalid_action_value_is_rejected_with_no_state_change","tests.integration","2026-09-19","passed","2026-09-19","","test_follow_through_api","",""
+"Money is Decimal-backed specifically so this doesn't drift the way
+    a float round-trip could (e.g. 42.50 -> 42.5 -> ""42.5"", which would be
+    a real behavioural difference a user would notice).","0","test_money_str_round_trips_the_original_decimal_representation","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","571","test_attempt_injection_via_custom_categorisation_rule_merchant_pattern","tests.integration","2026-09-19","passed","2026-09-19","","test_categorisation_rules_api","",""
+"","1154","test_idor_dashboard_totals_are_not_inflated_by_other_users_spend","tests.security","2026-09-19","passed","2026-09-19","","test_insights_security","",""
+"","4","test_auth_required_to_view_recommendation","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendations_api","",""
+"","1","test_sanitise_if_formula_prefixes_plus_sign","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-60-session-persistence-silent-refresh.feature: Returning user with a valid refresh cookie stays signed in after a page refresh","320","test_returning_user_with_a_valid_refresh_cookie_stays_signed_in_after_a_page_refresh","tests.integration","2026-09-19","passed","2026-09-19","","test_refresh_api","",""
+"","2","test_new_rejects_empty_merchant_pattern","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"A second correction for the same merchant updates the existing
+    rule's category rather than creating a second one -- backs AC3's
+    ""personal rule set"" framing (one current mapping per merchant, not an
+    append-only history).","1","test_update_transaction_handler_upserts_rather_than_duplicates_on_repeated_correction","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","3","test_garbage_bearer_token_is_rejected","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"FINTRACK-17 rewrite (was test_xss_payload_in_csv_category_is_stored_as_inert_text_not_executed,
+    which asserted the payload was ""stored verbatim, as data"" -- it no
+    longer is stored at all, verbatim or otherwise). The category column
+    is superseded by the auto-categorisation engine (ADR-012, decision
+    D): no rule matches ""Purchase"", so the row's category becomes
+    ""Uncategorised"" and the XSS-shaped text in the CSV's category column
+    is simply discarded during staging. See
+    test_xss_payload_in_csv_note_is_stored_as_inert_text_not_executed
+    below for the description/note column, which is unaffected and still
+    stores its payload verbatim as inert JSON data.","578","test_xss_payload_in_csv_category_column_never_becomes_transaction_data","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","1","test_google_verifier_rejects_wrong_issuer","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_verifier","",""
+"","1","test_apply_update_rejects_sql_injection_shaped_category_on_update","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","1","test_apply_update_bumps_updated_at_without_changing_created_at","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"The denylist TTL is the token's own exp -- keeping an entry longer
+    than the token could ever be valid for would grow the store without
+    bound, which is what keeps Redis usage bounded by construction.","0","test_denylist_entry_expires_with_the_token_not_later","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"","0","test_dashboard_totals_and_categorises_current_month_spending","tests.unit","2026-09-19","passed","2026-09-19","","test_spending_insights_handler","",""
+"","0","test_raise_ceiling_if_higher_raises_and_returns_true_when_amount_is_higher","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_justification_domain","",""
+"Directly exercises Gherkin scenario 7: 2 Done, 1 Dismiss, 1 Ignored
+    over the rolling window -> 50%.","0","test_rate_matches_the_gherkin_scenario_exactly_2_done_1_dismissed_1_ignored","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","4","test_auth_bypass_missing_token_rejected_on_update","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","4","test_auth_bypass_malformed_authorization_header_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_insights_security","",""
+"","2","test_is_valid_date_accepts_us_slash_format","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","13","test_all_subscription_endpoints_require_auth","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"Converse direction: Bob has a strong (normal-priority) history on
+    ""Dining""; Alice's own history on the same category name is poor.
+    Alice must still be deprioritised on her own merits -- Bob's good
+    record must never be read, joined, or applied to Alice's computation.
+    ","1243","test_bobs_high_follow_through_never_leaks_into_alices_computation","tests.security","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation_security","",""
+"","6","test_all_alert_endpoints_require_auth","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","4","test_auth_bypass_token_signed_with_wrong_secret_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"","1","test_update_staged_rows_handler_fixes_an_invalid_row_and_revalidates","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","0","test_delete_budget_removes_it","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","1129","test_a_users_rule_does_not_auto_categorise_another_users_import","tests.integration","2026-09-19","passed","2026-09-19","","test_categorisation_rules_api","",""
+"","2","test_new_rejects_sqli_shaped_category","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","0","test_money_parse_rejects_zero","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","0","test_new_strips_category_whitespace","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","3","test_auth_bypass_missing_token_rejected_on_overview","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","1","test_recommendation_never_reflects_another_users_data","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","4","test_auth_bypass_expired_token_rejected_on_confirm","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","1142","test_attempt_to_access_another_users_budget_data","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"","0","test_is_valid_amount_accepts_plain_decimal","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","846","setting a budget for a category shows its progress bar","chromium","2026-09-19","passed","2026-09-19","","budgets.spec.ts","",""
+"","3","test_auth_bypass_missing_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_recommendations_security","",""
+"","0","test_expired_token_is_rejected","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"One row per (user_id, merchant) -- a merchant pattern for one user
+    must never be visible to, or updated by, another user's transactions.","1","test_two_different_users_with_the_same_merchant_get_independent_rows","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"","1","test_budget_risk_with_low_follow_through_still_outranks_subscription_with_high","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_prioritisation","",""
+"","3","test_auth_bypass_missing_token_rejected_on_dismiss","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","1689","test_large_dataset_of_1000_rows_stages_and_commits_completely","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"Matches the BA's Gherkin scenario 1 exactly.","0","test_find_matching_rule_matches_substring_case_insensitively","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"Session edge case the Gherkin doesn't spell out: verifies logout's
+    effect is real and observable through the actual HTTP layer, not just
+    at the handler level (already covered in tests/unit).
+    ","560","test_logout_actually_revokes_the_session_end_to_end","tests.integration","2026-09-19","passed","2026-09-19","","test_login_logout_api","",""
+"Callers (the handler) don't guarantee ordering -- detect_pattern
+    must sort by transaction_date itself rather than trusting input order,
+    since an out-of-order gap gives a nonsensical (or negative) interval.","1","test_detect_pattern_sorts_occurrences_before_computing_gaps","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","0","test_password_mismatch_rejected","tests.unit","2026-09-19","passed","2026-09-19","","test_register_user","",""
+"If the payload had reached a query unparameterised, a DROP TABLE
+    would take out every account, not just fail to authenticate one. A
+    real, unrelated user logging in successfully right after is the
+    strongest evidence the table is intact.
+    ","830","test_sql_injection_does_not_disturb_other_accounts","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"`provider` is pattern-locked ^(google|apple)$ at the Pydantic layer
+    -- a SQLi-shaped provider value must fail validation (422) rather than
+    ever reach the router/handler/repository.","3","test_sql_injection_via_provider_field_rejected_by_schema_before_any_query","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-16-statement-import.feature: File contains zero valid transactions","597","test_file_contains_zero_valid_transactions","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"The commit-time skip is silent to the HTTP response by design
+    (best-effort batch import), but it must still be observable in logs.
+    Regression test for the gap found during FINTRACK-16's QA pass:
+    skipped rows previously produced zero log signal; import_commit_rows_skipped
+    is logged at WARNING whenever a row is skipped during commit.
+
+    FINTRACK-17 update: the payload now targets the description/note
+    column, not category -- as of ADR-012, an SQLi payload in the
+    category column is discarded during staging and never reaches
+    Transaction.new(), so it can no longer trigger a commit-time skip
+    (see test_sql_injection_in_csv_category_column_never_becomes_transaction_data
+    above). The note column is unaffected by that change and still
+    flows into Transaction.new() unchanged, so it's still the live
+    vector this log line needs to cover.","572","test_security_event_is_logged_on_csv_row_sql_injection_attempt","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","3","test_create_transaction_without_auth_token_returns_401","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","3","test_auth_bypass_malformed_authorization_header_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","0","test_new_accepts_two_decimal_places","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","3","test_auth_bypass_missing_token_rejected_on_delete","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","0","test_transaction_new_strips_whitespace_from_category_and_note","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","281","test_an_access_token_cannot_be_presented_as_a_refresh_cookie","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"","2","test_parse_csv_statement_rejects_empty_file_with_no_header","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","2","test_apple_verifier_rejects_unknown_kid","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_verifier","",""
+"","3","test_auth_bypass_malformed_authorization_header_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"Matches Gherkin: 'Sixth login attempt within 15 minutes is
+    rate-limited'. Uses a real counting fake (not Redis) to verify the
+    handler actually calls into the rate limiter before touching the
+    repository, and stops at the threshold.
+    ","1","test_rate_limit_exceeded_raises_before_any_db_lookup","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"","1","test_rotation_mints_a_fresh_jti_on_both_tokens","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"AC4: dismissing must have no effect on whether future alerts fire --
+    at the domain level, that means dismiss() touches dismissed_at and
+    nothing else (no category/threshold/period mutation that could
+    accidentally change how a future dedup lookup matches this row).","1","test_dismiss_does_not_change_any_other_field","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_domain","",""
+"","650","test_threshold_crossed_multiple_times_via_rapid_transactions_fires_only_once","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","8","test_auth_bypass_empty_or_missing_credentials_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"","570","test_attempt_to_set_an_invalid_budget_limit_zero","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"","1","test_exactly_30_pct_follow_through_rate_is_not_deprioritised","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"","1","test_create_categorisation_rule_scopes_rules_per_user","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_handlers","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-14-login-logout.feature: Sixth login attempt within 15 minutes is rate-limited","1684","test_sixth_login_attempt_within_15_minutes_is_ratelimited","tests.integration","2026-09-19","passed","2026-09-19","","test_login_logout_api","",""
+"","0","test_trailing_months_bounds_six_months_including_current","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"","560","test_sql_injection_in_category_field_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"AC5: a second transaction that keeps spend above 90% must not
+    produce a second alert for the same (user, category, period,
+    threshold).","0","test_threshold_crossing_fires_only_once_per_period","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","3","test_create_categorisation_rule_without_auth_token_returns_401","tests.integration","2026-09-19","passed","2026-09-19","","test_categorisation_rules_api","",""
+"","1","test_new_rejects_overlong_category","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"The honest shape of this control, asserted rather than glossed:
+    rotation does NOT prevent the first fraudulent use. It guarantees the
+    second is rejected -- which is what turns theft into a detectable
+    event. The threat model records this as residual risk T1.
+    ","288","test_a_stolen_refresh_token_works_once_and_then_never_again","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"","562","test_dashboard_returns_a_generic_error_body_not_a_stack_trace_on_failure","tests.integration","2026-09-19","passed","2026-09-19","","test_insights_api","",""
+"","3","test_auth_bypass_missing_token_rejected_on_dismiss","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-60-session-persistence-silent-refresh.feature: First-time visitor with no refresh cookie at all is not blocked by the refresh attempt","141","test_firsttime_visitor_with_no_refresh_cookie_at_all_is_not_blocked_by_the_refresh_attempt","tests.integration","2026-09-19","passed","2026-09-19","","test_refresh_api","",""
+"","0","test_parse_csv_statement_does_not_flag_normal_rows_alongside_a_flagged_one","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","1593","test_dashboard_loads_acceptably_and_stays_accurate_with_1000_plus_transactions","tests.integration","2026-09-19","passed","2026-09-19","","test_insights_api","",""
+"Documents, rather than silently skipping, the accessibility item
+    from the QA Lead checklist: N/A for the same reason FINTRACK-14/15's
+    equivalent tests give -- this is a backend-only story this sprint, no
+    upload/review UI exists yet. Applicable once the frontend ships.","0","test_accessibility_not_applicable_documented","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"Large-dataset check: 90 days of history (well past the 56-day rate
+    window) -- history returns all of it, rate only counts what's inside
+    the window.","705","test_large_history_still_returns_correctly_and_rate_only_counts_the_rolling_window","tests.integration","2026-09-19","passed","2026-09-19","","test_follow_through_api","",""
+"","1","test_month_sequence_is_gap_free_and_chronological","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"","1","test_replaying_a_rotated_token_raises_replay_error","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"Converse of the recovery test -- confirms recovery is genuinely
+    conditional on the most recent occurrence, not just on time passing.","1","test_still_deprioritised_when_most_recent_occurrence_is_not_done","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"","1","test_create_budget_creates_a_new_budget","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-13-user-registration.feature: Attempt SQL injection in email field during registration","313","test_attempt_sql_injection_in_email_field_during_registration","tests.integration","2026-09-19","passed","2026-09-19","","test_register_api","",""
+"","1146","test_follow_through_history_scoped_to_the_authenticated_user_only","tests.integration","2026-09-19","passed","2026-09-19","","test_follow_through_api","",""
+"","4","test_justify_endpoint_requires_auth","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"The route catches InvalidRefreshTokenError broadly and returns one
+    identical 401. If RefreshTokenReplayError ever stopped subclassing it,
+    a replay would escape as an unhandled 500 -- so the relationship is
+    asserted, not assumed.","0","test_replay_error_is_an_invalid_refresh_token_error","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"The core auth-bypass-adjacent check for login: an attacker probing
+    for valid emails must not be able to distinguish 'no such account'
+    from 'wrong password' via status code, body, or headers.
+    ","829","test_auth_bypass_unknown_email_and_wrong_password_return_identical_response","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"","1","test_budget_spend_just_under_threshold_does_not_trigger","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","0","test_staged_import_counts_reflect_row_statuses","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","0","test_find_matching_rule_returns_none_for_empty_rule_list","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"As with test_alerts_security.py's equivalent: the payload
+    legitimately appears in FastAPI's own 422 validation-error body
+    (standard Pydantic behaviour) -- not a reflection risk in a JSON-only
+    API. The security property under test is that this never reaches the
+    handler or a query at all.","561","test_sql_injection_shaped_subscription_id_path_param_rejected_as_malformed_uuid","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"Matches Gherkin scenario 3 exactly: a header row with no data rows
+    is NOT corrupted -- it stages successfully showing ""0 transactions
+    found"". This was a real bug found during this QA pass: the function
+    previously raised CorruptedFileError here, contradicting the Gherkin.
+    ","0","test_parse_csv_statement_header_only_zero_data_rows_returns_empty_list_not_error","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","0","test_create_budget_scopes_budgets_per_user","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","603","test_budget_category_with_too_few_occurrences_keeps_native_priority","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation_api","",""
+"","1175","test_idor_list_never_leaks_another_users_subscriptions","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","0","test_find_matching_rule_prefers_longest_pattern_when_multiple_match","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","1","test_sanitise_if_formula_prefixes_equals_sign","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","1152","test_alert_data_is_scoped_to_the_authenticated_user_only","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","0","test_malformed_token_is_rejected","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"","1","test_new_rejects_limit_at_or_above_the_ceiling","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","1","test_list_history_does_not_touch_a_pending_record_still_within_window","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"Matches the Gherkin scenario exactly: SQL injection in the
+    transaction description/note field.","564","test_sql_injection_in_note_field_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"","1207","test_attempt_to_justify_another_users_alert","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","0","test_confirm_sets_status_confirmed","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"AC4's auto-ignore is a system transition, not a user action --
+    actioned_at stays None so a later query can distinguish a real click
+    from the automatic timeout.","1","test_mark_ignored_sets_status_but_does_not_set_actioned_at","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"","616","test_dashboard_totals_and_categorises_current_month_spending","tests.integration","2026-09-19","passed","2026-09-19","","test_insights_api","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-oauth-google.feature: Google denies or the user cancels consent","33","test_google_denies_or_the_user_cancels_consent","tests.integration","2026-09-19","passed","2026-09-19","","test_oauth_api","",""
+"confirm_password only ever reaches a string equality check
+    (RegisterUserHandler.handle) -- a SQLi-shaped mismatch must fail as a
+    plain validation error, not as a DB or server error.
+    ","5","test_sql_injection_shaped_confirm_password_mismatch_rejected_safely","tests.security","2026-09-19","passed","2026-09-19","","test_register_api_security","",""
+"","0","test_three_monthly_charges_with_amount_variance_within_tolerance_are_flagged","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","0","test_new_normalises_merchant_pattern_to_upper_case","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","1","test_ensure_creates_a_distinct_record_for_a_different_period","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-14-login-logout.feature: Attempt to log in with an incorrect password","860","test_attempt_to_log_in_with_an_incorrect_password","tests.integration","2026-09-19","passed","2026-09-19","","test_login_logout_api","",""
+"Boundary complement to the above -- exactly MIN_SAMPLE occurrences,
+    all failing, must already be eligible for deprioritisation.","0","test_exactly_minimum_sample_size_with_low_rate_is_deprioritised","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-13-user-registration.feature: Successfully register a new account","307","test_successfully_register_a_new_account","tests.integration","2026-09-19","passed","2026-09-19","","test_register_api","",""
+"CORRECTED (2026-07-23): the first version of this test wrongly
+    asserted the SQLi-shaped transaction succeeds (201). It doesn't --
+    Transaction.new() runs _reject_if_suspicious() on `note` as well as
+    `category` (see apps/api/domain/models/transaction.py), so this is
+    rejected with 400 before subscription detection ever sees it, exactly
+    like test_alerts_security.py's equivalent test for Alert.category.
+    That earlier wrong assertion is almost certainly what was failing in
+    CI. The real security property here is: the SQLi-shaped input never
+    reaches the merchant-clustering path at all, and an unrelated victim's
+    own subscription data is completely unaffected by the attacker's
+    rejected attempt.","1217","test_sql_injection_shaped_note_is_rejected_at_transaction_creation_not_subscription_detection","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","1","test_is_overdue_false_once_already_done_even_if_old","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"IDOR at the handler layer -- the attacker gets the same
+    SubscriptionNotFoundError as a truly nonexistent id.","1","test_confirm_raises_not_found_for_another_users_subscription","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"Security-critical path: a verified-email OAuth login matching an
+    existing password-based account links rather than duplicates.","1","test_verified_email_links_to_existing_password_account","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_login_user","",""
+"","561","test_justifying_a_nonexistent_alert_returns_404","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-14-login-logout.feature: Successfully log in with correct credentials","585","test_successfully_log_in_with_correct_credentials","tests.integration","2026-09-19","passed","2026-09-19","","test_login_logout_api","",""
+"","0","test_create_transaction_handler_propagates_invalid_amount_error","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-60-session-persistence-silent-refresh.feature: Deep link is preserved across a silent refresh","316","test_deep_link_is_preserved_across_a_silent_refresh","tests.integration","2026-09-19","passed","2026-09-19","","test_refresh_api","",""
+"","0","test_logout_with_no_cookie_raises_no_active_session","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"IDOR prevention at the handler layer, same pattern as
+    UpdateTransactionHandler's equivalent test.","1","test_update_staged_rows_handler_raises_not_found_for_another_users_import","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"The password field is never used to build a query -- it only ever
+    reaches bcrypt.hashpw() as opaque bytes -- so a SQLi-shaped password
+    should register successfully like any other string, not error out.
+    A 500 or a DB-shape error here would indicate the string leaked into
+    a query path somewhere; a clean 201 confirms it didn't.
+    ","279","test_sql_injection_shaped_password_is_hashed_not_executed","tests.security","2026-09-19","passed","2026-09-19","","test_register_api_security","",""
+"","606","test_budget_risk_recommendation_via_real_api","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendations_api","",""
+"","1","test_justify_raises_not_found_for_a_nonexistent_alert","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"Rate limit must short-circuit before the (expensive, external)
+    verifier is ever called -- same principle as LoginUserHandler checking
+    the limiter before any DB call.","1","test_rate_limit_checked_before_token_verification","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_login_user","",""
+"","3","test_xss_payload_never_reflected_in_oauth_response","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"","0","test_new_assigns_a_fresh_id_and_timestamps","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"A well-formed-but-nonexistent UUID must fail the same way a real
+    other-user id does (404), never leak a stack trace or a distinct
+    error shape that would help an attacker distinguish the two cases.","563","test_idor_a_forged_alert_id_belonging_to_no_one_returns_404_not_500","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","273","test_xss_payload_never_reflected_in_login_response","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"","0","test_transaction_new_treats_blank_note_as_none","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"Logout has written to this denylist since FINTRACK-14 with nothing
+    reading it. This is the test that the write now has a reader.","1","test_a_token_revoked_by_logout_is_also_rejected","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"","0","test_raise_ceiling_if_higher_is_a_no_op_and_returns_false_when_amount_is_lower","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_justification_domain","",""
+"","1","test_parse_csv_statement_flags_and_sanitises_formula_injection_in_category","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","648","test_a_fourth_transaction_refreshes_the_existing_subscription_not_a_duplicate","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"`action` never reaches a query at all -- RecordRecommendationActionHandler
+    checks it against a fixed allow-list (VALID_ACTIONS) before any
+    repository call. A SQLi-shaped string is just another invalid value,
+    rejected the same way ""delete"" is in the Gherkin's negative scenario.","1145","test_sql_injection_shaped_action_value_is_rejected_by_application_validation_not_a_query","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"","656","test_a_plain_dismiss_does_not_suppress_future_similar_alerts","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","1","test_note_less_transaction_is_skipped_entirely","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"AC6: the access token is in-memory only. If the server ever set it
+    as a cookie it would be persisted by the browser regardless of what
+    apps/web does.","283","test_the_response_never_sets_the_access_token_as_a_cookie","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"AC5: dismissed pattern not re-suggested -- even though the pattern
+    still matches perfectly, a DISMISSED row must not be touched.","0","test_dismissed_subscription_is_never_resurfaced_by_re_detection","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"AC3: a transaction that would otherwise clear the rolling-average
+    multiplier is suppressed if it's <= the category's justified ceiling.","0","test_large_transaction_suppressed_when_at_or_below_justified_ceiling","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","1","test_update_transaction_handler_applies_a_partial_update","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-60-session-persistence-silent-refresh.feature: Tokens are never exposed to client-side script or persistent storage","316","test_tokens_are_never_exposed_to_clientside_script_or_persistent_storage","tests.integration","2026-09-19","passed","2026-09-19","","test_refresh_api","",""
+"Missing, malformed, expired, wrong-type and replayed must be
+    indistinguishable from outside. A caller learning WHICH failed would
+    learn whether a token was ever valid.","581","test_every_rejection_reason_returns_an_identical_response","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"AC5: reviewed rows use the same CreateTransactionCommand shape as
+    manual entry, tagged entry_source=csv_import.","1","test_commit_import_handler_commits_ok_rows_with_entry_source_csv_import","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"A refresh token is a valid, correctly-signed JWT -- but must not be
+    accepted in place of an access token (same principle logout already
+    enforces the other direction, ADR-009).","4","test_refresh_token_used_as_bearer_token_is_rejected","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-14-login-logout.feature: Attempt SQL injection in the email field during login","857","test_attempt_sql_injection_in_the_email_field_during_login","tests.integration","2026-09-19","passed","2026-09-19","","test_login_logout_api","",""
+"","1","test_record_action_dismiss_transitions_the_record","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","3","test_auth_bypass_missing_id_token_rejected_by_schema","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"AC3's Gherkin is explicit about ""an imported transaction"" -- a
+    manual entry correction (entry_source=""manual"") must not feed the
+    rule set, even if its category happens to be the literal string
+    ""Uncategorised"".","0","test_update_transaction_handler_does_not_create_a_rule_for_a_manual_entry","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","1","test_large_transaction_does_not_fire_within_normal_range","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","0","test_delete_transaction_handler_raises_not_found_for_unknown_id","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","1154","test_idor_recommendation_never_reflects_another_users_budget","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendations_api","",""
+"","566","test_sql_injection_in_merchant_pattern_field_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"","603","test_manual_category_correction_creates_a_rule_and_future_imports_use_it","tests.integration","2026-09-19","passed","2026-09-19","","test_categorisation_rules_api","",""
+"Regression test for the 2026-08-30 production incident: Apple's
+    verifier used to be built unconditionally in dependencies.py for
+    every OAuth call, and its constructor raised ValueError when Apple
+    wasn't configured -- crashing Google sign-in too, with a 500 that
+    lost its CORS headers on the way out and looked like a frontend/CORS
+    bug from the browser. apple_verifier=None must be a fully supported,
+    ordinary state, and a Google login must never touch it at all.","1","test_google_login_succeeds_when_apple_verifier_is_unconfigured","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_login_user","",""
+"","11","test_is_valid_date_accepts_iso_format","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","0","test_update_budget_raises_not_found_for_a_nonexistent_id","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-oauth-google.feature: New user completes Google OAuth and reaches the dashboard","38","test_new_user_completes_google_oauth_and_reaches_the_dashboard","tests.integration","2026-09-19","passed","2026-09-19","","test_oauth_api","",""
+"Gap-fill: defensive test for the handler's `if not budget.monthly_limit:
+    continue` branch -- a zero/None limit must never cause a
+    division-by-zero or false-positive trigger.","0","test_budget_with_no_monthly_limit_is_skipped_without_error","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"Alice and Bob both have a ""Dining"" budget at risk. Alice has
+    ignored her Dining budget-risk recommendations (would be
+    deprioritised for her); Bob has a completely clean history (no
+    follow-through data at all). Bob's own recommendation must be
+    computed purely from his own (empty) history -- never from Alice's --
+    so Bob's Dining category must still win normally, not be affected by
+    Alice's low rate on the exact same category name.
+    ","1193","test_alices_low_follow_through_never_deprioritises_bobs_own_recommendation","tests.security","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation_security","",""
+"If a SQLi-shaped category ever reached an unparameterised query
+    somewhere in the alert-evaluation path, a DROP TABLE would take out
+    every alert, not just one user's. A real, unrelated user's alert
+    surviving right after -- and still dismissible -- is the strongest
+    evidence the table is intact. (The category itself is rejected at
+    Transaction creation, same SuspiciousInputError as
+    test_transactions_security.py -- this test confirms that rejection
+    doesn't leave any alert-side side effect behind either.)
+    ","1175","test_sql_injection_shaped_category_inherited_from_a_transaction_does_not_disturb_other_users_data","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"AC5 ('Editable/deletable') end-to-end -- no Gherkin scenario covers
+    this, so this is the QA Lead gap-fill test for the full lifecycle.","606","test_full_crud_lifecycle_create_list_update_delete","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"PM AC + constraint matrix: registration endpoint is rate-limited.
+    Test config (apps/api/config.py defaults, unless overridden) allows
+    5 attempts / 15 minutes. The 6th attempt in the same window from the
+    same client must be rejected with 429.
+    ","1385","test_registration_rate_limited_after_threshold","tests.security","2026-09-19","passed","2026-09-19","","test_register_api_security","",""
+"","1","test_rate_is_none_when_nothing_is_resolved_yet","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","1","test_create_categorisation_rule_rejects_sqli_shaped_category","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_handlers","",""
+"A ceiling justified by one user must never suppress a different
+    user's alert in the same category -- justifications are per-(user,
+    category), not per-category alone.","1","test_justification_ceiling_is_scoped_per_user_not_global","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","0","test_record_action_done_transitions_the_record","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","589","test_formula_injection_payload_is_never_committed_unsanitised","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","0","test_shift_month_forward_within_year","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"","1","test_justify_creates_a_new_ceiling_equal_to_the_triggering_transactions_amount","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"Matches Gherkin exactly: ""999999999.99"" -> 'Amount exceeds maximum
+    allowed limit'. This is a >= check, not a >, so the boundary value
+    itself is rejected, not just values above it.
+    ","2","test_money_parse_rejects_amount_at_the_maximum_boundary_exactly","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-oauth-google.feature: Google email matches an existing password-registered account","320","test_google_email_matches_an_existing_passwordregistered_account","tests.integration","2026-09-19","passed","2026-09-19","","test_oauth_api","",""
+"Happy path: first-ever Google sign-in creates a brand-new OAuth-only user.","1","test_new_google_user_is_created","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_login_user","",""
+"","1","test_transaction_new_rejects_sql_injection_shaped_note","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","1","test_list_transactions_handler_clamps_limit_to_at_least_one","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","2","test_apple_verifier_returns_identity_for_valid_token","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_verifier","",""
+"Matches the BA's Gherkin scenario 2 exactly, and overrides whatever
+    the CSV's own category column held (ADR-012's deliberate supersession
+    of FINTRACK-16's category-column pass-through).","0","test_apply_auto_categorisation_falls_back_to_uncategorised_when_no_match","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","0","test_is_valid_date_rejects_garbage_returns_none_not_raise","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","3","test_auth_bypass_missing_token_rejected_on_actions","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"","0","test_overview_shows_zero_percent_for_a_budget_with_no_spend_yet","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"Strongest evidence the DB is intact: a real, unrelated OAuth user
+    can still sign in successfully right after the injection attempt.","14","test_sql_injection_does_not_disturb_other_accounts","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"","661","test_a_transaction_that_exceeds_every_previously_justified_amount_still_alerts","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","0","test_sanitise_if_formula_prefixes_leading_carriage_return","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","1","test_amount_deviation_over_tolerance_is_not_flagged","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"FLAGGED rows (sanitised, not rejected) are committable -- only
+    INVALID rows are excluded.","1","test_commit_import_handler_commits_flagged_rows_too","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","0","test_create_categorisation_rule_rejects_sqli_shaped_merchant_pattern","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_handlers","",""
+"","564","test_monthly_trend_months_are_formatted_as_zero_padded_year_month","tests.integration","2026-09-19","passed","2026-09-19","","test_insights_api","",""
+"","625","test_three_monthly_netflix_charges_are_flagged_as_a_subscription","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"","1","test_new_threshold_crossing_sets_all_fields","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_domain","",""
+"","595","test_follow_through_rate_reflects_a_mix_of_done_dismissed_and_ignored","tests.integration","2026-09-19","passed","2026-09-19","","test_follow_through_api","",""
+"AC2: justifying a larger amount than an already-existing ceiling
+    raises it.","1","test_justify_raises_an_existing_lower_ceiling","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"Same bystander-survives shape as the dismiss suite's equivalent
+    test: a real, unrelated user's justify flow must be unaffected by the
+    injection attempt against a different (forged) path.","1195","test_sql_injection_attempt_on_justify_path_does_not_disturb_other_users_data","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"IDOR prevention: owner_b cannot commit owner_a's staged import.","1","test_commit_import_handler_raises_not_found_for_another_users_import","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","565","test_confirming_a_nonexistent_subscription_returns_404","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"","0","test_new_assigns_a_fresh_id_and_matching_timestamps","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","4","test_xss_payload_in_email_rejected_by_format_validation","tests.security","2026-09-19","passed","2026-09-19","","test_register_api_security","",""
+"Concurrent modification scenario the Gherkin doesn't cover: several
+    simultaneous stage operations for different users must not leak rows
+    across each other's staged import. Exercises the real
+    RedisImportStagingRepository directly against the shared fakeredis
+    instance (same pattern as FINTRACK-15's concurrent-creation test),
+    since TestClient requests are sequential and wouldn't actually race.
+    ","7","test_concurrent_staging_for_different_users_does_not_cross_contaminate","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","579","test_deleting_a_budget_twice_returns_404_the_second_time","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"","1","test_list_includes_dismissed_when_requested","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"","1129","test_idor_second_user_cannot_discard_first_users_staged_import","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","0","test_new_sets_ceiling_to_the_given_amount","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_justification_domain","",""
+"","1145","test_create_categorisation_rule_scoped_per_user_does_not_collide_on_same_pattern","tests.integration","2026-09-19","passed","2026-09-19","","test_categorisation_rules_api","",""
+"","0","test_pending_records_excluded_from_sample_size_and_rate","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"","3","test_auth_bypass_missing_token_rejected_on_list","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","283","test_the_rotated_refresh_token_never_appears_in_the_response_body","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"","4","test_google_verifier_returns_identity_on_valid_claims","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_verifier","",""
+"","658","test_deprioritised_budget_category_passed_over_via_real_api","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation_api","",""
+"A late action (after the 7-day auto-ignore already fired) still
+    counts -- see record_recommendation_action.py's module docstring for
+    the rationale.","0","test_record_action_still_succeeds_on_an_already_ignored_record","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","0","test_interval_just_outside_tolerance_is_not_flagged","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","0","test_new_accepts_smallest_positive_limit","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"Same no-enumeration principle as login/register: an invalid token
+    and a well-formed-but-unverifiable token must both come back as the
+    exact same 401 + generic detail, so a caller can't distinguish
+    'malformed' from 'doesn't verify' from 'unknown user'.","6","test_auth_bypass_invalid_token_and_unknown_identity_return_identical_response","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"Groceries is the native top pick (95% used > Dining's 85%), but
+    Groceries has been mostly ignored -- Dining should be shown instead.","1","test_deprioritised_budget_category_is_passed_over_for_a_normal_one","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_prioritisation","",""
+"Reconciliation must be idempotent -- an already-IGNORED record
+    should never be re-processed as newly overdue.","0","test_is_overdue_false_once_already_ignored_even_if_old","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"AC2: 'Required category, custom allowed' -- any non-empty,
+    non-suspicious string is accepted, not just a fixed enum.","0","test_transaction_new_allows_custom_category_per_ac2","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"If the payload had reached a query unparameterised, a DROP TABLE
+    would take out every transaction, not just fail to commit one row. A
+    real, unrelated user's transaction surviving right after is the
+    strongest evidence the table is intact.","1150","test_sql_injection_payload_does_not_disturb_other_users_data","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","564","test_formula_injection_in_multiple_trigger_characters_all_sanitised","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","0","test_transaction_new_rejects_overlong_note","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"The single most important security check in this flow, re-verified
+    at the HTTP level (already unit-tested at the handler level in
+    tests/unit/test_oauth_login_user.py): an OAuth identity whose provider
+    reports email_verified=False must NOT be allowed to link onto -- and
+    thereby take over -- an existing password-registered account sharing
+    that email address.","285","test_auth_bypass_unverified_email_cannot_take_over_existing_account","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"AC7: THRESHOLD_CROSSING alerts cannot be justified -- there's no
+    per-transaction amount to build a ceiling from.","0","test_justify_rejects_a_threshold_crossing_alert","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","644","test_justifying_the_same_alert_twice_at_the_same_amount_is_idempotent","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","9","test_sum_by_month_groups_and_sums_correctly_across_months","tests.integration","2026-09-19","passed","2026-09-19","","test_transaction_repository_month_aggregation","",""
+"","627","test_new_subscription_recommendation_via_real_detection_path","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendations_api","",""
+"","0","test_spending_spike_alone_triggers_spike_recommendation","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","558","test_script_tag_in_trend_months_is_rejected_by_validation","tests.security","2026-09-19","passed","2026-09-19","","test_insights_security","",""
+"","1","test_new_rejects_empty_category","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","561","test_security_event_is_logged_on_sql_injection_attempt","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"AC4/ADR-014 decision D: a *different* period's crossing is a new
+    event and must still be able to fire, even if last month's alert for
+    the same category was never dismissed.","0","test_threshold_crossing_fires_again_in_a_new_month","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"Gap-fill: the second priority tier, not covered by BA's own
+    multi-trigger scenario (which only combines budget-risk +
+    subscription) -- proves NEW_SUBSCRIPTION > SPENDING_SPIKE too, not
+    just BUDGET_RISK > everything.","0","test_new_subscription_and_spending_spike_together_subscription_wins","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","0","test_money_parse_rejects_empty_string","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"A refresh-typed token presented as a bearer access token must be
+    rejected -- same convention as get_current_user_id's existing
+    handling for every other authenticated endpoint.","4","test_auth_bypass_refresh_token_rejected_as_access_token","tests.security","2026-09-19","passed","2026-09-19","","test_recommendations_security","",""
+"","0","test_sanitise_if_formula_prefixes_minus_sign","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","1","test_no_reorder_reason_when_native_top_pick_is_not_deprioritised","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_prioritisation","",""
+"","565","test_new_user_with_zero_transactions_sees_a_valid_empty_state","tests.integration","2026-09-19","passed","2026-09-19","","test_insights_api","",""
+"IDOR at the handler layer -- the attacker gets the same
+    BudgetNotFoundError as a truly nonexistent id, never a distinct
+    ""forbidden"" signal.","0","test_update_budget_raises_not_found_for_another_users_budget","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","0","test_confirm_sets_status_confirmed","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","1142","test_idor_rate_is_computed_only_from_the_callers_own_records","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"","3","test_auth_bypass_token_signed_with_wrong_secret_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","4","test_discard_import_without_auth_token_returns_401","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","0","test_staged_import_with_zero_rows_has_zero_counts_and_no_committable_rows","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","0","test_new_rejects_non_numeric_limit","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"FINTRACK-15 does not implement GET /transactions/{id} (only list,
+    update, delete) -- confirmed here so this isn't silently assumed. If
+    added later, it must reuse the same 404-not-403 IDOR pattern as
+    update/delete.","558","test_idor_no_get_by_id_endpoint_exists_yet_documented","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"","1","test_list_transactions_handler_clamps_limit_to_max_page_size","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","0","test_new_pending_starts_in_pending_status_with_no_actioned_at","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"","0","test_budget_risk_and_new_subscription_together_budget_risk_wins","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","0","test_logout_with_garbage_token_is_idempotent_not_a_crash","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"","4","test_auth_bypass_missing_token_rejected_on_history","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"Exercises AC3 at the real API/DB level. Pins ""today"" to 2026-07-19
+    by overriding the get_get_budget_overview_handler dependency with an
+    injected clock (ADR-013 decision F), same technique the client
+    fixture already uses to override get_db_session -- everything else
+    (routing, auth, real SQLite writes) stays on the real path.
+
+    This test's absolute dates are intentionally hardcoded (not
+    _this_month) -- it exists specifically to exercise the month-boundary
+    behaviour, and the frozen clock override below makes it self-
+    consistent regardless of real wall-clock time, unlike the rest of
+    this file (see the FINTRACK-38 Bug note on _this_month above).
+    ","610","test_budget_progress_resets_at_the_start_of_a_new_calendar_month","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"Guards against a monthly_limit value being passed to something
+    like eval() or an unparameterised numeric-context query -- it must be
+    rejected as an invalid amount, the same as any other malformed number.","560","test_non_numeric_monthly_limit_rejected_not_evaluated_as_an_expression","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","636","test_deprioritised_budget_risk_still_outranks_normal_subscription_via_real_api","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation_api","",""
+"","1","test_overview_only_returns_the_requesting_users_budgets_and_spend","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","0","test_monthly_trend_is_gap_free_across_a_year_boundary","tests.unit","2026-09-19","passed","2026-09-19","","test_spending_insights_handler","",""
+"","589","test_user_marks_a_recommendation_as_done","tests.integration","2026-09-19","passed","2026-09-19","","test_follow_through_api","",""
+"","618","test_xss_payload_in_merchant_is_inert_when_returned_in_a_subscription","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","0","test_new_rejects_negative_limit","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","669","test_user_edits_an_existing_budget_limit","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"","793","test_large_transaction_baseline_only_considers_the_last_10_transactions","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","1","test_new_accepts_category_at_the_length_boundary","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","561","test_idor_a_forged_record_id_belonging_to_no_one_returns_404_not_500","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"","1153","test_idor_overview_never_leaks_another_users_categories_or_spend","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"AC2: ""if a higher ceiling already exists for that category, it is
+    not lowered"" -- justifying a smaller amount than the current ceiling
+    is a no-op.","1","test_justify_does_not_lower_an_existing_higher_ceiling","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","4","test_update_transaction_without_auth_token_returns_401","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","0","test_mark_dismissed_sets_status_and_actioned_at","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"AC2: parses date/amount/description columns even when the header
+    names differ from the exact strings 'Date'/'Amount'/'Description' --
+    real bank exports vary (e.g. 'Posted Date', 'Debit', 'Memo').","0","test_parse_csv_statement_flexible_header_matching","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","1","test_find_matching_rule_breaks_ties_by_earliest_created_at","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","0","test_create_budget_rejects_sqli_shaped_category","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","0","test_apply_update_changes_only_the_provided_fields","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","3","test_auth_bypass_token_signed_with_wrong_secret_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_recommendations_security","",""
+"A more targeted XSS attempt shaped to look closer to a real email
+    local-part, to check the format regex isn't only catching the
+    obvious `<script>` case.
+    ","4","test_xss_payload_as_local_part_of_otherwise_valid_email_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_register_api_security","",""
+"","1","test_update_transaction_handler_creates_a_rule_when_correcting_an_imported_uncategorised_transaction","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","0","test_new_user_with_zero_transactions_gets_a_zeroed_not_broken_response","tests.unit","2026-09-19","passed","2026-09-19","","test_spending_insights_handler","",""
+"","0","test_apple_verifier_requires_client_ids","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_verifier","",""
+"","0","test_dismiss_sets_status_dismissed","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_domain","",""
+"","0","test_money_parse_accepts_amount_one_cent_below_the_maximum","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"If the payload had reached a query unparameterised, a DROP TABLE
+    would take out every transaction, not just fail to create one. A
+    real, unrelated user's transaction surviving right after is the
+    strongest evidence the table is intact.","1140","test_sql_injection_does_not_disturb_other_users_data","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"","0","test_new_rejects_sqli_shaped_category","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","1","test_commit_import_handler_deletes_the_staged_import_after_successful_commit","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","1157","test_attempt_to_dismiss_another_users_alert","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"No-user-enumeration via timing (AC2, beyond what the Gherkin spells
+    out explicitly): both failure paths must invoke the password hasher's
+    verify() the same number of times, so response latency doesn't reveal
+    whether the email exists. Asserts on call count rather than wall-clock
+    time, which would be flaky in CI.
+    ","0","test_unknown_email_and_wrong_password_take_comparable_time","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-frontend-scaffold.feature: Attempt to smuggle a secret into the client bundle","2517","test_attempt_to_smuggle_a_secret_into_the_client_bundle","tests.integration","2026-09-19","passed","2026-09-19","","test_frontend_build","",""
+"","5","test_totals_remain_accurate_across_a_large_number_of_transactions","tests.unit","2026-09-19","passed","2026-09-19","","test_spending_insights_handler","",""
+"","3","test_auth_bypass_token_signed_with_wrong_secret_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","1","test_new_rejects_overlong_category","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","1","test_list_only_returns_the_requesting_users_subscriptions","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"","1","test_parse_csv_statement_defaults_empty_category_to_uncategorised","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"SQLi-shaped content in the description/note column (distinct from
+    the formula-injection vector, and distinct from the now-closed
+    category-column vector above) isn't caught by sanitise_if_formula
+    (it doesn't start with a trigger char), so it stages as OK --
+    Transaction.new()'s own SuspiciousInputError check on `note` is the
+    actual defence-in-depth safety net at commit time, skipping just
+    this row.","1","test_commit_import_handler_skips_a_row_whose_note_is_sqli_shaped","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","1","test_apply_auto_categorisation_overrides_csv_category_column_even_on_match","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"Matches the BA's Gherkin scenario 8 (AC5) exactly: no budget_id,
+    no monthly_limit, no percent_used -- just spend.","1","test_overview_shows_spend_only_for_a_category_with_no_budget","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","0","test_large_transaction_fires_when_over_3x_the_rolling_average","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"","0","test_update_staged_rows_handler_raises_not_found_for_unknown_import","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","4","test_auth_bypass_expired_token_rejected_on_actions","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"Gap-fill / AC3 guard: a category with spend this week but zero
+    baseline history must not be called a 'spike' -- there's nothing to
+    compare against, and get_weekly_recommendation.py's own docstring
+    calls this out as exactly the kind of fabricated claim AC3
+    forbids.","1","test_no_baseline_history_never_fabricates_a_spike_claim","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"The SQLi pattern is deliberately narrow (statement terminator/comment
+    marker + destructive keyword) so ordinary merchant names with
+    apostrophes aren't rejected -- per ADR-010's explicit design note.","1","test_transaction_new_does_not_false_positive_on_apostrophes_in_legitimate_text","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","604","test_spend_stays_well_under_threshold","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"Matches Gherkin: SQL injection in transaction description ->
+    'Invalid characters detected'. Category is the other free-text field
+    the same pattern applies to.","0","test_transaction_new_rejects_sql_injection_shaped_category","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","6","test_update_staged_rows_without_auth_token_returns_401","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","4","test_auth_bypass_malformed_authorization_header_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"","564","test_sql_injection_in_category_field_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"","3","test_handler_remains_correct_with_a_large_transaction_volume","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","732","adding a transaction shows it in the list","chromium","2026-09-19","passed","2026-09-19","","transactions.spec.ts","",""
+"","1","test_two_justifications_get_different_ids","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_justification_domain","",""
+"","591","test_xss_payload_in_category_is_inert_when_returned_in_an_alert","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","4","test_auth_bypass_token_signed_with_wrong_secret_rejected_on_justify","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"Gap-fill: when more than one budget independently qualifies as
+    BUDGET_RISK, the handler must name exactly one -- and it should be
+    the most urgent (highest percent-used), per
+    get_weekly_recommendation.py's own sort-descending-by-percent-used
+    comment.","0","test_multiple_budgets_at_risk_names_the_most_urgent_one","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","4","test_auth_bypass_expired_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_recommendations_security","",""
+"","565","test_update_nonexistent_transaction_returns_404","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"Matches the BA's Gherkin scenario 5 (AC3) exactly: last month's
+    spend does not carry into this month's total. Unit-level equivalent of
+    the API-level test in test_budgets_api.py -- this one runs against
+    the handler directly via the injected clock, no HTTP/DB round trip.","0","test_overview_excludes_prior_month_spend_from_the_current_months_total","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"AC2's ""is not lowered"" also means an equal amount doesn't need a
+    write -- strictly-greater-than is the only case that changes state.","1","test_raise_ceiling_if_higher_is_a_no_op_and_returns_false_when_amount_equals_the_current_ceiling","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_justification_domain","",""
+"Concurrent modification scenario the Gherkin doesn't cover: several
+    simultaneous login attempts against the same account+IP must still
+    converge on the correct total (no more than max_attempts allowed),
+    even when the increments race each other -- exercises the real
+    RedisRateLimiter (via fakeredis) directly, since TestClient's requests
+    are sequential and wouldn't actually race.
+    ","3","test_concurrent_login_attempts_against_same_account_all_rate_limited_correctly","tests.integration","2026-09-19","passed","2026-09-19","","test_login_logout_api","",""
+"","1","test_trailing_months_bounds_crosses_year_boundary","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"","1155","test_idor_list_never_leaks_another_users_alerts","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","0","test_new_threshold_crossing_sets_fired_at_to_now","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_domain","",""
+"","1","test_commit_import_handler_raises_nothing_to_commit_when_all_rows_invalid","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","0","test_is_valid_amount_rejects_zero","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","573","test_discarding_an_already_discarded_import_is_not_an_error","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","1","test_list_alerts_includes_dismissed_when_requested","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"AC3's ""<= the ceiling"" boundary: an amount exactly equal to the
+    justified ceiling must also be suppressed, not just strictly-below.","0","test_large_transaction_suppressed_when_exactly_equal_to_the_ceiling","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"A justifications repository IS wired up (unlike the None-default
+    backward-compat path already covered by FINTRACK-22's original suite),
+    but no row exists yet for this category -- behaviour must be
+    unaffected.","0","test_large_transaction_fires_normally_when_no_justification_exists_for_the_category","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-oauth-google.feature: Forged or tampered Google ID token is rejected","30","test_forged_or_tampered_google_id_token_is_rejected","tests.integration","2026-09-19","passed","2026-09-19","","test_oauth_api","",""
+"Apple sometimes sends email_verified as the string ""false"" rather
+    than a real boolean -- must not be treated as truthy.","2","test_apple_verifier_normalises_string_email_verified_claim","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_verifier","",""
+"","600","test_brand_new_budget_category_with_no_history_is_not_deprioritised","tests.integration","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation_api","",""
+"","0","test_update_staged_rows_handler_re_flags_a_row_edited_to_contain_a_formula","tests.unit","2026-09-19","passed","2026-09-19","","test_import_command_handlers","",""
+"","3","test_auth_bypass_empty_bearer_token_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"Regression test for a live production finding (2026-07-07, Release
+    Pro smoke test): logout's delete_cookie() call didn't repeat
+    httponly/secure/samesite, so it silently fell back to Starlette's
+    default (samesite=lax) instead of this project's SameSite=Strict
+    cookie policy. Functionally harmless -- browsers match a cookie for
+    deletion by name+domain+path, not by attributes -- but the clearing
+    Set-Cookie header should still honestly reflect the same policy the
+    cookie was issued under, not depend on an implicit framework default.
+    ","560","test_logout_clears_cookie_with_same_security_attributes_it_was_set_with","tests.integration","2026-09-19","passed","2026-09-19","","test_login_logout_api","",""
+"","558","test_trend_months_above_maximum_is_rejected","tests.integration","2026-09-19","passed","2026-09-19","","test_insights_api","",""
+"The payload legitimately appears in FastAPI's own validation-error
+    body (it echoes back the rejected input value, standard Pydantic
+    behaviour for a 422) -- that's not a reflection risk in a JSON-only
+    API. The actual security property under test is that this never
+    reaches the handler or a query at all: a clean 422 with a well-formed
+    JSON body, not a 500 or a raw traceback.","636","test_sql_injection_shaped_alert_id_path_param_rejected_as_malformed_uuid","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"Matches Gherkin: 'Attempt to log in with an incorrect password'.","2","test_wrong_password_rejected_generically","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"Both tokens are signed with the same key, so an access token decodes
+    cleanly here. The `type` claim is the only thing stopping a leaked
+    15-minute access token from being upgraded into a fresh 7-day session.","1","test_an_access_token_cannot_be_used_to_refresh","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"Matches Gherkin: 'Attempt to register with a weak password'.","0","test_weak_password_rejected","tests.unit","2026-09-19","passed","2026-09-19","","test_register_user","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-oauth-apple.feature: User signs in using Apple's private relay email","42","test_user_signs_in_using_apples_private_relay_email","tests.integration","2026-09-19","passed","2026-09-19","","test_oauth_api","",""
+"","0","test_mark_done_sets_status_and_actioned_at","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"","0","test_apply_correction_rejects_empty_category","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","0","test_apply_update_rejects_invalid_amount_and_leaves_original_limit_intact","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","0","test_is_overdue_true_well_past_the_window","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"Matches the Gherkin scenario verbatim: ""received a recommendation
+    8 days ago and took no action"" -> should be auto-ignored.","0","test_is_overdue_true_at_eight_days","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-frontend-scaffold.feature: Build fails loudly when required environment variables are missing","2677","test_build_fails_loudly_when_required_environment_variables_are_missing","tests.integration","2026-09-19","passed","2026-09-19","","test_frontend_build","",""
+"OAuthProviderUnavailableError must NOT be swallowed into
+    OAuthLoginError -- the API layer needs to tell a transient provider
+    outage (503) apart from a genuinely invalid token (401).","0","test_provider_unavailable_propagates_distinctly_for_503_mapping","tests.unit","2026-09-19","passed","2026-09-19","","test_oauth_login_user","",""
+"","0","test_logout_revokes_the_refresh_token_jti","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"Matches Gherkin: 'Attempt SQL injection in the email field during
+    login'. Unlike registration's 400 + 'Invalid email format', login must
+    return the exact same 401 + generic message as any other failed login
+    -- confirmed against a real registered user's credentials being tried
+    alongside, so this isn't just ""no such row"" by coincidence.
+    ","553","test_sql_injection_in_login_email_rejected_generically","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"","1","test_find_matching_rule_returns_none_for_empty_description","tests.unit","2026-09-19","passed","2026-09-19","","test_categorisation_rule_domain","",""
+"","1","test_invalid_email_format_rejected","tests.unit","2026-09-19","passed","2026-09-19","","test_register_user","",""
+"Baseline IDOR check specific to this story's new data: the follow-
+    through history endpoint (which recommendation_key values feed) must
+    never return another user's rows -- already covered generally by
+    test_follow_through_security.py, re-asserted here because
+    recommendation_key is new data on that same response.","1161","test_follow_through_history_endpoint_never_exposes_another_users_prioritisation_data","tests.security","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation_security","",""
+"","0","test_dismiss_raises_not_found_for_another_users_subscription","tests.unit","2026-09-19","passed","2026-09-19","","test_subscription_handlers","",""
+"","4","test_auth_bypass_missing_token_rejected_on_justify","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","1157","test_idor_recommendation_never_reflects_another_users_budget_risk","tests.security","2026-09-19","passed","2026-09-19","","test_recommendations_security","",""
+"Matches Gherkin: 'Attempt SQL injection in the email field during
+    login'. Unlike registration, this must raise the SAME
+    InvalidCredentialsError as any other failure -- not a
+    format-specific InvalidEmailError -- since login must not leak
+    format-validity as a distinguishable signal.
+    ","1","test_sql_injection_shaped_email_rejected_generically_not_by_format","tests.unit","2026-09-19","passed","2026-09-19","","test_login_logout_user","",""
+"The level distinction is load-bearing: FINTRACK-64's alerting keys
+    on WARNING. If a replay were logged at INFO alongside routine
+    rejections, the signal would be indistinguishable from noise.","290","test_replay_is_logged_at_warning_while_ordinary_expiry_is_not","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"","616","test_category_spend_crosses_the_90_percent_threshold","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","3","test_auth_bypass_missing_token_rejected_on_create","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","4","test_auth_bypass_malformed_authorization_header_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-38-oauth-apple.feature: Forged or unverifiable Apple identity token is rejected","29","test_forged_or_unverifiable_apple_identity_token_is_rejected","tests.integration","2026-09-19","passed","2026-09-19","","test_oauth_api","",""
+"","0","test_shift_month_backward_several_months_across_year_boundary","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"Matches Gherkin happy path: amount ""42.50"".","0","test_money_parse_accepts_valid_two_decimal_amount","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","1181","test_idor_cannot_justify_another_users_alert","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","1136","test_idor_second_user_cannot_delete_first_users_transaction","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"Documents, rather than silently skipping, two scenario categories
+    from the QA Lead checklist that don't meaningfully apply to this
+    specific story:
+
+    - Accessibility (keyboard nav, ARIA labels): N/A -- FINTRACK-13 is a
+      backend-only story this sprint; no registration UI exists to test
+      yet. Applicable once the frontend registration form ships.
+    - Large dataset (1000+ records): registration is a single-row insert
+      keyed by a unique, indexed email column -- correctness at scale is
+      about the *query* path (list/search/report stories), not this
+      write-one-row endpoint. A rough proxy is included below: uniqueness
+      enforcement still works correctly with a non-trivially sized table,
+      rather than only ever having been tested against an empty one.
+
+    Goes through the handler directly (not the HTTP endpoint) so that the
+    registration endpoint's own rate limit -- a real, separate concern --
+    doesn't confound what this test is actually checking.
+    ","211","test_register_extra_scenarios_not_applicable_documented","tests.integration","2026-09-19","passed","2026-09-19","","test_register_api","",""
+"","1","test_new_subscription_alone_triggers_subscription_recommendation","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","3","test_xss_payload_as_id_token_rejected_generically","tests.security","2026-09-19","passed","2026-09-19","","test_oauth_security","",""
+"","1189","test_idor_cannot_confirm_another_users_subscription","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","1","test_transaction_new_creates_a_valid_transaction","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","1121","test_idor_second_user_cannot_edit_first_users_staged_import","tests.integration","2026-09-19","passed","2026-09-19","","test_imports_api","",""
+"","564","test_xss_payload_in_category_is_stored_as_inert_text_not_executed","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"","562","test_idor_a_forged_subscription_id_belonging_to_no_one_returns_404_not_500","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"The SQLi check must apply on the update path too, not only create --
+    a separate handler with its own call to Transaction.apply_update.","581","test_sql_injection_in_update_field_also_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"","1","test_create_budget_rejects_invalid_amount_before_touching_the_repository","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","1185","test_idor_cannot_dismiss_another_users_subscription","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","1","test_presented_token_is_revoked_after_use","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"","688","test_justify_calls_for_the_same_category_in_either_order_converge_on_the_highest_ceiling","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"Revoke-before-issue means a store failure denies the refresh rather
+    than handing out a second live session. If the ordering were ever
+    reversed, this test would fail by returning a result instead of
+    raising -- which is the whole point of asserting it.","1","test_no_new_tokens_are_issued_if_revocation_fails","tests.unit","2026-09-19","passed","2026-09-19","","test_refresh_session","",""
+"","3","test_list_transactions_without_auth_token_returns_401","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","0","test_create_transaction_handler_propagates_amount_exceeds_maximum_error","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","1138","test_idor_second_user_cannot_see_first_users_transaction_in_their_list","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","0","test_money_parse_rejects_amount_above_the_maximum","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","0","test_transaction_new_rejects_empty_category","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_domain","",""
+"","563","test_sql_injection_payload_never_reflected_in_response","tests.security","2026-09-19","passed","2026-09-19","","test_categorisation_rules_security","",""
+"The row is RowStatus.OK at stage time (note isn't checked by the
+    lighter validators), so NothingToCommitError does NOT fire here --
+    that only triggers when committable_rows is empty *before* the commit
+    loop runs. This row is attempted, fails Transaction.new()'s
+    SuspiciousInputError check, and is counted as skipped -- a 200 with
+    committed_count=0, not a 400.","575","test_sql_injection_in_csv_note_is_skipped_at_commit_not_committed","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"Gap-fill: a CONFIRMED subscription is already-acknowledged, not
+    'new,' even if it was first detected within the rolling window --
+    only DETECTED-status rows count (get_weekly_recommendation.py's own
+    documented rationale).","0","test_confirmed_subscription_does_not_count_as_new","tests.unit","2026-09-19","passed","2026-09-19","","test_weekly_recommendation_handler","",""
+"","1138","test_cannot_mark_another_users_recommendation_record_as_done","tests.integration","2026-09-19","passed","2026-09-19","","test_follow_through_api","",""
+"","1","test_is_overdue_false_for_a_record_created_today","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_record_domain","",""
+"","1130","test_idor_cannot_mark_another_users_record_done","tests.security","2026-09-19","passed","2026-09-19","","test_follow_through_security","",""
+"","0","test_list_history_does_not_reprocess_an_already_resolved_record","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","3","test_auth_bypass_missing_token_rejected_on_mark_not_subscription","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","585","test_recommendation_unactioned_past_seven_days_is_auto_ignored","tests.integration","2026-09-19","passed","2026-09-19","","test_follow_through_api","",""
+"The domain method itself is not idempotency-guarded -- that's
+    DismissAlertHandler's job (only calls dismiss() once, guarded by
+    `if alert.dismissed_at is None`). At the pure domain level, calling
+    dismiss() twice just re-stamps the time; this documents that
+    boundary rather than asserting a domain-level guard that doesn't
+    exist.","1","test_dismiss_can_be_called_again_and_updates_the_timestamp","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_domain","",""
+"NEUTRAL recommendations pass recommendation_key=None (see
+    recommendations.py's _recommendation_key) -- must never be
+    deprioritised and must never even query the repository.","1","test_none_recommendation_key_short_circuits_without_a_repository_call","tests.unit","2026-09-19","passed","2026-09-19","","test_recommendation_prioritisation","",""
+"","607","test_editing_a_budget_recalculates_percentage_against_the_new_limit","tests.integration","2026-09-19","passed","2026-09-19","","test_budgets_api","",""
+"Exercises AC4 at the real API/DB level across a simulated month
+    boundary, using the same injected-clock override technique
+    test_budgets_api.py's monthly-reset test uses (ADR-013 decision F /
+    ADR-014 decision A) -- the evaluate-alerts handler's clock is pinned
+    so July's crossing and August's crossing are genuinely different
+    periods, not just two calls on the same day.
+
+    This test's absolute dates are intentionally hardcoded (not
+    _this_month) -- the frozen clock overrides below make it self-
+    consistent regardless of real wall-clock time, same reasoning as
+    test_budgets_api.py's monthly-reset test.
+    ","637","test_dismissing_an_alert_does_not_suppress_future_alerts","tests.integration","2026-09-19","passed","2026-09-19","","test_alerts_api","",""
+"","558","test_trend_months_below_minimum_is_rejected","tests.integration","2026-09-19","passed","2026-09-19","","test_insights_api","",""
+"","0","test_month_sequence_across_year_boundary","tests.unit","2026-09-19","passed","2026-09-19","","test_date_ranges","",""
+"","4","test_auth_bypass_token_signed_with_wrong_secret_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","4","test_auth_bypass_token_signed_with_wrong_secret_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_insights_security","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-60-session-persistence-silent-refresh.feature: A rotated refresh token cannot be replayed","320","test_a_rotated_refresh_token_cannot_be_replayed","tests.integration","2026-09-19","passed","2026-09-19","","test_refresh_api","",""
+"","539","visiting /alerts while logged out redirects to /login, never showing alert content","chromium","2026-09-19","passed","2026-09-19","Unauthenticated access (security)","auth.spec.ts","",""
+"","559","test_sql_injection_payload_never_reflected_in_response","tests.security","2026-09-19","passed","2026-09-19","","test_budgets_security","",""
+"","573","test_xss_payload_in_category_is_stored_as_inert_text_not_executed","tests.security","2026-09-19","passed","2026-09-19","","test_transactions_security","",""
+"Logout takes no user-controlled text field at all (only a cookie
+    the client can't set arbitrary content into via this endpoint's own
+    contract) -- there is no injection surface to test here. Documented
+    rather than silently omitted.
+    ","5","test_xss_payload_not_applicable_to_logout","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"","597","test_user_dismisses_a_recommendation_and_it_still_counts_toward_the_denominator","tests.integration","2026-09-19","passed","2026-09-19","","test_follow_through_api","",""
+"IDOR prevention at the handler layer: owner_a's transaction must be
+    invisible to owner_b, surfaced as the same TransactionNotFoundError a
+    truly-nonexistent id would raise -- not a distinguishable 403.","0","test_update_transaction_handler_raises_not_found_for_another_users_transaction","tests.unit","2026-09-19","passed","2026-09-19","","test_transaction_handlers","",""
+"","1828","test_subscriptions_list_is_correct_across_many_independent_merchants","tests.integration","2026-09-19","passed","2026-09-19","","test_subscriptions_api","",""
+"Only a LEADING trigger char is dangerous to Excel/Sheets -- a
+    normal sentence containing one of these characters elsewhere must not
+    be flagged.","1","test_sanitise_if_formula_does_not_flag_a_trigger_char_mid_string","tests.unit","2026-09-19","passed","2026-09-19","","test_import_batch_domain","",""
+"","0","test_record_action_nonexistent_record_id_raises_not_found","tests.unit","2026-09-19","passed","2026-09-19","","test_follow_through_handlers","",""
+"","1","test_new_accepts_whole_number_limit","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_domain","",""
+"","364","test_a_logged_out_refresh_token_cannot_refresh","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"/home/runner/work/finance-tracker-app/finance-tracker-app/tests/features/FINTRACK-15-add-manual-transaction.feature: Successfully add an expense transaction","605","test_successfully_add_an_expense_transaction","tests.integration","2026-09-19","passed","2026-09-19","","test_transactions_api","",""
+"","4","test_auth_bypass_missing_token_rejected_on_list","tests.security","2026-09-19","passed","2026-09-19","","test_subscriptions_security","",""
+"","1","test_create_budget_rejects_a_duplicate_category","tests.unit","2026-09-19","passed","2026-09-19","","test_budget_handlers","",""
+"","283","test_success_is_logged_with_user_id_only_and_no_email","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
+"The closest real analogue to IDOR available on this endpoint: does
+    supplying a syntactically-valid-looking but unowned/garbage token let
+    an attacker revoke someone else's actual session? It must not --
+    logout should just fail to find anything to revoke, not revoke the
+    wrong session or error in a way that reveals another user's data.
+    ","831","test_logout_cannot_be_used_to_revoke_an_arbitrary_users_session_without_their_token","tests.security","2026-09-19","passed","2026-09-19","","test_login_security","",""
+"Mirrors the dismiss endpoint's equivalent test: the alert_id path
+    parameter is UUID-typed, so FastAPI's own validation rejects the
+    SQLi-shaped payload with a clean 422 before it ever reaches the
+    handler or a query.","560","test_sql_injection_shaped_alert_id_path_param_rejected_as_malformed_uuid_on_justify","tests.security","2026-09-19","passed","2026-09-19","","test_alerts_security","",""
+"","4","test_auth_bypass_malformed_authorization_header_rejected","tests.security","2026-09-19","passed","2026-09-19","","test_imports_security","",""
+"","1","test_list_alerts_only_returns_the_requesting_users_alerts","tests.unit","2026-09-19","passed","2026-09-19","","test_alert_handlers","",""
+"path=/api/v1/auth keeps the credential off every transactions,
+    budgets and alerts request -- it is only ever sent where it is needed.","283","test_the_refresh_cookie_is_scoped_away_from_business_endpoints","tests.security","2026-09-19","passed","2026-09-19","","test_refresh_security","",""
