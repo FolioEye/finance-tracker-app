@@ -15,6 +15,21 @@ aiosqlite==0.20.0
 # tests/conftest.py for how this is wired in.
 fakeredis==2.36.2
 
+# allure-pytest (FINTRACK-65): emits Allure results from the Python suites so
+# the published report covers unit/security/integration alongside the
+# Playwright E2E tier, rather than E2E alone. Pulls one transitive,
+# allure-python-commons==2.16.0; its only other requirement is pytest>=4.5.0,
+# already pinned above.
+#
+# Deliberately NOT allure-pytest-bdd. That package renders pytest-bdd
+# scenarios as Gherkin steps in the report, which would be genuinely useful
+# for traceability here -- but it is an alternative to allure-pytest, not an
+# addition, and installing both double-reports every test. The whole suite is
+# reported uniformly by allure-pytest for now; switching the BDD modules over
+# is a separate, deliberate change, not something to discover through
+# duplicated results.
+allure-pytest==2.16.0
+
 # packaging, coverage[toml]: same pip-compile non-determinism class as
 # wrapt/mako/starlette/cffi in apps/api/requirements.txt -- pinned here
 # instead since these come in via test-side tooling (pip-tools' own build
