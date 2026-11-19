@@ -165,7 +165,13 @@ jobs:
           # instance.
           DATABASE_URL: postgresql+asyncpg://postgres:test_password@localhost:5432/fintrack_test
           REDIS_URL: redis://localhost:6379
-          JWT_SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}
+          # A pull request from a fork gets no repository secrets, so
+          # TEST_SECRET_KEY is empty there and TokenService refuses to start.
+          # The fallback is a throwaway value built from this run's own id and
+          # commit: nothing is hard-coded, it exists only inside one CI run
+          # against a disposable database, and pushes or PRs from inside this
+          # repo still use the real secret.
+          JWT_SECRET_KEY: ${{ secrets.TEST_SECRET_KEY || format('ci-fork-{0}-{1}', github.run_id, github.sha) }}
           # Without this, `apps` isn't importable and every test module that
           # imports it at module level fails collection with
           # ModuleNotFoundError: No module named 'apps' -- this step never
@@ -260,7 +266,9 @@ jobs:
     env:
       DATABASE_URL: postgresql+asyncpg://postgres:test_password@localhost:5432/fintrack_e2e
       REDIS_URL: redis://localhost:6379
-      JWT_SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}
+      # Same fallback as the Test Suite job: a fork's pull request has no
+      # TEST_SECRET_KEY, so use a throwaway per-run value instead of an empty one.
+      JWT_SECRET_KEY: ${{ secrets.TEST_SECRET_KEY || format('ci-fork-{0}-{1}', github.run_id, github.sha) }}
       PYTHONPATH: ${{ github.workspace }}
       # REQUIRED. apps/api/main.py only registers CORSMiddleware when this is
       # non-empty -- unset, every browser call is CORS-blocked and the whole
