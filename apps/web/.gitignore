@@ -4,6 +4,9 @@ coverage/
 *.tsbuildinfo
 vite.config.d.ts
 vite.config.js
+# tsc -b emits these next to the source (tsconfig.node.json, FINTRACK-80)
+buildEnvGuard.d.ts
+buildEnvGuard.js
 playwright-report/
 test-results/
 .env.local

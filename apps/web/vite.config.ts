@@ -2,6 +2,8 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
+import { assertBuildEnv } from "./buildEnvGuard";
+
 // Config vars the production build must not silently proceed without.
 // FINTRACK-47: previously, an unset VITE_API_BASE_URL was baked into the
 // bundle as the literal string "undefined" with a clean exit 0 -- every
@@ -17,18 +19,14 @@ import { defineConfig, loadEnv } from "vite";
 // crashing when those are absent. Google has no such paywall, so it stays
 // a hard build-time requirement like the API base URL.
 //
-// Known gap (found 2026-08-30, live production incident): this guard only
-// checks that a required var is *present*, not that its value is real.
-// VITE_API_URL was set in GitHub Secrets to the literal placeholder
-// "https://placeholder.railway.app" -- present, so this check passed, but
-// every request the shipped app made (including OAuth login) silently
-// went to a domain that doesn't exist. No build-time signal caught it
-// because "present but wrong" and "present and correct" look identical to
-// a plain existence check. Corrected in secrets, not fixed here -- a
-// stronger guard (e.g. rejecting obviously-placeholder-looking values, or
-// a smoke-test step that actually calls the configured API URL post-build)
-// is a real follow-up, not yet built.
-const REQUIRED_BUILD_ENV_VARS = ["VITE_API_BASE_URL", "VITE_GOOGLE_CLIENT_ID"] as const;
+// FINTRACK-80 (follows the 2026-08-30 live incident): the presence-only
+// check passed a VITE_API_URL secret set to the literal placeholder
+// "https://placeholder.railway.app". The guard now also rejects values
+// matching a fixed placeholder deny-list -- see buildEnvGuard.ts for the
+// rule (FINTRACK-80-AC5). Still not done: a post-build smoke test that
+// actually calls the configured API URL (out of scope for FINTRACK-80).
+// The list of required vars lives in buildEnvGuard.ts as
+// REQUIRED_BUILD_ENV_VARS.
 
 export default defineConfig(({ command, mode }) => {
   if (command === "build") {
@@ -42,15 +40,8 @@ export default defineConfig(({ command, mode }) => {
     // global types being available to this client-adjacent TS project.
     // Scoped to command === "build" only, so `npm run dev` and vitest
     // test runs aren't forced to have production config present just to
-    // start.
-    const env = loadEnv(mode, ".", "");
-    const missing = REQUIRED_BUILD_ENV_VARS.filter((key) => !env[key]);
-    if (missing.length > 0) {
-      throw new Error(
-        `Missing required config for production build: ${missing.join(", ")}. ` +
-          "Set these before running `npm run build` -- see apps/web/.env.example.",
-      );
-    }
+    // start (FINTRACK-80-AC4).
+    assertBuildEnv(loadEnv(mode, ".", ""));
   }
 
   return {
